@@ -15,9 +15,26 @@ export const calculateOverallAverage = (subjects: Subject[]): number => {
   const mainSubjects = subjects.filter(subject => subject.type === 'main');
   const secondarySubjects = subjects.filter(subject => subject.type === 'secondary');
   
-  const mainAverage = mainSubjects.reduce((sum, subject) => sum + calculateSubjectAverage(subject.grades), 0) / (mainSubjects.length || 1);
-  const secondaryAverage = secondarySubjects.reduce((sum, subject) => sum + calculateSubjectAverage(subject.grades), 0) / (secondarySubjects.length || 1);
+  // Berechne Durchschnitt nur für Fächer mit Noten
+  const mainSubjectsWithGrades = mainSubjects.filter(subject => subject.grades.length > 0);
+  const secondarySubjectsWithGrades = secondarySubjects.filter(subject => subject.grades.length > 0);
   
-  // Hauptfächer zählen doppelt
+  if (mainSubjectsWithGrades.length === 0 && secondarySubjectsWithGrades.length === 0) return 0;
+  
+  const mainAverage = mainSubjectsWithGrades.length > 0
+    ? mainSubjectsWithGrades.reduce((sum, subject) => sum + calculateSubjectAverage(subject.grades), 0) / mainSubjectsWithGrades.length
+    : 0;
+    
+  const secondaryAverage = secondarySubjectsWithGrades.length > 0
+    ? secondarySubjectsWithGrades.reduce((sum, subject) => sum + calculateSubjectAverage(subject.grades), 0) / secondarySubjectsWithGrades.length
+    : 0;
+  
+  // Wenn keine Hauptfächer vorhanden sind, gib nur den Durchschnitt der Nebenfächer zurück
+  if (mainSubjectsWithGrades.length === 0) return Number(secondaryAverage.toFixed(2));
+  
+  // Wenn keine Nebenfächer vorhanden sind, gib nur den Durchschnitt der Hauptfächer zurück
+  if (secondarySubjectsWithGrades.length === 0) return Number(mainAverage.toFixed(2));
+  
+  // Hauptfächer zählen doppelt (2:1 Gewichtung)
   return Number(((mainAverage * 2 + secondaryAverage) / 3).toFixed(2));
 };
