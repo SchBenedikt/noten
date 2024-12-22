@@ -15,7 +15,10 @@ interface SubjectCardProps {
 export const SubjectCard = ({ subject, onAddGrade }: SubjectCardProps) => {
   const [isAddingGrade, setIsAddingGrade] = useState(false);
   const average = calculateSubjectAverage(subject.grades);
-  const { written, oral } = calculateMainSubjectAverages(subject.grades);
+  const { written, oral, total } = calculateMainSubjectAverages(
+    subject.grades,
+    subject.writtenWeight || 1
+  );
 
   return (
     <Card className="w-full">
@@ -29,8 +32,9 @@ export const SubjectCard = ({ subject, onAddGrade }: SubjectCardProps) => {
         <div className="flex items-center gap-2">
           {subject.type === 'main' ? (
             <div className="text-sm">
-              <div>Schulaufgaben: ∅ {written}</div>
+              <div>Schulaufgaben: ∅ {written} {subject.writtenWeight === 2 && '(×2)'}</div>
               <div>Mündlich: ∅ {oral}</div>
+              <div className="font-semibold">Gesamt: ∅ {total}</div>
             </div>
           ) : (
             <span className="text-lg font-semibold">∅ {average}</span>

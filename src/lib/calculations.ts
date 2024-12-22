@@ -9,13 +9,23 @@ export const calculateSubjectAverage = (grades: Grade[]): number => {
   return Number((weightedSum / totalWeight).toFixed(2));
 };
 
-export const calculateMainSubjectAverages = (grades: Grade[]) => {
+export const calculateMainSubjectAverages = (grades: Grade[], writtenWeight: number = 1) => {
   const writtenGrades = grades.filter(grade => grade.type === 'written');
   const oralGrades = grades.filter(grade => grade.type === 'oral');
 
+  // Berechne Durchschnitte
+  const writtenAvg = calculateSubjectAverage(writtenGrades);
+  const oralAvg = calculateSubjectAverage(oralGrades);
+
+  // Berechne Gesamtdurchschnitt mit Gewichtung
+  const total = grades.length > 0 
+    ? Number(((writtenAvg * writtenWeight + oralAvg) / (writtenWeight + 1)).toFixed(2))
+    : 0;
+
   return {
-    written: calculateSubjectAverage(writtenGrades),
-    oral: calculateSubjectAverage(oralGrades)
+    written: writtenAvg,
+    oral: oralAvg,
+    total
   };
 };
 
@@ -31,11 +41,14 @@ export const calculateOverallAverage = (subjects: Subject[]): number => {
   
   if (mainSubjectsWithGrades.length === 0 && secondarySubjectsWithGrades.length === 0) return 0;
 
-  // Berechne Durchschnitt für Hauptfächer mit Berücksichtigung der mündlichen/schriftlichen Gewichtung
+  // Berechne Durchschnitt für Hauptfächer mit Berücksichtigung der Gewichtungen
   const mainAverage = mainSubjectsWithGrades.length > 0
     ? mainSubjectsWithGrades.reduce((sum, subject) => {
-        const averages = calculateMainSubjectAverages(subject.grades);
-        const oralWeight = subject.oralWeight || 0.5; // Standard: 50% mündlich, 50% schriftlich
+        const averages = calculateMainSubjectAverages(
+          subject.grades, 
+          subject.writtenWeight || 1
+        );
+        const oralWeight = subject.oralWeight || 0.5;
         return sum + (averages.written * (1 - oralWeight) + averages.oral * oralWeight);
       }, 0) / mainSubjectsWithGrades.length
     : 0;
