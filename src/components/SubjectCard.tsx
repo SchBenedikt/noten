@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Subject, Grade } from '@/types';
-import { calculateSubjectAverage } from '@/lib/calculations';
+import { calculateSubjectAverage, calculateMainSubjectAverages } from '@/lib/calculations';
 import { GradeList } from './GradeList';
 import { GradeForm } from './GradeForm';
 import { useState } from 'react';
@@ -15,6 +15,7 @@ interface SubjectCardProps {
 export const SubjectCard = ({ subject, onAddGrade }: SubjectCardProps) => {
   const [isAddingGrade, setIsAddingGrade] = useState(false);
   const average = calculateSubjectAverage(subject.grades);
+  const { written, oral } = calculateMainSubjectAverages(subject.grades);
 
   return (
     <Card className="w-full">
@@ -26,7 +27,14 @@ export const SubjectCard = ({ subject, onAddGrade }: SubjectCardProps) => {
           </span>
         </CardTitle>
         <div className="flex items-center gap-2">
-          <span className="text-lg font-semibold">∅ {average}</span>
+          {subject.type === 'main' ? (
+            <div className="text-sm">
+              <div>Schulaufgaben: ∅ {written}</div>
+              <div>Mündlich: ∅ {oral}</div>
+            </div>
+          ) : (
+            <span className="text-lg font-semibold">∅ {average}</span>
+          )}
           <Button
             variant="ghost"
             size="icon"

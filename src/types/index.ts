@@ -13,4 +13,5 @@ export interface Subject {
   name: string;
   type: SubjectType;
   grades: Grade[];
+  oralWeight?: number; // Gewichtung der mündlichen Noten (nur für Hauptfächer)
 }
