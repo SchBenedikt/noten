@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Subject } from '@/types';
+import { Subject, Grade } from '@/types';
 import { calculateSubjectAverage } from '@/lib/calculations';
 import { GradeList } from './GradeList';
 import { GradeForm } from './GradeForm';
