@@ -41,17 +41,17 @@ export const SubjectCard = ({
   );
 
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
+    <Card className="w-full bg-white shadow-sm">
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+        <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2">
           {subject.name}
           <span className="text-sm font-normal text-muted-foreground">
             ({subject.type === 'main' ? 'Hauptfach' : 'Nebenfach'})
           </span>
         </CardTitle>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {subject.type === 'main' ? (
-            <div className="text-sm">
+            <div className="text-sm space-y-1 sm:space-y-0 sm:text-right">
               <div>Schulaufgaben: ∅ {written} {subject.writtenWeight === 2 && '(×2)'}</div>
               <div>Mündlich: ∅ {oral}</div>
               <div className="font-semibold">Gesamt: ∅ {total}</div>
@@ -79,13 +79,15 @@ export const SubjectCard = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {isAddingGrade && (
-          <GradeForm
-            onSubmit={(grade) => {
-              onAddGrade(subject.id, grade);
-              setIsAddingGrade(false);
-            }}
-            subjectType={subject.type}
-          />
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <GradeForm
+              onSubmit={(grade) => {
+                onAddGrade(subject.id, grade);
+                setIsAddingGrade(false);
+              }}
+              subjectType={subject.type}
+            />
+          </div>
         )}
         <GradeList 
           grades={subject.grades} 
