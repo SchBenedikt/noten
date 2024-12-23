@@ -16,10 +16,23 @@ export const calculateMainSubjectAverages = (grades: Grade[], writtenWeight: num
   const writtenAvg = calculateSubjectAverage(writtenGrades);
   const oralAvg = calculateSubjectAverage(oralGrades);
 
-  // Berechne Gesamtdurchschnitt mit korrekter Gewichtung (2:1 für Schulaufgaben)
-  const total = grades.length > 0 
-    ? Number(((writtenAvg * writtenWeight + oralAvg) / (writtenWeight + 1)).toFixed(2))
-    : 0;
+  // Wenn keine Noten vorhanden sind, gib 0 zurück
+  if (writtenGrades.length === 0 && oralGrades.length === 0) {
+    return { written: 0, oral: 0, total: 0 };
+  }
+
+  // Wenn nur schriftliche Noten vorhanden sind
+  if (oralGrades.length === 0) {
+    return { written: writtenAvg, oral: 0, total: writtenAvg };
+  }
+
+  // Wenn nur mündliche Noten vorhanden sind
+  if (writtenGrades.length === 0) {
+    return { written: 0, oral: oralAvg, total: oralAvg };
+  }
+
+  // Wenn beide Arten von Noten vorhanden sind
+  const total = Number(((writtenAvg * writtenWeight + oralAvg) / (writtenWeight + 1)).toFixed(2));
 
   return {
     written: writtenAvg,
@@ -29,17 +42,18 @@ export const calculateMainSubjectAverages = (grades: Grade[], writtenWeight: num
 };
 
 export const calculateOverallAverage = (subjects: Subject[]): number => {
-  if (subjects.length === 0) return 0;
+  // Filtere Fächer ohne Noten heraus
+  const mainSubjectsWithGrades = subjects
+    .filter(subject => subject.type === 'main' && subject.grades.length > 0);
+  const secondarySubjectsWithGrades = subjects
+    .filter(subject => subject.type === 'secondary' && subject.grades.length > 0);
   
-  const mainSubjects = subjects.filter(subject => subject.type === 'main');
-  const secondarySubjects = subjects.filter(subject => subject.type === 'secondary');
-  
-  const mainSubjectsWithGrades = mainSubjects.filter(subject => subject.grades.length > 0);
-  const secondarySubjectsWithGrades = secondarySubjects.filter(subject => subject.grades.length > 0);
-  
-  if (mainSubjectsWithGrades.length === 0 && secondarySubjectsWithGrades.length === 0) return 0;
+  // Wenn keine Fächer mit Noten vorhanden sind
+  if (mainSubjectsWithGrades.length === 0 && secondarySubjectsWithGrades.length === 0) {
+    return 0;
+  }
 
-  // Berechne Durchschnitt für Hauptfächer mit korrekter 2:1 Gewichtung für Schulaufgaben
+  // Berechne Durchschnitt für Hauptfächer
   const mainAverage = mainSubjectsWithGrades.length > 0
     ? mainSubjectsWithGrades.reduce((sum, subject) => {
         const averages = calculateMainSubjectAverages(subject.grades, 2);
@@ -47,13 +61,22 @@ export const calculateOverallAverage = (subjects: Subject[]): number => {
       }, 0) / mainSubjectsWithGrades.length
     : 0;
     
+  // Berechne Durchschnitt für Nebenfächer
   const secondaryAverage = secondarySubjectsWithGrades.length > 0
-    ? secondarySubjectsWithGrades.reduce((sum, subject) => sum + calculateSubjectAverage(subject.grades), 0) / secondarySubjectsWithGrades.length
+    ? secondarySubjectsWithGrades.reduce((sum, subject) => 
+        sum + calculateSubjectAverage(subject.grades), 0) / secondarySubjectsWithGrades.length
     : 0;
   
-  if (mainSubjectsWithGrades.length === 0) return Number(secondaryAverage.toFixed(2));
-  if (secondarySubjectsWithGrades.length === 0) return Number(mainAverage.toFixed(2));
+  // Wenn nur Hauptfächer vorhanden sind
+  if (secondarySubjectsWithGrades.length === 0 && mainSubjectsWithGrades.length > 0) {
+    return Number(mainAverage.toFixed(2));
+  }
   
-  // Hauptfächer zählen doppelt (2:1 Gewichtung)
+  // Wenn nur Nebenfächer vorhanden sind
+  if (mainSubjectsWithGrades.length === 0 && secondarySubjectsWithGrades.length > 0) {
+    return Number(secondaryAverage.toFixed(2));
+  }
+  
+  // Wenn beide Arten von Fächern vorhanden sind (Hauptfächer zählen doppelt)
   return Number(((mainAverage * 2 + secondaryAverage) / 3).toFixed(2));
 };
