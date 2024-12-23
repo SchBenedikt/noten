@@ -55,6 +55,7 @@ export const SubjectCard = ({ subject, onAddGrade }: SubjectCardProps) => {
               onAddGrade(subject.id, grade);
               setIsAddingGrade(false);
             }}
+            subjectType={subject.type}
           />
         )}
         <GradeList grades={subject.grades} />
