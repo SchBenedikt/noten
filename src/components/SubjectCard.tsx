@@ -35,15 +35,12 @@ export const SubjectCard = ({
   const [isAddingGrade, setIsAddingGrade] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const average = calculateSubjectAverage(subject.grades);
-  const { written, oral, total } = calculateMainSubjectAverages(
-    subject.grades,
-    subject.writtenWeight || 1
-  );
+  const { written, oral, total } = calculateMainSubjectAverages(subject.grades, 2);
 
   return (
     <Card className="w-full bg-white shadow-sm">
-      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
-        <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2">
+      <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0 p-4 sm:p-6">
+        <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 text-xl sm:text-2xl">
           {subject.name}
           <span className="text-sm font-normal text-muted-foreground">
             ({subject.type === 'main' ? 'Hauptfach' : 'Nebenfach'})
@@ -51,33 +48,35 @@ export const SubjectCard = ({
         </CardTitle>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           {subject.type === 'main' ? (
-            <div className="text-sm space-y-1 sm:space-y-0 sm:text-right">
-              <div>Schulaufgaben: ∅ {written} {subject.writtenWeight === 2 && '(×2)'}</div>
+            <div className="text-sm space-y-1 sm:space-y-0 sm:text-right bg-gray-50 p-2 rounded-md w-full sm:w-auto">
+              <div>Schulaufgaben: ∅ {written} (×2)</div>
               <div>Mündlich: ∅ {oral}</div>
-              <div className="font-semibold">Gesamt: ∅ {total}</div>
+              <div className="font-semibold text-base">Gesamt: ∅ {total}</div>
             </div>
           ) : (
-            <span className="text-lg font-semibold">∅ {average}</span>
+            <span className="text-lg font-semibold bg-gray-50 p-2 rounded-md">∅ {average}</span>
           )}
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto justify-end">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsAddingGrade(!isAddingGrade)}
+              className="hover:bg-gray-100"
             >
-              {isAddingGrade ? <MinusIcon /> : <PlusIcon />}
+              {isAddingGrade ? <MinusIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
             </Button>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setShowDeleteDialog(true)}
+              className="hover:bg-red-50"
             >
               <Trash2Icon className="h-4 w-4 text-red-500" />
             </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 p-4 sm:p-6">
         {isAddingGrade && (
           <div className="bg-gray-50 p-4 rounded-lg">
             <GradeForm

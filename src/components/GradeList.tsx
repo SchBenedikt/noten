@@ -27,7 +27,7 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
   const sortedGrades = [...grades].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <div className="overflow-x-auto -mx-4 sm:mx-0">
+    <div className="overflow-x-auto -mx-4 sm:mx-0 rounded-lg border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -42,15 +42,17 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
           {sortedGrades.map((grade) => (
             editingGradeId === grade.id ? (
               <TableRow key={grade.id}>
-                <TableCell colSpan={5}>
-                  <GradeForm
-                    initialGrade={grade}
-                    onSubmit={(updatedGrade) => {
-                      onUpdateGrade(grade.id, updatedGrade);
-                      setEditingGradeId(null);
-                    }}
-                    onCancel={() => setEditingGradeId(null)}
-                  />
+                <TableCell colSpan={5} className="p-0">
+                  <div className="p-4 bg-gray-50">
+                    <GradeForm
+                      initialGrade={grade}
+                      onSubmit={(updatedGrade) => {
+                        onUpdateGrade(grade.id, updatedGrade);
+                        setEditingGradeId(null);
+                      }}
+                      onCancel={() => setEditingGradeId(null)}
+                    />
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
@@ -58,7 +60,7 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
                 <TableCell className="font-medium">
                   {new Date(grade.date).toLocaleDateString()}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right whitespace-nowrap">
                   {grade.value}
                   {grade.value <= 2 ? (
                     <ArrowUp className="inline ml-1 text-green-500" size={16} />
@@ -76,6 +78,7 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
                       variant="ghost"
                       size="icon"
                       onClick={() => setEditingGradeId(grade.id)}
+                      className="h-8 w-8"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -83,6 +86,7 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
                       variant="ghost"
                       size="icon"
                       onClick={() => setDeletingGradeId(grade.id)}
+                      className="h-8 w-8"
                     >
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
