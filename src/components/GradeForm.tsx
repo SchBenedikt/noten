@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,14 +7,30 @@ import { Grade } from '@/types';
 
 interface GradeFormProps {
   onSubmit: (grade: Omit<Grade, 'id'>) => void;
+  onCancel?: () => void;
   subjectType?: 'main' | 'secondary';
+  initialGrade?: Grade;
 }
 
-export const GradeForm = ({ onSubmit, subjectType = 'main' }: GradeFormProps) => {
-  const [value, setValue] = useState('');
-  const [weight, setWeight] = useState('1');
-  const [type, setType] = useState<'oral' | 'written'>('oral');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+export const GradeForm = ({ 
+  onSubmit, 
+  onCancel, 
+  subjectType = 'main',
+  initialGrade 
+}: GradeFormProps) => {
+  const [value, setValue] = useState(initialGrade?.value.toString() || '');
+  const [weight, setWeight] = useState(initialGrade?.weight.toString() || '1');
+  const [type, setType] = useState<'oral' | 'written'>(initialGrade?.type || 'oral');
+  const [date, setDate] = useState(initialGrade?.date || new Date().toISOString().split('T')[0]);
+
+  useEffect(() => {
+    if (initialGrade) {
+      setValue(initialGrade.value.toString());
+      setWeight(initialGrade.weight.toString());
+      setType(initialGrade.type);
+      setDate(initialGrade.date);
+    }
+  }, [initialGrade]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,9 +40,11 @@ export const GradeForm = ({ onSubmit, subjectType = 'main' }: GradeFormProps) =>
       type,
       date,
     });
-    setValue('');
-    setWeight('1');
-    setType('oral');
+    if (!initialGrade) {
+      setValue('');
+      setWeight('1');
+      setType('oral');
+    }
   };
 
   return (
@@ -83,7 +101,16 @@ export const GradeForm = ({ onSubmit, subjectType = 'main' }: GradeFormProps) =>
           />
         </div>
       </div>
-      <Button type="submit">Hinzufügen</Button>
+      <div className="flex justify-end gap-2">
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Abbrechen
+          </Button>
+        )}
+        <Button type="submit">
+          {initialGrade ? 'Speichern' : 'Hinzufügen'}
+        </Button>
+      </div>
     </form>
   );
 };

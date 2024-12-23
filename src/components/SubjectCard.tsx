@@ -5,15 +5,35 @@ import { GradeList } from './GradeList';
 import { GradeForm } from './GradeForm';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, MinusIcon } from 'lucide-react';
+import { PlusIcon, MinusIcon, Trash2Icon } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SubjectCardProps {
   subject: Subject;
   onAddGrade: (subjectId: string, grade: Omit<Grade, 'id'>) => void;
+  onUpdateGrade: (subjectId: string, gradeId: string, grade: Omit<Grade, 'id'>) => void;
+  onDeleteGrade: (subjectId: string, gradeId: string) => void;
+  onDeleteSubject: (subjectId: string) => void;
 }
 
-export const SubjectCard = ({ subject, onAddGrade }: SubjectCardProps) => {
+export const SubjectCard = ({ 
+  subject, 
+  onAddGrade, 
+  onUpdateGrade,
+  onDeleteGrade,
+  onDeleteSubject 
+}: SubjectCardProps) => {
   const [isAddingGrade, setIsAddingGrade] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const average = calculateSubjectAverage(subject.grades);
   const { written, oral, total } = calculateMainSubjectAverages(
     subject.grades,
@@ -39,13 +59,22 @@ export const SubjectCard = ({ subject, onAddGrade }: SubjectCardProps) => {
           ) : (
             <span className="text-lg font-semibold">∅ {average}</span>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsAddingGrade(!isAddingGrade)}
-          >
-            {isAddingGrade ? <MinusIcon /> : <PlusIcon />}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsAddingGrade(!isAddingGrade)}
+            >
+              {isAddingGrade ? <MinusIcon /> : <PlusIcon />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowDeleteDialog(true)}
+            >
+              <Trash2Icon className="h-4 w-4 text-red-500" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -58,8 +87,33 @@ export const SubjectCard = ({ subject, onAddGrade }: SubjectCardProps) => {
             subjectType={subject.type}
           />
         )}
-        <GradeList grades={subject.grades} />
+        <GradeList 
+          grades={subject.grades} 
+          onUpdateGrade={(gradeId, grade) => onUpdateGrade(subject.id, gradeId, grade)}
+          onDeleteGrade={(gradeId) => onDeleteGrade(subject.id, gradeId)}
+        />
       </CardContent>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Fach löschen</AlertDialogTitle>
+            <AlertDialogDescription>
+              Möchten Sie das Fach "{subject.name}" wirklich löschen? 
+              Diese Aktion kann nicht rückgängig gemacht werden.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => onDeleteSubject(subject.id)}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

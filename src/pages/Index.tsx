@@ -31,6 +31,48 @@ const Index = () => {
     }));
   };
 
+  const handleDeleteSubject = (subjectId: string) => {
+    setSubjects(subjects.filter(subject => subject.id !== subjectId));
+    toast({
+      title: "Erfolg",
+      description: "Fach wurde erfolgreich gelöscht.",
+    });
+  };
+
+  const handleUpdateGrade = (subjectId: string, gradeId: string, updatedGrade: Omit<Grade, 'id'>) => {
+    setSubjects(subjects.map(subject => {
+      if (subject.id === subjectId) {
+        return {
+          ...subject,
+          grades: subject.grades.map(grade => 
+            grade.id === gradeId ? { ...updatedGrade, id: gradeId } : grade
+          ),
+        };
+      }
+      return subject;
+    }));
+    toast({
+      title: "Erfolg",
+      description: "Note wurde erfolgreich aktualisiert.",
+    });
+  };
+
+  const handleDeleteGrade = (subjectId: string, gradeId: string) => {
+    setSubjects(subjects.map(subject => {
+      if (subject.id === subjectId) {
+        return {
+          ...subject,
+          grades: subject.grades.filter(grade => grade.id !== gradeId),
+        };
+      }
+      return subject;
+    }));
+    toast({
+      title: "Erfolg",
+      description: "Note wurde erfolgreich gelöscht.",
+    });
+  };
+
   const overallAverage = calculateOverallAverage(subjects);
 
   return (
@@ -64,6 +106,9 @@ const Index = () => {
                     key={subject.id}
                     subject={subject}
                     onAddGrade={handleAddGrade}
+                    onUpdateGrade={handleUpdateGrade}
+                    onDeleteGrade={handleDeleteGrade}
+                    onDeleteSubject={handleDeleteSubject}
                   />
                 ))}
               </div>
