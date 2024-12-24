@@ -27,53 +27,43 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
   const sortedGrades = [...grades].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <div className="overflow-x-auto -mx-4 sm:mx-0 rounded-lg border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Datum</TableHead>
-            <TableHead className="w-[80px] text-right">Note</TableHead>
-            <TableHead className="hidden sm:table-cell">Art</TableHead>
-            <TableHead className="text-right">Gewichtung</TableHead>
-            <TableHead className="w-[100px]">Aktionen</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
+    <div className="overflow-x-auto -mx-4 sm:mx-0">
+      <div className="min-w-full divide-y divide-gray-200">
+        {/* Mobile View */}
+        <div className="block sm:hidden">
           {sortedGrades.map((grade) => (
             editingGradeId === grade.id ? (
-              <TableRow key={grade.id}>
-                <TableCell colSpan={5} className="p-0">
-                  <div className="p-4 bg-gray-50">
-                    <GradeForm
-                      initialGrade={grade}
-                      onSubmit={(updatedGrade) => {
-                        onUpdateGrade(grade.id, updatedGrade);
-                        setEditingGradeId(null);
-                      }}
-                      onCancel={() => setEditingGradeId(null)}
-                    />
-                  </div>
-                </TableCell>
-              </TableRow>
+              <div key={grade.id} className="p-4 bg-gray-50">
+                <GradeForm
+                  initialGrade={grade}
+                  onSubmit={(updatedGrade) => {
+                    onUpdateGrade(grade.id, updatedGrade);
+                    setEditingGradeId(null);
+                  }}
+                  onCancel={() => setEditingGradeId(null)}
+                />
+              </div>
             ) : (
-              <TableRow key={grade.id}>
-                <TableCell className="font-medium">
-                  {new Date(grade.date).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="text-right whitespace-nowrap">
-                  {grade.value}
-                  {grade.value <= 2 ? (
-                    <ArrowUp className="inline ml-1 text-green-500" size={16} />
-                  ) : grade.value >= 5 ? (
-                    <ArrowDown className="inline ml-1 text-red-500" size={16} />
-                  ) : null}
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {grade.type === 'oral' ? 'Mündlich' : 'Schulaufgabe'}
-                </TableCell>
-                <TableCell className="text-right">{grade.weight}</TableCell>
-                <TableCell>
-                  <div className="flex justify-end gap-2">
+              <div key={grade.id} className="p-4 bg-white border-b">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="font-medium">
+                    {new Date(grade.date).toLocaleDateString()}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">
+                      {grade.value}
+                      {grade.value <= 2 ? (
+                        <ArrowUp className="inline ml-1 text-green-500" size={16} />
+                      ) : grade.value >= 5 ? (
+                        <ArrowDown className="inline ml-1 text-red-500" size={16} />
+                      ) : null}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center text-sm text-gray-500">
+                  <div>{grade.type === 'oral' ? 'Mündlich' : 'Schulaufgabe'}</div>
+                  <div className="flex items-center gap-2">
+                    <span>Gewichtung: {grade.weight}</span>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -91,12 +81,85 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </div>
-                </TableCell>
-              </TableRow>
+                </div>
+              </div>
             )
           ))}
-        </TableBody>
-      </Table>
+        </div>
+
+        {/* Desktop View */}
+        <div className="hidden sm:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">Datum</TableHead>
+                <TableHead className="w-[80px] text-right">Note</TableHead>
+                <TableHead>Art</TableHead>
+                <TableHead className="text-right">Gewichtung</TableHead>
+                <TableHead className="w-[100px]">Aktionen</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sortedGrades.map((grade) => (
+                editingGradeId === grade.id ? (
+                  <TableRow key={grade.id}>
+                    <TableCell colSpan={5} className="p-0">
+                      <div className="p-4 bg-gray-50">
+                        <GradeForm
+                          initialGrade={grade}
+                          onSubmit={(updatedGrade) => {
+                            onUpdateGrade(grade.id, updatedGrade);
+                            setEditingGradeId(null);
+                          }}
+                          onCancel={() => setEditingGradeId(null)}
+                        />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  <TableRow key={grade.id}>
+                    <TableCell className="font-medium">
+                      {new Date(grade.date).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      {grade.value}
+                      {grade.value <= 2 ? (
+                        <ArrowUp className="inline ml-1 text-green-500" size={16} />
+                      ) : grade.value >= 5 ? (
+                        <ArrowDown className="inline ml-1 text-red-500" size={16} />
+                      ) : null}
+                    </TableCell>
+                    <TableCell>
+                      {grade.type === 'oral' ? 'Mündlich' : 'Schulaufgabe'}
+                    </TableCell>
+                    <TableCell className="text-right">{grade.weight}</TableCell>
+                    <TableCell>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setEditingGradeId(grade.id)}
+                          className="h-8 w-8"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeletingGradeId(grade.id)}
+                          className="h-8 w-8"
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
 
       <AlertDialog 
         open={deletingGradeId !== null} 

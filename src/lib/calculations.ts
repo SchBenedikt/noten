@@ -56,7 +56,7 @@ export const calculateOverallAverage = (subjects: Subject[]): number => {
   // Berechne Durchschnitt für Hauptfächer
   const mainAverage = mainSubjectsWithGrades.length > 0
     ? mainSubjectsWithGrades.reduce((sum, subject) => {
-        const averages = calculateMainSubjectAverages(subject.grades, 2);
+        const averages = calculateMainSubjectAverages(subject.grades, subject.writtenWeight || 2);
         return sum + averages.total;
       }, 0) / mainSubjectsWithGrades.length
     : 0;
