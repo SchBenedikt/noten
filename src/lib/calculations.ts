@@ -18,20 +18,20 @@ export const calculateMainSubjectAverages = (grades: Grade[], writtenWeight: num
 
   // Wenn keine Noten vorhanden sind, gib 0 zurück
   if (writtenGrades.length === 0 && oralGrades.length === 0) {
-    return { written: 0, oral: 0, total: 0 };
+    return { written: writtenAvg, oral: oralAvg, total: 0 };
   }
 
   // Wenn nur schriftliche Noten vorhanden sind
   if (oralGrades.length === 0) {
-    return { written: writtenAvg, oral: 0, total: writtenAvg };
+    return { written: writtenAvg, oral: oralAvg, total: writtenAvg };
   }
 
   // Wenn nur mündliche Noten vorhanden sind
   if (writtenGrades.length === 0) {
-    return { written: 0, oral: oralAvg, total: oralAvg };
+    return { written: writtenAvg, oral: oralAvg, total: oralAvg };
   }
 
-  // Wenn beide Arten von Noten vorhanden sind
+  // Wenn beide Arten von Noten vorhanden sind, verwende die konfigurierte Gewichtung
   const total = Number(((writtenAvg * writtenWeight + oralAvg) / (writtenWeight + 1)).toFixed(2));
 
   return {
