@@ -1,8 +1,44 @@
 import { useState, useEffect } from 'react';
-import { Subject, Grade } from '@/types';
+import { Subject, Grade, SubjectType, GradeType } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+
+interface DatabaseSubject {
+  id: string;
+  name: string;
+  type: string;
+  written_weight: number | null;
+  user_id: string;
+  created_at: string;
+  grades: DatabaseGrade[];
+}
+
+interface DatabaseGrade {
+  id: string;
+  subject_id: string;
+  value: number;
+  weight: number;
+  type: string;
+  date: string;
+  created_at: string;
+}
+
+const mapDatabaseSubjectToSubject = (dbSubject: DatabaseSubject): Subject => ({
+  id: dbSubject.id,
+  name: dbSubject.name,
+  type: dbSubject.type as SubjectType,
+  writtenWeight: dbSubject.written_weight || undefined,
+  grades: dbSubject.grades.map(mapDatabaseGradeToGrade),
+});
+
+const mapDatabaseGradeToGrade = (dbGrade: DatabaseGrade): Grade => ({
+  id: dbGrade.id,
+  value: dbGrade.value,
+  weight: dbGrade.weight,
+  type: dbGrade.type as GradeType,
+  date: dbGrade.date,
+});
 
 export const useSubjects = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -23,7 +59,17 @@ export const useSubjects = () => {
         name,
         type,
         written_weight,
-        grades (*)
+        user_id,
+        created_at,
+        grades (
+          id,
+          subject_id,
+          value,
+          weight,
+          type,
+          date,
+          created_at
+        )
       `)
       .order('created_at', { ascending: true });
 
@@ -36,7 +82,7 @@ export const useSubjects = () => {
       return;
     }
 
-    setSubjects(subjectsData || []);
+    setSubjects((subjectsData || []).map(mapDatabaseSubjectToSubject));
   };
 
   const addSubject = async (newSubject: Omit<Subject, 'id' | 'grades'>) => {
@@ -67,7 +113,7 @@ export const useSubjects = () => {
       return;
     }
 
-    setSubjects([...subjects, { ...data, grades: [] }]);
+    setSubjects([...subjects, mapDatabaseSubjectToSubject({ ...data, grades: [] })]);
     toast({
       title: "Erfolg",
       description: "Fach wurde erfolgreich erstellt",
@@ -100,7 +146,7 @@ export const useSubjects = () => {
       if (subject.id === subjectId) {
         return {
           ...subject,
-          grades: [...subject.grades, data],
+          grades: [...subject.grades, mapDatabaseGradeToGrade(data)],
         };
       }
       return subject;

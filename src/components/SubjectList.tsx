@@ -1,4 +1,4 @@
-import { Subject } from '@/types';
+import { Subject, Grade } from '@/types';
 import { SubjectCard } from './SubjectCard';
 
 interface SubjectListProps {
