@@ -1,11 +1,14 @@
 export type SubjectType = 'main' | 'secondary';
+export type GradeType = 'oral' | 'written';
 
 export interface Grade {
   id: string;
   value: number;
   weight: number;
-  type: 'oral' | 'written';
+  type: GradeType;
   date: string;
+  subject_id?: string;
+  created_at?: string;
 }
 
 export interface Subject {
@@ -13,5 +16,7 @@ export interface Subject {
   name: string;
   type: SubjectType;
   grades: Grade[];
-  writtenWeight?: number; // 1 = einfach, 2 = doppelt
+  writtenWeight?: number;
+  user_id?: string;
+  created_at?: string;
 }
