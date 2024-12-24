@@ -9,7 +9,71 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      grades: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          subject_id: string
+          type: string
+          value: number
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          subject_id: string
+          type: string
+          value: number
+          weight: number
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          subject_id?: string
+          type?: string
+          value?: number
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grades_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subjects: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          type: string
+          user_id: string
+          written_weight: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          type: string
+          user_id: string
+          written_weight?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          type?: string
+          user_id?: string
+          written_weight?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
