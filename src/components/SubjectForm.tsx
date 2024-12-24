@@ -50,7 +50,6 @@ export const SubjectForm = ({ onSubmit }: SubjectFormProps) => {
             name: data.name,
             type: data.type,
             writtenWeight: data.type === "main" ? data.writtenWeight : undefined,
-            grades: [],
           });
           form.reset();
         })}
