@@ -5,7 +5,7 @@ import { GradeList } from './GradeList';
 import { GradeForm } from './GradeForm';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, MinusIcon, Trash2Icon } from 'lucide-react';
+import { PlusIcon, MinusIcon, Trash2Icon, Edit2Icon } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +16,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface SubjectCardProps {
   subject: Subject;
@@ -23,6 +30,7 @@ interface SubjectCardProps {
   onUpdateGrade: (subjectId: string, gradeId: string, grade: Omit<Grade, 'id'>) => void;
   onDeleteGrade: (subjectId: string, gradeId: string) => void;
   onDeleteSubject: (subjectId: string) => void;
+  onUpdateSubject?: (subjectId: string, updates: Partial<Subject>) => void;
 }
 
 export const SubjectCard = ({ 
@@ -30,12 +38,21 @@ export const SubjectCard = ({
   onAddGrade, 
   onUpdateGrade,
   onDeleteGrade,
-  onDeleteSubject 
+  onDeleteSubject,
+  onUpdateSubject
 }: SubjectCardProps) => {
   const [isAddingGrade, setIsAddingGrade] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isEditingWeight, setIsEditingWeight] = useState(false);
   const average = calculateSubjectAverage(subject.grades);
-  const { written, oral, total } = calculateMainSubjectAverages(subject.grades, 2);
+  const { written, oral, total } = calculateMainSubjectAverages(subject.grades, subject.writtenWeight || 2);
+
+  const handleWeightChange = (value: string) => {
+    if (onUpdateSubject) {
+      onUpdateSubject(subject.id, { writtenWeight: Number(value) });
+      setIsEditingWeight(false);
+    }
+  };
 
   return (
     <Card className="w-full bg-white shadow-sm">
@@ -47,14 +64,42 @@ export const SubjectCard = ({
           </span>
         </CardTitle>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          {subject.type === 'main' ? (
+          {subject.type === 'main' && (
             <div className="text-sm space-y-1 sm:space-y-0 sm:text-right bg-gray-50 p-2 rounded-md w-full sm:w-auto">
-              <div>Schulaufgaben: ∅ {written} (×2)</div>
+              <div className="flex items-center gap-2">
+                <span>Schulaufgaben: ∅ {written}</span>
+                <div className="flex items-center gap-1">
+                  {isEditingWeight ? (
+                    <Select
+                      defaultValue={subject.writtenWeight?.toString() || "2"}
+                      onValueChange={handleWeightChange}
+                    >
+                      <SelectTrigger className="w-20">
+                        <SelectValue placeholder="×2" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">×1</SelectItem>
+                        <SelectItem value="2">×2</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <>
+                      <span>(×{subject.writtenWeight || 2})</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsEditingWeight(true)}
+                        className="h-6 w-6"
+                      >
+                        <Edit2Icon className="h-3 w-3" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
               <div>Mündlich: ∅ {oral}</div>
               <div className="font-semibold text-base">Gesamt: ∅ {total}</div>
             </div>
-          ) : (
-            <span className="text-lg font-semibold bg-gray-50 p-2 rounded-md">∅ {average}</span>
           )}
           <div className="flex gap-2 w-full sm:w-auto justify-end">
             <Button

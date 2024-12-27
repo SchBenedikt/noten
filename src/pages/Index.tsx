@@ -6,6 +6,7 @@ import { useSubjects } from '@/hooks/use-subjects';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
+import { Subject } from '@/types';
 
 const Index = () => {
   const {
@@ -15,6 +16,7 @@ const Index = () => {
     updateGrade,
     deleteGrade,
     deleteSubject,
+    updateSubject,
   } = useSubjects();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -30,6 +32,10 @@ const Index = () => {
       return;
     }
     navigate('/login');
+  };
+
+  const handleUpdateSubject = async (subjectId: string, updates: Partial<Subject>) => {
+    await updateSubject(subjectId, updates);
   };
 
   const overallAverage = calculateOverallAverage(subjects);
@@ -68,6 +74,7 @@ const Index = () => {
               onUpdateGrade={updateGrade}
               onDeleteGrade={deleteGrade}
               onDeleteSubject={deleteSubject}
+              onUpdateSubject={handleUpdateSubject}
             />
           </div>
         </div>

@@ -120,6 +120,35 @@ export const useSubjects = () => {
     });
   };
 
+  const updateSubject = async (subjectId: string, updates: Partial<Subject>) => {
+    const { error } = await supabase
+      .from('subjects')
+      .update({
+        written_weight: updates.writtenWeight,
+      })
+      .eq('id', subjectId);
+
+    if (error) {
+      toast({
+        title: "Fehler",
+        description: "Fehler beim Aktualisieren des Fachs",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSubjects(subjects.map(subject => 
+      subject.id === subjectId 
+        ? { ...subject, ...updates }
+        : subject
+    ));
+
+    toast({
+      title: "Erfolg",
+      description: "Fach wurde erfolgreich aktualisiert",
+    });
+  };
+
   const addGrade = async (subjectId: string, grade: Omit<Grade, 'id'>) => {
     const { data, error } = await supabase
       .from('grades')
@@ -260,5 +289,6 @@ export const useSubjects = () => {
     updateGrade,
     deleteGrade,
     deleteSubject,
+    updateSubject,
   };
 };
