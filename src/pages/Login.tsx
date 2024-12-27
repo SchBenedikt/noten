@@ -19,14 +19,14 @@ const Login = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-sm p-8 space-y-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-card rounded-lg shadow-sm p-8 space-y-6">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
             <LogIn className="w-6 h-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Notenverwaltung</h1>
-          <p className="text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-foreground">Notenverwaltung</h1>
+          <p className="text-sm text-muted-foreground">
             Melde dich an, um deine Noten zu verwalten
           </p>
         </div>
@@ -38,17 +38,19 @@ const Login = () => {
             variables: {
               default: {
                 colors: {
-                  brand: 'rgb(59 130 246)',
-                  brandAccent: 'rgb(37 99 235)',
+                  brand: 'hsl(var(--primary))',
+                  brandAccent: 'hsl(var(--primary) / 0.9)',
                 }
               }
             },
             className: {
               container: 'space-y-4',
-              button: 'w-full px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors',
-              input: 'w-full px-3 py-2 text-sm border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',
-              label: 'block text-sm font-medium text-gray-700 mb-1',
+              button: 'w-full px-4 py-2 text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 rounded-md transition-colors',
+              input: 'w-full px-3 py-2 text-sm border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',
+              label: 'block text-sm font-medium text-foreground mb-1',
               anchor: 'text-sm text-primary hover:text-primary/90',
+              divider: 'text-muted-foreground',
+              message: 'text-sm text-muted-foreground',
             }
           }}
           localization={{
