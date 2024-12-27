@@ -19,8 +19,8 @@ const Login = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white/80 backdrop-blur-sm rounded-xl shadow-lg p-8 space-y-6">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-sm p-8 space-y-6">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
             <LogIn className="w-6 h-6 text-primary" />
@@ -45,9 +45,10 @@ const Login = () => {
             },
             className: {
               container: 'space-y-4',
-              button: 'w-full px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors',
-              input: 'w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+              button: 'w-full px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors',
+              input: 'w-full px-3 py-2 text-sm border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent',
               label: 'block text-sm font-medium text-gray-700 mb-1',
+              anchor: 'text-sm text-primary hover:text-primary/90',
             }
           }}
           localization={{
