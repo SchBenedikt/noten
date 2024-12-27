@@ -1,6 +1,6 @@
 import { Grade } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowUp, ArrowDown, Pencil, Trash2 } from 'lucide-react';
+import { ArrowUp, ArrowDown, Pencil, Trash2, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { GradeForm } from './GradeForm';
@@ -14,6 +14,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface GradeListProps {
   grades: Grade[];
@@ -64,6 +70,18 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
                   <div>{grade.type === 'oral' ? 'Mündlich' : 'Schulaufgabe'}</div>
                   <div className="flex items-center gap-2">
                     <span>Gewichtung: {grade.weight}</span>
+                    {grade.notes && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <MessageSquare className="h-4 w-4 text-gray-400" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{grade.notes}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -96,6 +114,7 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
                 <TableHead className="w-[80px] text-right">Note</TableHead>
                 <TableHead>Art</TableHead>
                 <TableHead className="text-right">Gewichtung</TableHead>
+                <TableHead>Notizen</TableHead>
                 <TableHead className="w-[100px]">Aktionen</TableHead>
               </TableRow>
             </TableHeader>
@@ -103,7 +122,7 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
               {sortedGrades.map((grade) => (
                 editingGradeId === grade.id ? (
                   <TableRow key={grade.id}>
-                    <TableCell colSpan={5} className="p-0">
+                    <TableCell colSpan={6} className="p-0">
                       <div className="p-4 bg-gray-50">
                         <GradeForm
                           initialGrade={grade}
@@ -133,6 +152,23 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
                       {grade.type === 'oral' ? 'Mündlich' : 'Schulaufgabe'}
                     </TableCell>
                     <TableCell className="text-right">{grade.weight}</TableCell>
+                    <TableCell>
+                      {grade.notes && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-1 text-gray-500">
+                                <MessageSquare className="h-4 w-4" />
+                                <span className="text-sm truncate max-w-[200px]">{grade.notes}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{grade.notes}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-2">
                         <Button

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
 import { Grade } from '@/types';
 
 interface GradeFormProps {
@@ -22,6 +23,7 @@ export const GradeForm = ({
   const [weight, setWeight] = useState(initialGrade?.weight.toString() || '1');
   const [type, setType] = useState<'oral' | 'written'>(initialGrade?.type || 'oral');
   const [date, setDate] = useState(initialGrade?.date || new Date().toISOString().split('T')[0]);
+  const [notes, setNotes] = useState(initialGrade?.notes || '');
 
   useEffect(() => {
     if (initialGrade) {
@@ -29,6 +31,7 @@ export const GradeForm = ({
       setWeight(initialGrade.weight.toString());
       setType(initialGrade.type);
       setDate(initialGrade.date);
+      setNotes(initialGrade.notes || '');
     }
   }, [initialGrade]);
 
@@ -39,11 +42,13 @@ export const GradeForm = ({
       weight: Number(weight),
       type,
       date,
+      notes,
     });
     if (!initialGrade) {
       setValue('');
       setWeight('1');
       setType('oral');
+      setNotes('');
     }
   };
 
@@ -98,6 +103,16 @@ export const GradeForm = ({
             value={date}
             onChange={(e) => setDate(e.target.value)}
             required
+          />
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="notes">Notizen</Label>
+          <Textarea
+            id="notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Optionale Notizen zur Note..."
+            className="min-h-[100px]"
           />
         </div>
       </div>

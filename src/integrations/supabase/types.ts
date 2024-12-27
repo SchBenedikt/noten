@@ -14,6 +14,7 @@ export type Database = {
           created_at: string
           date: string
           id: string
+          notes: string | null
           subject_id: string
           type: string
           value: number
@@ -23,6 +24,7 @@ export type Database = {
           created_at?: string
           date: string
           id?: string
+          notes?: string | null
           subject_id: string
           type: string
           value: number
@@ -32,6 +34,7 @@ export type Database = {
           created_at?: string
           date?: string
           id?: string
+          notes?: string | null
           subject_id?: string
           type?: string
           value?: number

@@ -7,6 +7,7 @@ export interface Grade {
   weight: number;
   type: GradeType;
   date: string;
+  notes?: string;
   subject_id?: string;
   created_at?: string;
 }
