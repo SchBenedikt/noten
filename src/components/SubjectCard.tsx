@@ -45,7 +45,7 @@ export const SubjectCard = ({
   const [isAddingGrade, setIsAddingGrade] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditingWeight, setIsEditingWeight] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false); // Changed to false by default
   const average = calculateSubjectAverage(subject.grades);
   const { written, oral, total } = calculateMainSubjectAverages(subject.grades, subject.writtenWeight || 2);
 
@@ -57,13 +57,21 @@ export const SubjectCard = ({
   };
 
   return (
-    <Card className="w-full bg-white shadow-sm">
+    <Card className="w-full bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0 p-4 sm:p-6">
           <div className="flex items-center gap-2">
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                {isOpen ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 transition-transform duration-200"
+              >
+                {isOpen ? (
+                  <ChevronUpIcon className="h-4 w-4 transition-transform duration-200" />
+                ) : (
+                  <ChevronDownIcon className="h-4 w-4 transition-transform duration-200" />
+                )}
               </Button>
             </CollapsibleTrigger>
             <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 text-xl sm:text-2xl">
@@ -80,18 +88,20 @@ export const SubjectCard = ({
                   <span>Schulaufgaben: ∅ {written}</span>
                   <div className="flex items-center gap-1">
                     {isEditingWeight ? (
-                      <Select
+                      <Input
+                        type="number"
+                        min="1"
+                        max="3"
+                        step="0.5"
                         defaultValue={subject.writtenWeight?.toString() || "2"}
-                        onValueChange={handleWeightChange}
-                      >
-                        <SelectTrigger className="w-20">
-                          <SelectValue placeholder="×2" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">×1</SelectItem>
-                          <SelectItem value="2">×2</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        className="w-20"
+                        onBlur={(e) => handleWeightChange(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleWeightChange((e.target as HTMLInputElement).value);
+                          }
+                        }}
+                      />
                     ) : (
                       <>
                         <span>(×{subject.writtenWeight || 2})</span>
@@ -116,7 +126,7 @@ export const SubjectCard = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsAddingGrade(!isAddingGrade)}
-                className="hover:bg-gray-100"
+                className="hover:bg-gray-100 transition-colors duration-200"
               >
                 {isAddingGrade ? <MinusIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
               </Button>
@@ -124,23 +134,24 @@ export const SubjectCard = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowDeleteDialog(true)}
-                className="hover:bg-red-50"
+                className="hover:bg-red-50 transition-colors duration-200"
               >
                 <Trash2Icon className="h-4 w-4 text-red-500" />
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CollapsibleContent>
+        <CollapsibleContent className="transition-all duration-200">
           <CardContent className="space-y-4 p-4 sm:p-6">
             {isAddingGrade && (
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-gray-50 p-4 rounded-lg animate-fade-in">
                 <GradeForm
                   onSubmit={(grade) => {
                     onAddGrade(subject.id, grade);
                     setIsAddingGrade(false);
                   }}
                   subjectType={subject.type}
+                  onCancel={() => setIsAddingGrade(false)}
                 />
               </div>
             )}
