@@ -2,11 +2,26 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LogIn } from "lucide-react";
+import { School } from "@/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [schools, setSchools] = useState<School[]>([]);
+  const [selectedSchool, setSelectedSchool] = useState<string>("");
+  const [newSchoolName, setNewSchoolName] = useState("");
+  const [isAddingSchool, setIsAddingSchool] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -15,8 +30,64 @@ const Login = () => {
       }
     });
 
+    fetchSchools();
+
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const fetchSchools = async () => {
+    const { data, error } = await supabase
+      .from('schools')
+      .select('*')
+      .order('name');
+    
+    if (error) {
+      toast({
+        title: "Fehler",
+        description: "Schulen konnten nicht geladen werden",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSchools(data || []);
+  };
+
+  const handleAddSchool = async () => {
+    if (!newSchoolName.trim()) {
+      toast({
+        title: "Fehler",
+        description: "Bitte geben Sie einen Schulnamen ein",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('schools')
+      .insert([{ name: newSchoolName.trim() }])
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: "Fehler",
+        description: "Schule konnte nicht erstellt werden",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSchools([...schools, data]);
+    setSelectedSchool(data.id);
+    setNewSchoolName("");
+    setIsAddingSchool(false);
+    
+    toast({
+      title: "Erfolg",
+      description: "Schule wurde erfolgreich erstellt",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -29,6 +100,55 @@ const Login = () => {
           <p className="text-sm text-muted-foreground">
             Melde dich an, um deine Noten zu verwalten
           </p>
+        </div>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Schule</label>
+            {!isAddingSchool ? (
+              <div className="space-y-2">
+                <Select value={selectedSchool} onValueChange={setSelectedSchool}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Wähle deine Schule" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {schools.map((school) => (
+                      <SelectItem key={school.id} value={school.id}>
+                        {school.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsAddingSchool(true)}
+                >
+                  Neue Schule hinzufügen
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Input
+                  placeholder="Name der Schule"
+                  value={newSchoolName}
+                  onChange={(e) => setNewSchoolName(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setIsAddingSchool(false)}
+                  >
+                    Abbrechen
+                  </Button>
+                  <Button className="flex-1" onClick={handleAddSchool}>
+                    Hinzufügen
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         
         <Auth

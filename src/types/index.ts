@@ -12,6 +12,12 @@ export interface Grade {
   created_at?: string;
 }
 
+export interface School {
+  id: string;
+  name: string;
+  created_at?: string;
+}
+
 export interface Subject {
   id: string;
   name: string;
@@ -19,5 +25,6 @@ export interface Subject {
   grades: Grade[];
   writtenWeight?: number;
   user_id?: string;
+  school_id?: string;
   created_at?: string;
 }
