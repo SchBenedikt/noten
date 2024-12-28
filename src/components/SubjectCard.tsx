@@ -5,6 +5,7 @@ import { GradeList } from './GradeList';
 import { GradeForm } from './GradeForm';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { PlusIcon, MinusIcon, Trash2Icon, Edit2Icon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import {
   AlertDialog,
