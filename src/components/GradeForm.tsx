@@ -38,7 +38,7 @@ export const GradeForm = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
-      value: Math.round(Number(value)), // Round to whole numbers
+      value: Number(value),
       weight: Number(weight),
       type,
       date,
@@ -52,11 +52,8 @@ export const GradeForm = ({
     }
   };
 
-  // Adjust min weight based on grade type
-  const minWeight = type === 'oral' ? 0.5 : 1;
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid gap-4">
         <div className="grid gap-2">
           <Label htmlFor="value">Note</Label>
@@ -65,7 +62,7 @@ export const GradeForm = ({
             type="number"
             min="1"
             max="6"
-            step="1"
+            step="0.5"
             value={value}
             onChange={(e) => setValue(e.target.value)}
             required
@@ -76,33 +73,16 @@ export const GradeForm = ({
           <Input
             id="weight"
             type="number"
-            min={minWeight}
+            min="1"
             max="3"
-            step="0.5"
             value={weight}
-            onChange={(e) => {
-              const newWeight = Number(e.target.value);
-              if (type === 'written' && newWeight < 1) {
-                setWeight('1');
-              } else {
-                setWeight(e.target.value);
-              }
-            }}
+            onChange={(e) => setWeight(e.target.value)}
             required
           />
         </div>
         <div className="grid gap-2">
           <Label>Art</Label>
-          <RadioGroup 
-            value={type} 
-            onValueChange={(value) => {
-              setType(value as 'oral' | 'written');
-              // Reset weight to minimum if current weight is below the new minimum
-              if (value === 'written' && Number(weight) < 1) {
-                setWeight('1');
-              }
-            }}
-          >
+          <RadioGroup value={type} onValueChange={(value) => setType(value as 'oral' | 'written')}>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="oral" id="oral" />
               <Label htmlFor="oral">Mündlich</Label>
