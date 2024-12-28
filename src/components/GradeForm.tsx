@@ -73,8 +73,9 @@ export const GradeForm = ({
           <Input
             id="weight"
             type="number"
-            min="1"
+            min="0.5"
             max="3"
+            step="0.5"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             required
