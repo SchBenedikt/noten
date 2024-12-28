@@ -52,6 +52,9 @@ export const GradeForm = ({
     }
   };
 
+  // Adjust min weight based on grade type
+  const minWeight = type === 'oral' ? 0.5 : 1;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
       <div className="grid gap-4">
@@ -73,17 +76,33 @@ export const GradeForm = ({
           <Input
             id="weight"
             type="number"
-            min={type === 'oral' ? '0.5' : '1'}
+            min={minWeight}
             max="3"
             step="0.5"
             value={weight}
-            onChange={(e) => setWeight(e.target.value)}
+            onChange={(e) => {
+              const newWeight = Number(e.target.value);
+              if (type === 'written' && newWeight < 1) {
+                setWeight('1');
+              } else {
+                setWeight(e.target.value);
+              }
+            }}
             required
           />
         </div>
         <div className="grid gap-2">
           <Label>Art</Label>
-          <RadioGroup value={type} onValueChange={(value) => setType(value as 'oral' | 'written')}>
+          <RadioGroup 
+            value={type} 
+            onValueChange={(value) => {
+              setType(value as 'oral' | 'written');
+              // Reset weight to minimum if current weight is below the new minimum
+              if (value === 'written' && Number(weight) < 1) {
+                setWeight('1');
+              }
+            }}
+          >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="oral" id="oral" />
               <Label htmlFor="oral">Mündlich</Label>
