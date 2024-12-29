@@ -38,7 +38,7 @@ export const GradeForm = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
-      value: Math.round(Number(value)), // Round to whole numbers
+      value: Number(value),
       weight: Number(weight),
       type,
       date,
@@ -53,7 +53,7 @@ export const GradeForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 animate-fade-in">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid gap-4">
         <div className="grid gap-2">
           <Label htmlFor="value">Note</Label>
@@ -62,7 +62,7 @@ export const GradeForm = ({
             type="number"
             min="1"
             max="6"
-            step="1"
+            step="0.5"
             value={value}
             onChange={(e) => setValue(e.target.value)}
             required
@@ -73,7 +73,7 @@ export const GradeForm = ({
           <Input
             id="weight"
             type="number"
-            min={type === 'oral' ? '0.5' : '1'}
+            min="0.5"
             max="3"
             step="0.5"
             value={weight}
