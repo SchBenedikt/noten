@@ -50,30 +50,11 @@ export type Database = {
           },
         ]
       }
-      schools: {
-        Row: {
-          created_at: string
-          id: string
-          name: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
       subjects: {
         Row: {
           created_at: string
           id: string
           name: string
-          school_id: string | null
           type: string
           user_id: string
           written_weight: number | null
@@ -82,7 +63,6 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
-          school_id?: string | null
           type: string
           user_id: string
           written_weight?: number | null
@@ -91,20 +71,11 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
-          school_id?: string | null
           type?: string
           user_id?: string
           written_weight?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "subjects_school_id_fkey"
-            columns: ["school_id"]
-            isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
