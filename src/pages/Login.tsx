@@ -2,11 +2,19 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LogIn } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [schools, setSchools] = useState<{ id: string; name: string; }[]>([]);
+  const [selectedSchool, setSelectedSchool] = useState<string>("");
+  const [newSchoolName, setNewSchoolName] = useState("");
+  const [showNewSchoolInput, setShowNewSchoolInput] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -15,8 +23,50 @@ const Login = () => {
       }
     });
 
+    loadSchools();
+
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const loadSchools = async () => {
+    const { data, error } = await supabase
+      .from('schools')
+      .select('*')
+      .order('name');
+    
+    if (error) {
+      console.error('Error loading schools:', error);
+      toast.error("Fehler beim Laden der Schulen");
+      return;
+    }
+
+    setSchools(data || []);
+  };
+
+  const handleCreateSchool = async () => {
+    if (!newSchoolName.trim()) {
+      toast.error("Bitte geben Sie einen Schulnamen ein");
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from('schools')
+      .insert([{ name: newSchoolName.trim() }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating school:', error);
+      toast.error("Fehler beim Erstellen der Schule");
+      return;
+    }
+
+    toast.success("Schule erfolgreich erstellt");
+    setNewSchoolName("");
+    setShowNewSchoolInput(false);
+    await loadSchools();
+    setSelectedSchool(data.id);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -29,6 +79,55 @@ const Login = () => {
           <p className="text-sm text-muted-foreground">
             Melde dich an, um deine Noten zu verwalten
           </p>
+        </div>
+
+        <div className="space-y-4">
+          {!showNewSchoolInput ? (
+            <div className="space-y-2">
+              <Select value={selectedSchool} onValueChange={setSelectedSchool}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Wähle deine Schule" />
+                </SelectTrigger>
+                <SelectContent>
+                  {schools.map((school) => (
+                    <SelectItem key={school.id} value={school.id}>
+                      {school.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setShowNewSchoolInput(true)}
+              >
+                Neue Schule erstellen
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Input
+                placeholder="Name der Schule"
+                value={newSchoolName}
+                onChange={(e) => setNewSchoolName(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowNewSchoolInput(false)}
+                >
+                  Abbrechen
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handleCreateSchool}
+                >
+                  Erstellen
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
         
         <Auth
