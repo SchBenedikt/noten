@@ -2,16 +2,11 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { LogIn } from "lucide-react";
-import { School } from "@/types";
-import { SchoolSelector } from "@/components/SchoolSelector";
-import { toast } from "@/components/ui/use-toast";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [schools, setSchools] = useState<School[]>([]);
-  const [selectedSchool, setSelectedSchool] = useState<string>("");
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -20,28 +15,8 @@ const Login = () => {
       }
     });
 
-    fetchSchools();
-
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  const fetchSchools = async () => {
-    const { data, error } = await supabase
-      .from('schools')
-      .select('*')
-      .order('name');
-    
-    if (error) {
-      toast({
-        title: "Fehler",
-        description: "Schulen konnten nicht geladen werden",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSchools(data || []);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -55,13 +30,6 @@ const Login = () => {
             Melde dich an, um deine Noten zu verwalten
           </p>
         </div>
-
-        <SchoolSelector
-          schools={schools}
-          selectedSchool={selectedSchool}
-          onSchoolSelect={setSelectedSchool}
-          className="mb-6"
-        />
         
         <Auth
           supabaseClient={supabase}
