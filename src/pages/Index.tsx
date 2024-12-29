@@ -6,7 +6,9 @@ import { useSubjects } from '@/hooks/use-subjects';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
-import { Subject } from '@/types';
+import { Subject, School } from '@/types';
+import { useEffect, useState } from 'react';
+import { SchoolSelector } from '@/components/SchoolSelector';
 
 const Index = () => {
   const {
@@ -20,6 +22,32 @@ const Index = () => {
   } = useSubjects();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const [schools, setSchools] = useState<School[]>([]);
+  const [selectedSchool, setSelectedSchool] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSchools = async () => {
+      const { data, error } = await supabase
+        .from('schools')
+        .select('*')
+        .order('name');
+      
+      if (error) {
+        toast({
+          title: "Fehler",
+          description: "Schulen konnten nicht geladen werden",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSchools(data || []);
+      setLoading(false);
+    };
+
+    fetchSchools();
+  }, []);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -39,6 +67,32 @@ const Index = () => {
   };
 
   const overallAverage = calculateOverallAverage(subjects);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (!selectedSchool) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white rounded-lg shadow-sm p-8 space-y-6">
+          <h1 className="text-2xl font-bold text-center">Wähle deine Schule</h1>
+          <p className="text-center text-muted-foreground">
+            Bevor du beginnen kannst, wähle bitte deine Schule aus.
+          </p>
+          <SchoolSelector
+            schools={schools}
+            selectedSchool={selectedSchool}
+            onSchoolSelect={setSelectedSchool}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">

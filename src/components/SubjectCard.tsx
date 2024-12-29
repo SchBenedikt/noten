@@ -45,7 +45,7 @@ export const SubjectCard = ({
   const [isAddingGrade, setIsAddingGrade] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditingWeight, setIsEditingWeight] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);  // Changed to false to be collapsed by default
   const average = calculateSubjectAverage(subject.grades);
   const { written, oral, total } = calculateMainSubjectAverages(subject.grades, subject.writtenWeight || 2);
 
