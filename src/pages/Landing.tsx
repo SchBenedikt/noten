@@ -27,7 +27,7 @@ const Landing = () => {
           weight: 1,
           type: "oral",
           date: "2024-03-10",
-          notes: "Mündliche Beteiligung"
+          notes: "Mitarbeit"
         }
       ]
     },
@@ -100,7 +100,7 @@ const Landing = () => {
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="flex flex-col items-center justify-center space-y-8 md:space-y-12 text-center">
           <h1 className="animate-fade-in text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl">
-            Subject Sculptor
+            Notenverwaltung
           </h1>
           
           <p className="animate-fade-in animation-delay-200 max-w-[600px] text-base md:text-lg text-muted-foreground sm:text-xl px-4">
@@ -147,8 +147,7 @@ const Landing = () => {
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h2 className="text-2xl font-bold mb-6">Demo-Version</h2>
               <p className="text-muted-foreground mb-8">
-                Probiere Subject Sculptor direkt aus! Diese Demo-Version zeigt dir die wichtigsten Funktionen.
-                Alle Änderungen werden nur temporär gespeichert.
+                Probiere die Notenverwaltung direkt aus! Diese Demo-Version zeigt dir die wichtigsten Funktionen.
               </p>
               <SubjectList
                 subjects={demoSubjects}
