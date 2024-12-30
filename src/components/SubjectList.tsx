@@ -8,6 +8,7 @@ interface SubjectListProps {
   onDeleteGrade: (subjectId: string, gradeId: string) => Promise<void>;
   onDeleteSubject: (subjectId: string) => Promise<void>;
   onUpdateSubject?: (subjectId: string, updates: Partial<Subject>) => Promise<void>;
+  isDemo?: boolean;
 }
 
 export const SubjectList = ({
@@ -17,6 +18,7 @@ export const SubjectList = ({
   onDeleteGrade,
   onDeleteSubject,
   onUpdateSubject,
+  isDemo = false
 }: SubjectListProps) => {
   if (subjects.length === 0) {
     return (
@@ -39,6 +41,7 @@ export const SubjectList = ({
           onDeleteGrade={onDeleteGrade}
           onDeleteSubject={onDeleteSubject}
           onUpdateSubject={onUpdateSubject}
+          isDemo={isDemo}
         />
       ))}
     </div>

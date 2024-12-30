@@ -32,6 +32,7 @@ interface SubjectCardProps {
   onDeleteGrade: (subjectId: string, gradeId: string) => void;
   onDeleteSubject: (subjectId: string) => void;
   onUpdateSubject?: (subjectId: string, updates: Partial<Subject>) => void;
+  isDemo?: boolean;
 }
 
 export const SubjectCard = ({ 
@@ -40,12 +41,14 @@ export const SubjectCard = ({
   onUpdateGrade,
   onDeleteGrade,
   onDeleteSubject,
-  onUpdateSubject
+  onUpdateSubject,
+  isDemo = false
 }: SubjectCardProps) => {
   const [isAddingGrade, setIsAddingGrade] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditingWeight, setIsEditingWeight] = useState(false);
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const average = calculateSubjectAverage(subject.grades);
   const { written, oral, total } = calculateMainSubjectAverages(subject.grades, subject.writtenWeight || 2);
 
@@ -54,6 +57,14 @@ export const SubjectCard = ({
       onUpdateSubject(subject.id, { writtenWeight: Number(value) });
       setIsEditingWeight(false);
     }
+  };
+
+  const handleGradeAction = () => {
+    if (isDemo) {
+      setShowLoginDialog(true);
+      return;
+    }
+    setIsAddingGrade(!isAddingGrade);
   };
 
   return (
@@ -115,7 +126,7 @@ export const SubjectCard = ({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setIsAddingGrade(!isAddingGrade)}
+                onClick={handleGradeAction}
                 className="hover:bg-gray-100"
               >
                 {isAddingGrade ? <MinusIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
@@ -152,6 +163,26 @@ export const SubjectCard = ({
           </CardContent>
         </CollapsibleContent>
       </Collapsible>
+
+      <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Registrierung erforderlich</AlertDialogTitle>
+            <AlertDialogDescription>
+              Um Noten zu bearbeiten und zu speichern, erstellen Sie bitte ein kostenloses Konto. 
+              So können Sie Ihre Noten dauerhaft speichern und von überall darauf zugreifen.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button onClick={() => window.location.href = '/login'}>
+                Jetzt registrieren
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

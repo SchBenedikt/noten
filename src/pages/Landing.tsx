@@ -157,6 +157,7 @@ const Landing = () => {
                 onDeleteGrade={handleDemoDeleteGrade}
                 onDeleteSubject={handleDemoDeleteSubject}
                 onUpdateSubject={handleDemoUpdateSubject}
+                isDemo={true}
               />
             </div>
           </div>
