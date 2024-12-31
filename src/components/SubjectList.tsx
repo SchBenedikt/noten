@@ -3,6 +3,7 @@ import { SubjectCard } from './SubjectCard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import { calculateNumberOfSubjects, calculateNumberOfGrades, calculateAverageGradesPerSubject } from '@/lib/calculations';
 
 interface SubjectListProps {
   subjects: Subject[];
@@ -36,6 +37,18 @@ export const SubjectList = ({
   const mainSubjects = subjects.filter(subject => subject.type === 'main');
   const secondarySubjects = subjects.filter(subject => subject.type === 'secondary');
 
+  const mainSubjectsSummary = {
+    numberOfSubjects: calculateNumberOfSubjects(mainSubjects),
+    numberOfGrades: calculateNumberOfGrades(mainSubjects),
+    averageGradesPerSubject: calculateAverageGradesPerSubject(mainSubjects)
+  };
+
+  const secondarySubjectsSummary = {
+    numberOfSubjects: calculateNumberOfSubjects(secondarySubjects),
+    numberOfGrades: calculateNumberOfGrades(secondarySubjects),
+    averageGradesPerSubject: calculateAverageGradesPerSubject(secondarySubjects)
+  };
+
   return (
     <div className="space-y-6">
       {mainSubjects.length > 0 && (
@@ -64,6 +77,11 @@ export const SubjectList = ({
               ))}
             </div>
           </CollapsibleContent>
+          <div className="bg-gray-100 p-4 rounded-lg mt-4">
+            <p>Anzahl der Fächer: {mainSubjectsSummary.numberOfSubjects}</p>
+            <p>Anzahl der Noten: {mainSubjectsSummary.numberOfGrades}</p>
+            <p>Durchschnittliche Anzahl an Noten pro Fach: {mainSubjectsSummary.averageGradesPerSubject}</p>
+          </div>
         </Collapsible>
       )}
       {secondarySubjects.length > 0 && (
@@ -92,6 +110,11 @@ export const SubjectList = ({
               ))}
             </div>
           </CollapsibleContent>
+          <div className="bg-gray-100 p-4 rounded-lg mt-4">
+            <p>Anzahl der Fächer: {secondarySubjectsSummary.numberOfSubjects}</p>
+            <p>Anzahl der Noten: {secondarySubjectsSummary.numberOfGrades}</p>
+            <p>Durchschnittliche Anzahl an Noten pro Fach: {secondarySubjectsSummary.averageGradesPerSubject}</p>
+          </div>
         </Collapsible>
       )}
     </div>

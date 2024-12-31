@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Subject, Grade } from '@/types';
-import { calculateSubjectAverage, calculateMainSubjectAverages } from '@/lib/calculations';
+import { calculateSubjectAverage, calculateMainSubjectAverages, calculateNumberOfGrades, calculateAverageGradesPerSubject } from '@/lib/calculations';
 import { GradeList } from './GradeList';
 import { GradeForm } from './GradeForm';
 import { useState } from 'react';
@@ -51,6 +51,8 @@ export const SubjectCard = ({
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const average = calculateSubjectAverage(subject.grades);
   const { written, oral, total } = calculateMainSubjectAverages(subject.grades, subject.writtenWeight || 2);
+  const numberOfGrades = calculateNumberOfGrades([subject]);
+  const averageGradesPerSubject = calculateAverageGradesPerSubject([subject]);
 
   const handleWeightChange = (value: string) => {
     if (onUpdateSubject) {
@@ -172,6 +174,12 @@ export const SubjectCard = ({
             />
           </CardContent>
         </CollapsibleContent>
+        {!isOpen && (
+          <div className="bg-gray-100 p-4 rounded-lg mt-4">
+            <p>Anzahl der Noten: {numberOfGrades}</p>
+            <p>Durchschnittliche Anzahl an Noten pro Fach: {averageGradesPerSubject}</p>
+          </div>
+        )}
       </Collapsible>
 
       <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>

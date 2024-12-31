@@ -80,3 +80,17 @@ export const calculateOverallAverage = (subjects: Subject[]): number => {
   // Wenn beide Arten von Fächern vorhanden sind (Hauptfächer zählen doppelt)
   return Number(((mainAverage * 2 + secondaryAverage) / 3).toFixed(2));
 };
+
+export const calculateNumberOfSubjects = (subjects: Subject[]): number => {
+  return subjects.length;
+};
+
+export const calculateNumberOfGrades = (subjects: Subject[]): number => {
+  return subjects.reduce((sum, subject) => sum + subject.grades.length, 0);
+};
+
+export const calculateAverageGradesPerSubject = (subjects: Subject[]): number => {
+  if (subjects.length === 0) return 0;
+  const totalGrades = calculateNumberOfGrades(subjects);
+  return Number((totalGrades / subjects.length).toFixed(2));
+};
