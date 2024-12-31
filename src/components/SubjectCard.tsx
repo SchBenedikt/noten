@@ -151,8 +151,8 @@ export const SubjectCard = ({
             </div>
           </div>
         </CardHeader>
-        <CollapsibleContent>
-          <CardContent className="space-y-4 p-4 sm:p-6">
+        <CollapsibleContent className="w-full">
+          <CardContent className="space-y-4 p-4 sm:p-6 w-full">
             {isAddingGrade && (
               <div className="bg-gray-50 p-4 rounded-lg">
                 <GradeForm

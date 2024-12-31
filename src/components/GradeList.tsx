@@ -121,8 +121,8 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade, isDemo = false
 
         {/* Desktop View */}
         <div className="hidden sm:block">
-          <Table>
-            <TableHeader>
+          <Table className="w-full">
+            <TableHeader className="w-full">
               <TableRow>
                 <TableHead className="w-[100px]">Datum</TableHead>
                 <TableHead className="w-[80px] text-right">Note</TableHead>
@@ -132,7 +132,7 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade, isDemo = false
                 <TableHead className="w-[100px]">Aktionen</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className="w-full">
               {sortedGrades.map((grade) => (
                 editingGradeId === grade.id ? (
                   <TableRow key={grade.id}>
