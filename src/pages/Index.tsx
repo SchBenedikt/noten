@@ -3,8 +3,10 @@ import { SubjectList } from '@/components/SubjectList';
 import { calculateOverallAverage } from '@/lib/calculations';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSubjects } from '@/hooks/use-subjects';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/components/ui/use-toast';
 import { Subject } from '@/types';
-import { ProfileMenu } from '@/components/ProfileMenu';
 
 const Index = () => {
   const {
@@ -17,6 +19,20 @@ const Index = () => {
     updateSubject,
   } = useSubjects();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Fehler",
+        description: "Fehler beim Abmelden",
+        variant: "destructive",
+      });
+      return;
+    }
+    navigate('/login');
+  };
 
   const handleUpdateSubject = async (subjectId: string, updates: Partial<Subject>) => {
     await updateSubject(subjectId, updates);
@@ -36,7 +52,12 @@ const Index = () => {
               </p>
             )}
           </div>
-          <ProfileMenu />
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+          >
+            Abmelden
+          </button>
         </div>
 
         <div className={`${isMobile ? 'space-y-6' : 'grid grid-cols-[300px,1fr] gap-8'}`}>
