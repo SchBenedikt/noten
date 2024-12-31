@@ -1,6 +1,6 @@
 {
-  "name": "Notenverwaltung",
-  "short_name": "Notenverwaltung",
+  "name": "Subject Sculptor",
+  "short_name": "SubjectSculptor",
   "description": "Gestalte dein Lernerlebnis. Verwalte deine Fächer und Noten einfach und effizient.",
   "start_url": "/",
   "display": "standalone",
