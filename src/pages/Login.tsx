@@ -7,17 +7,6 @@ import { toast } from "sonner";
 const Login = () => {
   const [loading, setLoading] = useState(false);
 
-  const handleAuthError = (error: Error) => {
-    console.error("Auth error:", error);
-    
-    if (error.message.includes("Invalid login credentials")) {
-      toast.error("Ungültige Anmeldedaten. Bitte überprüfen Sie Ihre E-Mail und Ihr Passwort.");
-    } else {
-      toast.error("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
-    }
-    setLoading(false);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -46,7 +35,6 @@ const Login = () => {
             }}
             theme="light"
             providers={[]}
-            onError={handleAuthError}
             localization={{
               variables: {
                 sign_in: {
@@ -60,6 +48,21 @@ const Login = () => {
                   button_label: 'Registrieren',
                 },
               },
+            }}
+            onlyThirdPartyProviders={false}
+            redirectTo={window.location.origin}
+            {...{
+              options: {
+                onError: (error: Error) => {
+                  console.error("Auth error:", error);
+                  if (error.message.includes("Invalid login credentials")) {
+                    toast.error("Ungültige Anmeldedaten. Bitte überprüfen Sie Ihre E-Mail und Ihr Passwort.");
+                  } else {
+                    toast.error("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
+                  }
+                  setLoading(false);
+                }
+              }
             }}
           />
         </div>
