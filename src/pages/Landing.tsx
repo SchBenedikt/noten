@@ -130,54 +130,13 @@ const Landing = () => {
           </div>
 
           <div className="w-full max-w-5xl pt-12">
-            <h2 className="text-2xl md:text-3xl font-bold mb-8 animate-fade-in animation-delay-500">
-              Warum Subject Sculptor?
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
-              <FeatureCard
-                icon={<BookOpen className="w-8 h-8 mb-4 text-primary" />}
-                title="Übersichtlich"
-                description="Alle deine Fächer und Noten auf einen Blick. Klar strukturiert und einfach zu verstehen."
-                delay="500"
-              />
-              <FeatureCard
-                icon={<LineChart className="w-8 h-8 mb-4 text-primary" />}
-                title="Statistiken"
-                description="Detaillierte Auswertungen deiner Leistungen. Erkenne Trends und Verbesserungspotenziale."
-                delay="600"
-              />
-              <FeatureCard
-                icon={<Brain className="w-8 h-8 mb-4 text-primary" />}
-                title="Intelligent"
-                description="Automatische Durchschnittsberechnung und clevere Notenverwaltung."
-                delay="700"
-              />
-            </div>
-          </div>
-
-          <div className="w-full pt-16 flex flex-col items-center animate-fade-in animation-delay-700">
-            <ArrowDown className="w-6 h-6 text-primary animate-bounce" />
-            <span className="text-sm text-muted-foreground mt-2">Scrolle nach unten für die Demo</span>
-          </div>
-
-          <div className="w-full max-w-5xl pt-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 items-center">
-              <div className="space-y-4 animate-fade-in animation-delay-800">
-                <GraduationCap className="w-12 h-12 text-primary" />
-                <h3 className="text-2xl font-bold">Für Schüler und Studenten</h3>
-                <p className="text-muted-foreground">
-                  Egal ob Gymnasium, Universität oder Berufsschule - Subject Sculptor passt sich deinen Bedürfnissen an. 
-                  Behalte den Überblick über deine akademische Laufbahn und setze dir Ziele für die Zukunft.
-                </p>
-              </div>
-              <div className="space-y-4 animate-fade-in animation-delay-900">
-                <Users className="w-12 h-12 text-primary" />
-                <h3 className="text-2xl font-bold">Gemeinsam Lernen</h3>
-                <p className="text-muted-foreground">
-                  Teile deine Erfolge mit anderen und motiviere dich gegenseitig. 
-                  Mit Subject Sculptor behältst du den Überblick über deine Leistungen und kannst dich auf das Wesentliche konzentrieren.
-                </p>
-              </div>
+            <div className="space-y-4 animate-fade-in animation-delay-800">
+              <GraduationCap className="w-12 h-12 text-primary" />
+              <h3 className="text-2xl font-bold">Für Schüler und Studenten</h3>
+              <p className="text-muted-foreground">
+                Egal ob Gymnasium, Universität oder Berufsschule - Subject Sculptor passt sich deinen Bedürfnissen an. 
+                Behalte den Überblick über deine akademische Laufbahn und setze dir Ziele für die Zukunft.
+              </p>
             </div>
           </div>
 
