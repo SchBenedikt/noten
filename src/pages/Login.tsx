@@ -58,6 +58,10 @@ const Login = () => {
                   console.error("Auth error:", error);
                   if (error.message.includes("Invalid login credentials")) {
                     toast.error("Ungültige Anmeldedaten. Bitte überprüfen Sie Ihre E-Mail und Ihr Passwort.");
+                  } else if (error.message.includes("User not found")) {
+                    toast.error("E-Mail-Adresse nicht gefunden. Bitte überprüfen Sie Ihre E-Mail-Adresse.");
+                  } else if (error.message.includes("Incorrect password")) {
+                    toast.error("Falsches Passwort. Bitte versuchen Sie es erneut.");
                   } else {
                     toast.error("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
                   }
