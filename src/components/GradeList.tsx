@@ -25,30 +25,12 @@ interface GradeListProps {
   grades: Grade[];
   onUpdateGrade: (gradeId: string, grade: Omit<Grade, 'id'>) => void;
   onDeleteGrade: (gradeId: string) => void;
-  isDemo?: boolean;
 }
 
-export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade, isDemo = false }: GradeListProps) => {
+export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListProps) => {
   const [editingGradeId, setEditingGradeId] = useState<string | null>(null);
   const [deletingGradeId, setDeletingGradeId] = useState<string | null>(null);
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const sortedGrades = [...grades].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  const handleEditClick = () => {
-    if (isDemo) {
-      setShowLoginDialog(true);
-      return;
-    }
-    setEditingGradeId(null);
-  };
-
-  const handleDeleteClick = () => {
-    if (isDemo) {
-      setShowLoginDialog(true);
-      return;
-    }
-    setDeletingGradeId(null);
-  };
 
   return (
     <div className="overflow-x-auto -mx-4 sm:mx-0">
@@ -103,7 +85,7 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade, isDemo = false
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={handleEditClick}
+                      onClick={() => setEditingGradeId(grade.id)}
                       className="h-8 w-8"
                     >
                       <Pencil className="h-4 w-4" />
@@ -111,7 +93,7 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade, isDemo = false
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={handleDeleteClick}
+                      onClick={() => setDeletingGradeId(grade.id)}
                       className="h-8 w-8"
                     >
                       <Trash2 className="h-4 w-4 text-red-500" />
@@ -192,7 +174,7 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade, isDemo = false
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={handleEditClick}
+                          onClick={() => setEditingGradeId(grade.id)}
                           className="h-8 w-8"
                         >
                           <Pencil className="h-4 w-4" />
@@ -200,7 +182,7 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade, isDemo = false
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={handleDeleteClick}
+                          onClick={() => setDeletingGradeId(grade.id)}
                           className="h-8 w-8"
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
@@ -214,26 +196,6 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade, isDemo = false
           </Table>
         </div>
       </div>
-
-      <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Registrierung erforderlich</AlertDialogTitle>
-            <AlertDialogDescription>
-              Um Noten zu bearbeiten und zu speichern, erstellen Sie bitte ein kostenloses Konto. 
-              So können Sie Ihre Noten dauerhaft speichern und von überall darauf zugreifen.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button onClick={() => window.location.href = '/login'}>
-                Jetzt registrieren
-              </Button>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <AlertDialog 
         open={deletingGradeId !== null} 
