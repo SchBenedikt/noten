@@ -77,11 +77,13 @@ export const SubjectList = ({
               ))}
             </div>
           </CollapsibleContent>
-          <div className="bg-gray-100 p-4 rounded-lg mt-4">
-            <p>Anzahl der Fächer: {mainSubjectsSummary.numberOfSubjects}</p>
-            <p>Anzahl der Noten: {mainSubjectsSummary.numberOfGrades}</p>
-            <p>Durchschnittliche Anzahl an Noten pro Fach: {mainSubjectsSummary.averageGradesPerSubject}</p>
-          </div>
+          {!isDemo && (
+            <div className="bg-gray-100 p-4 rounded-lg mt-4">
+              <p>Anzahl der Fächer: {mainSubjectsSummary.numberOfSubjects}</p>
+              <p>Anzahl der Noten: {mainSubjectsSummary.numberOfGrades}</p>
+              <p>Durchschnittliche Anzahl an Noten pro Fach: {mainSubjectsSummary.averageGradesPerSubject}</p>
+            </div>
+          )}
         </Collapsible>
       )}
       {secondarySubjects.length > 0 && (
@@ -110,11 +112,13 @@ export const SubjectList = ({
               ))}
             </div>
           </CollapsibleContent>
-          <div className="bg-gray-100 p-4 rounded-lg mt-4">
-            <p>Anzahl der Fächer: {secondarySubjectsSummary.numberOfSubjects}</p>
-            <p>Anzahl der Noten: {secondarySubjectsSummary.numberOfGrades}</p>
-            <p>Durchschnittliche Anzahl an Noten pro Fach: {secondarySubjectsSummary.averageGradesPerSubject}</p>
-          </div>
+          {!isDemo && (
+            <div className="bg-gray-100 p-4 rounded-lg mt-4">
+              <p>Anzahl der Fächer: {secondarySubjectsSummary.numberOfSubjects}</p>
+              <p>Anzahl der Noten: {secondarySubjectsSummary.numberOfGrades}</p>
+              <p>Durchschnittliche Anzahl an Noten pro Fach: {secondarySubjectsSummary.averageGradesPerSubject}</p>
+            </div>
+          )}
         </Collapsible>
       )}
     </div>
