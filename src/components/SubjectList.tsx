@@ -48,7 +48,7 @@ export const SubjectList = ({
               </Button>
             </CollapsibleTrigger>
           </div>
-          <CollapsibleContent>
+          <CollapsibleContent className="animate-fade-in">
             <div className="grid gap-4">
               {mainSubjects.map((subject) => (
                 <SubjectCard
@@ -76,7 +76,7 @@ export const SubjectList = ({
               </Button>
             </CollapsibleTrigger>
           </div>
-          <CollapsibleContent>
+          <CollapsibleContent className="animate-fade-in">
             <div className="grid gap-4">
               {secondarySubjects.map((subject) => (
                 <SubjectCard
