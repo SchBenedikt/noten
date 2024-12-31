@@ -39,7 +39,7 @@ export const SubjectList = ({
   return (
     <div className="space-y-6">
       {mainSubjects.length > 0 && (
-        <Collapsible open={isDemo} disabled={isDemo}>
+        <Collapsible open={isDemo || !isDemo} disabled={isDemo}>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold mb-4">Hauptfächer</h2>
             {!isDemo && (
@@ -69,7 +69,7 @@ export const SubjectList = ({
         </Collapsible>
       )}
       {secondarySubjects.length > 0 && (
-        <Collapsible open={isDemo} disabled={isDemo}>
+        <Collapsible open={isDemo || !isDemo} disabled={isDemo}>
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold mb-4">Nebenfächer</h2>
             {!isDemo && (
