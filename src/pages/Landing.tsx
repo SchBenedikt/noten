@@ -76,11 +76,11 @@ const Landing = () => {
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="flex flex-col items-center justify-center space-y-8 md:space-y-12 text-center">
           <h1 className="animate-fade-in text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl">
-            Willkommen bei Subject Sculptor
+            Willkommen bei Notenverwaltung
           </h1>
           
           <p className="animate-fade-in animation-delay-200 max-w-[600px] text-base md:text-lg text-muted-foreground sm:text-xl px-4">
-            Gestalte dein Lernerlebnis. Verwalte deine Fächer und Noten einfach und effizient. Mit Subject Sculptor hast du alle deine schulischen Leistungen im Blick und kannst deinen Fortschritt jederzeit nachvollziehen.
+            Gestalte dein Lernerlebnis. Verwalte deine Fächer und Noten einfach und effizient. Mit Notenverwaltung hast du alle deine schulischen Leistungen im Blick und kannst deinen Fortschritt jederzeit nachvollziehen.
           </p>
 
           <div className="animate-fade-in animation-delay-300 flex flex-col w-full px-4 space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0 sm:px-0 sm:w-auto">
@@ -144,7 +144,7 @@ const Landing = () => {
 
 const FeatureCard = ({ title, description }: { title: string; description: string }) => {
   return (
-    <div className="hover-scale rounded-lg border bg-card p-4 md:p-6 text-card-foreground shadow-sm transition-all">
+    <div className="hover-scale rounded-lg border bg-card p-4 md:p-6 text-card-foreground shadow-sm transition-all hover:text-primary hover:bg-gradient-to-r from-purple-400 via-pink-500 to-red-500">
       <h3 className="mb-2 text-lg md:text-xl font-semibold">{title}</h3>
       <p className="text-sm text-muted-foreground">{description}</p>
     </div>
