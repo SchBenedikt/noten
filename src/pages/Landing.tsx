@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { SubjectList } from "@/components/SubjectList";
 import { Subject, Grade } from "@/types";
-import { ArrowDown, BookOpen, Brain, GraduationCap, LineChart, Users } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -101,7 +100,7 @@ const Landing = () => {
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="flex flex-col items-center justify-center space-y-8 md:space-y-12 text-center">
           <h1 className="animate-fade-in text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
-            Subject Sculptor
+            Notenverwaltung
           </h1>
           
           <p className="animate-fade-in animation-delay-200 max-w-[700px] text-lg md:text-xl text-muted-foreground sm:text-2xl px-4 leading-relaxed">
@@ -129,17 +128,6 @@ const Landing = () => {
             </Button>
           </div>
 
-          <div className="w-full max-w-5xl pt-12">
-            <div className="space-y-4 animate-fade-in animation-delay-800">
-              <GraduationCap className="w-12 h-12 text-primary" />
-              <h3 className="text-2xl font-bold">Für Schüler und Studenten</h3>
-              <p className="text-muted-foreground">
-                Egal ob Gymnasium, Universität oder Berufsschule - Subject Sculptor passt sich deinen Bedürfnissen an. 
-                Behalte den Überblick über deine akademische Laufbahn und setze dir Ziele für die Zukunft.
-              </p>
-            </div>
-          </div>
-
           <div id="demo-section" className="w-full max-w-6xl mt-16 animate-fade-in animation-delay-1000">
             <div className="bg-white rounded-lg shadow-lg p-6">
               <h2 className="text-2xl font-bold mb-6">Demo-Version</h2>
@@ -159,23 +147,6 @@ const Landing = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-};
-
-const FeatureCard = ({ icon, title, description, delay }: { 
-  icon: React.ReactNode;
-  title: string; 
-  description: string;
-  delay: string;
-}) => {
-  return (
-    <div className={`animate-fade-in animation-delay-${delay} hover:scale-105 transition-all duration-300 rounded-lg border bg-card p-6 text-card-foreground shadow-sm`}>
-      <div className="flex flex-col items-center text-center">
-        {icon}
-        <h3 className="mb-2 text-xl font-semibold">{title}</h3>
-        <p className="text-sm text-muted-foreground">{description}</p>
       </div>
     </div>
   );
