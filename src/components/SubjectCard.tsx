@@ -159,6 +159,7 @@ export const SubjectCard = ({
               grades={subject.grades} 
               onUpdateGrade={(gradeId, grade) => onUpdateGrade(subject.id, gradeId, grade)}
               onDeleteGrade={(gradeId) => onDeleteGrade(subject.id, gradeId)}
+              isDemo={isDemo}
             />
           </CardContent>
         </CollapsibleContent>
