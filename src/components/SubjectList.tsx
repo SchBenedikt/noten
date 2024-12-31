@@ -1,5 +1,8 @@
 import { Subject, Grade } from '@/types';
 import { SubjectCard } from './SubjectCard';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
+import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 
 interface SubjectListProps {
   subjects: Subject[];
@@ -30,20 +33,67 @@ export const SubjectList = ({
     );
   }
 
+  const mainSubjects = subjects.filter(subject => subject.type === 'main');
+  const secondarySubjects = subjects.filter(subject => subject.type === 'secondary');
+
   return (
-    <div className="grid gap-4">
-      {subjects.map((subject) => (
-        <SubjectCard
-          key={subject.id}
-          subject={subject}
-          onAddGrade={onAddGrade}
-          onUpdateGrade={onUpdateGrade}
-          onDeleteGrade={onDeleteGrade}
-          onDeleteSubject={onDeleteSubject}
-          onUpdateSubject={onUpdateSubject}
-          isDemo={isDemo}
-        />
-      ))}
+    <div className="space-y-6">
+      {mainSubjects.length > 0 && (
+        <Collapsible>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold mb-4">Hauptfächer</h2>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <ChevronDownIcon className="h-4 w-4" />
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+          <CollapsibleContent>
+            <div className="grid gap-4">
+              {mainSubjects.map((subject) => (
+                <SubjectCard
+                  key={subject.id}
+                  subject={subject}
+                  onAddGrade={onAddGrade}
+                  onUpdateGrade={onUpdateGrade}
+                  onDeleteGrade={onDeleteGrade}
+                  onDeleteSubject={onDeleteSubject}
+                  onUpdateSubject={onUpdateSubject}
+                  isDemo={isDemo}
+                />
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+      {secondarySubjects.length > 0 && (
+        <Collapsible>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold mb-4">Nebenfächer</h2>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <ChevronDownIcon className="h-4 w-4" />
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+          <CollapsibleContent>
+            <div className="grid gap-4">
+              {secondarySubjects.map((subject) => (
+                <SubjectCard
+                  key={subject.id}
+                  subject={subject}
+                  onAddGrade={onAddGrade}
+                  onUpdateGrade={onUpdateGrade}
+                  onDeleteGrade={onDeleteGrade}
+                  onDeleteSubject={onDeleteSubject}
+                  onUpdateSubject={onUpdateSubject}
+                  isDemo={isDemo}
+                />
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
     </div>
   );
 };

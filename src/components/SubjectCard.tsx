@@ -64,6 +64,9 @@ export const SubjectCard = ({
       setShowLoginDialog(true);
       return;
     }
+    if (!isOpen) {
+      setIsOpen(true);
+    }
     setIsAddingGrade(!isAddingGrade);
   };
 
