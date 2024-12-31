@@ -30,20 +30,49 @@ export const SubjectList = ({
     );
   }
 
+  const mainSubjects = subjects.filter(subject => subject.type === 'main');
+  const secondarySubjects = subjects.filter(subject => subject.type === 'secondary');
+
   return (
-    <div className="grid gap-4">
-      {subjects.map((subject) => (
-        <SubjectCard
-          key={subject.id}
-          subject={subject}
-          onAddGrade={onAddGrade}
-          onUpdateGrade={onUpdateGrade}
-          onDeleteGrade={onDeleteGrade}
-          onDeleteSubject={onDeleteSubject}
-          onUpdateSubject={onUpdateSubject}
-          isDemo={isDemo}
-        />
-      ))}
+    <div className="space-y-6">
+      {mainSubjects.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Hauptfächer</h2>
+          <div className="grid gap-4">
+            {mainSubjects.map((subject) => (
+              <SubjectCard
+                key={subject.id}
+                subject={subject}
+                onAddGrade={onAddGrade}
+                onUpdateGrade={onUpdateGrade}
+                onDeleteGrade={onDeleteGrade}
+                onDeleteSubject={onDeleteSubject}
+                onUpdateSubject={onUpdateSubject}
+                isDemo={isDemo}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+      {secondarySubjects.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-4">Nebenfächer</h2>
+          <div className="grid gap-4">
+            {secondarySubjects.map((subject) => (
+              <SubjectCard
+                key={subject.id}
+                subject={subject}
+                onAddGrade={onAddGrade}
+                onUpdateGrade={onUpdateGrade}
+                onDeleteGrade={onDeleteGrade}
+                onDeleteSubject={onDeleteSubject}
+                onUpdateSubject={onUpdateSubject}
+                isDemo={isDemo}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
