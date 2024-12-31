@@ -53,6 +53,7 @@ const Login = () => {
             redirectTo={window.location.origin}
             {...{
               options: {
+                emailRedirectTo: window.location.origin,
                 onError: (error: Error) => {
                   console.error("Auth error:", error);
                   if (error.message.includes("Invalid login credentials")) {
