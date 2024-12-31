@@ -134,7 +134,13 @@ export const SubjectCard = ({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setShowDeleteDialog(true)}
+                onClick={() => {
+                  if (isDemo) {
+                    setShowLoginDialog(true);
+                    return;
+                  }
+                  setShowDeleteDialog(true);
+                }}
                 className="hover:bg-red-50"
               >
                 <Trash2Icon className="h-4 w-4 text-red-500" />
@@ -159,6 +165,7 @@ export const SubjectCard = ({
               grades={subject.grades} 
               onUpdateGrade={(gradeId, grade) => onUpdateGrade(subject.id, gradeId, grade)}
               onDeleteGrade={(gradeId) => onDeleteGrade(subject.id, gradeId)}
+              isDemo={isDemo}
             />
           </CardContent>
         </CollapsibleContent>

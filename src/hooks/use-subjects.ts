@@ -22,6 +22,7 @@ interface DatabaseGrade {
   type: string;
   date: string;
   created_at: string;
+  notes?: string;
 }
 
 const mapDatabaseSubjectToSubject = (dbSubject: DatabaseSubject): Subject => ({
@@ -38,6 +39,7 @@ const mapDatabaseGradeToGrade = (dbGrade: DatabaseGrade): Grade => ({
   weight: dbGrade.weight,
   type: dbGrade.type as GradeType,
   date: dbGrade.date,
+  notes: dbGrade.notes,
 });
 
 export const useSubjects = () => {
@@ -68,7 +70,8 @@ export const useSubjects = () => {
           weight,
           type,
           date,
-          created_at
+          created_at,
+          notes
         )
       `)
       .order('created_at', { ascending: true });
@@ -158,6 +161,7 @@ export const useSubjects = () => {
         weight: grade.weight,
         type: grade.type,
         date: grade.date,
+        notes: grade.notes,
       })
       .select()
       .single();
@@ -217,6 +221,7 @@ export const useSubjects = () => {
         weight: updatedGrade.weight,
         type: updatedGrade.type,
         date: updatedGrade.date,
+        notes: updatedGrade.notes,
       })
       .eq('id', gradeId);
 

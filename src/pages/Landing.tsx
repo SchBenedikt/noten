@@ -49,50 +49,26 @@ const Landing = () => {
     }
   ]);
 
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+
   const handleDemoAddGrade = async (subjectId: string, grade: Omit<Grade, 'id'>) => {
-    setDemoSubjects(prev => prev.map(subject => {
-      if (subject.id === subjectId) {
-        return {
-          ...subject,
-          grades: [...subject.grades, { ...grade, id: `grade-${Date.now()}` }]
-        };
-      }
-      return subject;
-    }));
+    setShowLoginDialog(true);
   };
 
   const handleDemoUpdateGrade = async (subjectId: string, gradeId: string, grade: Omit<Grade, 'id'>) => {
-    setDemoSubjects(prev => prev.map(subject => {
-      if (subject.id === subjectId) {
-        return {
-          ...subject,
-          grades: subject.grades.map(g => g.id === gradeId ? { ...grade, id: gradeId } : g)
-        };
-      }
-      return subject;
-    }));
+    setShowLoginDialog(true);
   };
 
   const handleDemoDeleteGrade = async (subjectId: string, gradeId: string) => {
-    setDemoSubjects(prev => prev.map(subject => {
-      if (subject.id === subjectId) {
-        return {
-          ...subject,
-          grades: subject.grades.filter(g => g.id !== gradeId)
-        };
-      }
-      return subject;
-    }));
+    setShowLoginDialog(true);
   };
 
   const handleDemoDeleteSubject = async (subjectId: string) => {
-    setDemoSubjects(prev => prev.filter(subject => subject.id !== subjectId));
+    setShowLoginDialog(true);
   };
 
   const handleDemoUpdateSubject = async (subjectId: string, updates: Partial<Subject>) => {
-    setDemoSubjects(prev => prev.map(subject => 
-      subject.id === subjectId ? { ...subject, ...updates } : subject
-    ));
+    setShowLoginDialog(true);
   };
 
   return (
