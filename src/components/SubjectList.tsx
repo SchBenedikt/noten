@@ -3,7 +3,6 @@ import { SubjectCard } from './SubjectCard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
-import { calculateSubjectAverage } from '@/lib/calculations';
 
 interface SubjectListProps {
   subjects: Subject[];
@@ -80,20 +79,16 @@ export const SubjectList = ({
           <CollapsibleContent>
             <div className="grid gap-4">
               {secondarySubjects.map((subject) => (
-                <div key={subject.id}>
-                  <SubjectCard
-                    subject={subject}
-                    onAddGrade={onAddGrade}
-                    onUpdateGrade={onUpdateGrade}
-                    onDeleteGrade={onDeleteGrade}
-                    onDeleteSubject={onDeleteSubject}
-                    onUpdateSubject={onUpdateSubject}
-                    isDemo={isDemo}
-                  />
-                  <div className="text-right text-sm text-gray-500 mt-2">
-                    Durchschnitt: {calculateSubjectAverage(subject.grades)}
-                  </div>
-                </div>
+                <SubjectCard
+                  key={subject.id}
+                  subject={subject}
+                  onAddGrade={onAddGrade}
+                  onUpdateGrade={onUpdateGrade}
+                  onDeleteGrade={onDeleteGrade}
+                  onDeleteSubject={onDeleteSubject}
+                  onUpdateSubject={onUpdateSubject}
+                  isDemo={isDemo}
+                />
               ))}
             </div>
           </CollapsibleContent>
