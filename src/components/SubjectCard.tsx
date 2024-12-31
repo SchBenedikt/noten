@@ -65,9 +65,6 @@ export const SubjectCard = ({
       return;
     }
     setIsAddingGrade(!isAddingGrade);
-    if (!isOpen) {
-      setIsOpen(true);
-    }
   };
 
   return (
