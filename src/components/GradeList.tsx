@@ -25,11 +25,13 @@ interface GradeListProps {
   grades: Grade[];
   onUpdateGrade: (gradeId: string, grade: Omit<Grade, 'id'>) => void;
   onDeleteGrade: (gradeId: string) => void;
+  isDemo?: boolean;
 }
 
-export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListProps) => {
+export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade, isDemo = false }: GradeListProps) => {
   const [editingGradeId, setEditingGradeId] = useState<string | null>(null);
   const [deletingGradeId, setDeletingGradeId] = useState<string | null>(null);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const sortedGrades = [...grades].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
@@ -85,7 +87,13 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => setEditingGradeId(grade.id)}
+                      onClick={() => {
+                        if (isDemo) {
+                          setShowLoginDialog(true);
+                          return;
+                        }
+                        setEditingGradeId(grade.id);
+                      }}
                       className="h-8 w-8"
                     >
                       <Pencil className="h-4 w-4" />
@@ -93,7 +101,13 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => setDeletingGradeId(grade.id)}
+                      onClick={() => {
+                        if (isDemo) {
+                          setShowLoginDialog(true);
+                          return;
+                        }
+                        setDeletingGradeId(grade.id);
+                      }}
                       className="h-8 w-8"
                     >
                       <Trash2 className="h-4 w-4 text-red-500" />
@@ -174,7 +188,13 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => setEditingGradeId(grade.id)}
+                          onClick={() => {
+                            if (isDemo) {
+                              setShowLoginDialog(true);
+                              return;
+                            }
+                            setEditingGradeId(grade.id);
+                          }}
                           className="h-8 w-8"
                         >
                           <Pencil className="h-4 w-4" />
@@ -182,7 +202,13 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => setDeletingGradeId(grade.id)}
+                          onClick={() => {
+                            if (isDemo) {
+                              setShowLoginDialog(true);
+                              return;
+                            }
+                            setDeletingGradeId(grade.id);
+                          }}
                           className="h-8 w-8"
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
@@ -221,6 +247,26 @@ export const GradeList = ({ grades, onUpdateGrade, onDeleteGrade }: GradeListPro
               className="bg-red-500 hover:bg-red-600"
             >
               Löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Registrierung erforderlich</AlertDialogTitle>
+            <AlertDialogDescription>
+              Um Noten zu bearbeiten und zu speichern, erstellen Sie bitte ein kostenloses Konto. 
+              So können Sie Ihre Noten dauerhaft speichern und von überall darauf zugreifen.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button onClick={() => window.location.href = '/login'}>
+                Jetzt registrieren
+              </Button>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
