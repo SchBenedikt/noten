@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { LogIn } from "lucide-react";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -87,6 +88,7 @@ const Login = () => {
           }}
           theme="default"
           providers={[]}
+          redirectTo={`${window.location.origin}/dashboard`}
         />
       </div>
     </div>
