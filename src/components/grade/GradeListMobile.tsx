@@ -13,8 +13,8 @@ interface GradeListMobileProps {
   grades: Grade[];
   editingGradeId: string | null;
   onUpdateGrade: (gradeId: string, grade: Omit<Grade, 'id'>) => void;
-  handleEditClick: () => void;
-  handleDeleteClick: () => void;
+  handleEditClick: (gradeId: string) => void;
+  handleDeleteClick: (gradeId: string) => void;
   setEditingGradeId: (id: string | null) => void;
 }
 
@@ -76,7 +76,7 @@ export const GradeListMobile = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={handleEditClick}
+                  onClick={() => handleEditClick(grade.id)}
                   className="h-8 w-8"
                 >
                   <Pencil className="h-4 w-4" />
@@ -84,7 +84,7 @@ export const GradeListMobile = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={handleDeleteClick}
+                  onClick={() => handleDeleteClick(grade.id)}
                   className="h-8 w-8"
                 >
                   <Trash2 className="h-4 w-4 text-red-500" />

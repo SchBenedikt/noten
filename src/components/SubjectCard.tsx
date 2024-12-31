@@ -49,6 +49,7 @@ export const SubjectCard = ({
   const [isEditingWeight, setIsEditingWeight] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [editingGradeId, setEditingGradeId] = useState<string | null>(null);
   const average = calculateSubjectAverage(subject.grades);
   const { written, oral, total } = calculateMainSubjectAverages(subject.grades, subject.writtenWeight || 2);
 
@@ -65,6 +66,14 @@ export const SubjectCard = ({
       return;
     }
     setIsAddingGrade(!isAddingGrade);
+  };
+
+  const handleEditClick = (gradeId: string) => {
+    if (isDemo) {
+      setShowLoginDialog(true);
+      return;
+    }
+    setEditingGradeId(gradeId);
   };
 
   return (
@@ -159,6 +168,9 @@ export const SubjectCard = ({
               grades={subject.grades} 
               onUpdateGrade={(gradeId, grade) => onUpdateGrade(subject.id, gradeId, grade)}
               onDeleteGrade={(gradeId) => onDeleteGrade(subject.id, gradeId)}
+              handleEditClick={handleEditClick}
+              editingGradeId={editingGradeId}
+              setEditingGradeId={setEditingGradeId}
               isDemo={isDemo}
             />
           </CardContent>
