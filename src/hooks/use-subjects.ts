@@ -278,6 +278,16 @@ export const useSubjects = () => {
     });
   };
 
+  const sendGradesToAI = async (question: string) => {
+    const grades = subjects.flatMap(subject => subject.grades);
+    const gradesString = grades.map(grade => `Subject: ${grade.subject_id}, Grade: ${grade.value}`).join('; ');
+    const fullQuestion = `${question} Grades: ${gradesString}`;
+
+    const res = await fetch(`https://google.schaechner.workers.dev/?question=${encodeURIComponent(fullQuestion)}`);
+    const data = await res.text();
+    return data;
+  };
+
   useEffect(() => {
     fetchSubjects();
   }, []);
@@ -290,5 +300,6 @@ export const useSubjects = () => {
     deleteGrade,
     deleteSubject,
     updateSubject,
+    sendGradesToAI,
   };
 };

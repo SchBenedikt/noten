@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { Subject } from '@/types';
+import ChatWithAI from '@/components/ChatWithAI';
 
 const Index = () => {
   const {
@@ -77,6 +78,10 @@ const Index = () => {
               onUpdateSubject={handleUpdateSubject}
             />
           </div>
+        </div>
+
+        <div className="mt-8">
+          <ChatWithAI />
         </div>
       </div>
     </div>
