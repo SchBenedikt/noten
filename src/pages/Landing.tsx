@@ -76,11 +76,11 @@ const Landing = () => {
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="flex flex-col items-center justify-center space-y-8 md:space-y-12 text-center">
           <h1 className="animate-fade-in text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl">
-            Notenverwaltung
+            Willkommen bei Subject Sculptor
           </h1>
           
           <p className="animate-fade-in animation-delay-200 max-w-[600px] text-base md:text-lg text-muted-foreground sm:text-xl px-4">
-            Gestalte dein Lernerlebnis. Verwalte deine Fächer und Noten einfach und effizient.
+            Gestalte dein Lernerlebnis. Verwalte deine Fächer und Noten einfach und effizient. Mit Subject Sculptor hast du alle deine schulischen Leistungen im Blick und kannst deinen Fortschritt jederzeit nachvollziehen.
           </p>
 
           <div className="animate-fade-in animation-delay-300 flex flex-col w-full px-4 space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0 sm:px-0 sm:w-auto">
