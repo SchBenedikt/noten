@@ -41,6 +41,17 @@ export const calculateMainSubjectAverages = (grades: Grade[], writtenWeight: num
   };
 };
 
+export const calculateSecondarySubjectAverages = (grades: Grade[]) => {
+  // Bei Nebenfächern nur mündliche Noten berücksichtigen
+  const oralGrades = grades.filter(grade => grade.type === 'oral');
+  const oralAvg = calculateSubjectAverage(oralGrades);
+
+  return {
+    oral: oralAvg,
+    total: oralAvg // Bei Nebenfächern ist der Gesamtdurchschnitt gleich dem mündlichen Durchschnitt
+  };
+};
+
 export const calculateOverallAverage = (subjects: Subject[]): number => {
   // Filtere Fächer ohne Noten heraus
   const mainSubjectsWithGrades = subjects
@@ -63,8 +74,10 @@ export const calculateOverallAverage = (subjects: Subject[]): number => {
     
   // Berechne Durchschnitt für Nebenfächer
   const secondaryAverage = secondarySubjectsWithGrades.length > 0
-    ? secondarySubjectsWithGrades.reduce((sum, subject) => 
-        sum + calculateSubjectAverage(subject.grades), 0) / secondarySubjectsWithGrades.length
+    ? secondarySubjectsWithGrades.reduce((sum, subject) => {
+        const averages = calculateSecondarySubjectAverages(subject.grades);
+        return sum + averages.total;
+      }, 0) / secondarySubjectsWithGrades.length
     : 0;
   
   // Wenn nur Hauptfächer vorhanden sind
