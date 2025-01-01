@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Subject, Grade } from '@/types';
-import { calculateSubjectAverage, calculateMainSubjectAverages, calculateSecondarySubjectAverage } from '@/lib/calculations';
+import { calculateSubjectAverage, calculateMainSubjectAverages } from '@/lib/calculations';
 import { GradeList } from './GradeList';
 import { GradeForm } from './GradeForm';
 import { useState } from 'react';
@@ -49,10 +49,8 @@ export const SubjectCard = ({
   const [isEditingWeight, setIsEditingWeight] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  
-  const averages = subject.type === 'main' 
-    ? calculateMainSubjectAverages(subject.grades, subject.writtenWeight || 2)
-    : calculateSecondarySubjectAverage(subject.grades);
+  const average = calculateSubjectAverage(subject.grades);
+  const { written, oral, total } = calculateMainSubjectAverages(subject.grades, subject.writtenWeight || 2);
 
   const handleWeightChange = (value: string) => {
     if (onUpdateSubject) {
@@ -90,50 +88,43 @@ export const SubjectCard = ({
             </CardTitle>
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="text-sm space-y-1 sm:space-y-0 sm:text-right bg-gray-50 p-2 rounded-md w-full sm:w-auto">
-              {subject.type === 'main' ? (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span>Schulaufgaben: ∅ {averages.written}</span>
-                    <div className="flex items-center gap-1">
-                      {isEditingWeight ? (
-                        <Select
-                          defaultValue={subject.writtenWeight?.toString() || "2"}
-                          onValueChange={handleWeightChange}
+            {subject.type === 'main' && (
+              <div className="text-sm space-y-1 sm:space-y-0 sm:text-right bg-gray-50 p-2 rounded-md w-full sm:w-auto">
+                <div className="flex items-center gap-2">
+                  <span>Schulaufgaben: ∅ {written}</span>
+                  <div className="flex items-center gap-1">
+                    {isEditingWeight ? (
+                      <Select
+                        defaultValue={subject.writtenWeight?.toString() || "2"}
+                        onValueChange={handleWeightChange}
+                      >
+                        <SelectTrigger className="w-20">
+                          <SelectValue placeholder="×2" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">×1</SelectItem>
+                          <SelectItem value="2">×2</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <>
+                        <span>(×{subject.writtenWeight || 2})</span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setIsEditingWeight(true)}
+                          className="h-6 w-6"
                         >
-                          <SelectTrigger className="w-20">
-                            <SelectValue placeholder="×2" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">×1</SelectItem>
-                            <SelectItem value="2">×2</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <>
-                          <span>(×{subject.writtenWeight || 2})</span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setIsEditingWeight(true)}
-                            className="h-6 w-6"
-                          >
-                            <Edit2Icon className="h-3 w-3" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
+                          <Edit2Icon className="h-3 w-3" />
+                        </Button>
+                      </>
+                    )}
                   </div>
-                  <div>Mündlich: ∅ {averages.oral}</div>
-                  <div className="font-semibold text-base">Gesamt: ∅ {averages.total}</div>
-                </>
-              ) : (
-                <>
-                  <div>Mündlich: ∅ {averages.oral}</div>
-                  <div className="font-semibold text-base">Gesamt: ∅ {averages.total}</div>
-                </>
-              )}
-            </div>
+                </div>
+                <div>Mündlich: ∅ {oral}</div>
+                <div className="font-semibold text-base">Gesamt: ∅ {total}</div>
+              </div>
+            )}
             <div className="flex gap-2 w-full sm:w-auto justify-end">
               <Button
                 variant="ghost"

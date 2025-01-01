@@ -13,42 +13,31 @@ export const calculateMainSubjectAverages = (grades: Grade[], writtenWeight: num
   const writtenGrades = grades.filter(grade => grade.type === 'written');
   const oralGrades = grades.filter(grade => grade.type === 'oral');
 
-  const written = calculateSubjectAverage(writtenGrades);
-  const oral = calculateSubjectAverage(oralGrades);
+  const writtenAvg = calculateSubjectAverage(writtenGrades);
+  const oralAvg = calculateSubjectAverage(oralGrades);
 
   // Wenn keine Noten vorhanden sind, gib 0 zurück
   if (writtenGrades.length === 0 && oralGrades.length === 0) {
-    return { written: 0, oral: 0, total: 0 };
+    return { written: writtenAvg, oral: oralAvg, total: 0 };
   }
 
   // Wenn nur schriftliche Noten vorhanden sind
   if (oralGrades.length === 0) {
-    return { written, oral: 0, total: written };
+    return { written: writtenAvg, oral: oralAvg, total: writtenAvg };
   }
 
   // Wenn nur mündliche Noten vorhanden sind
   if (writtenGrades.length === 0) {
-    return { written: 0, oral, total: oral };
+    return { written: writtenAvg, oral: oralAvg, total: oralAvg };
   }
 
   // Wenn beide Arten von Noten vorhanden sind, verwende die konfigurierte Gewichtung
-  const total = Number(((written * writtenWeight + oral) / (writtenWeight + 1)).toFixed(2));
+  const total = Number(((writtenAvg * writtenWeight + oralAvg) / (writtenWeight + 1)).toFixed(2));
 
   return {
-    written,
-    oral,
+    written: writtenAvg,
+    oral: oralAvg,
     total
-  };
-};
-
-export const calculateSecondarySubjectAverage = (grades: Grade[]) => {
-  // Für Nebenfächer: Nur mündliche Noten berücksichtigen
-  const oralGrades = grades.filter(grade => grade.type === 'oral');
-  const average = calculateSubjectAverage(oralGrades);
-
-  return {
-    oral: average,
-    total: average
   };
 };
 
@@ -74,10 +63,8 @@ export const calculateOverallAverage = (subjects: Subject[]): number => {
     
   // Berechne Durchschnitt für Nebenfächer
   const secondaryAverage = secondarySubjectsWithGrades.length > 0
-    ? secondarySubjectsWithGrades.reduce((sum, subject) => {
-        const averages = calculateSecondarySubjectAverage(subject.grades);
-        return sum + averages.total;
-      }, 0) / secondarySubjectsWithGrades.length
+    ? secondarySubjectsWithGrades.reduce((sum, subject) => 
+        sum + calculateSubjectAverage(subject.grades), 0) / secondarySubjectsWithGrades.length
     : 0;
   
   // Wenn nur Hauptfächer vorhanden sind
