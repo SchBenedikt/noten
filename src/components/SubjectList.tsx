@@ -56,7 +56,14 @@ export const SubjectList = ({
                 <SubjectCard
                   key={subject.id}
                   subject={subject}
-                  onAddGrade={onAddGrade}
+                  onAddGrade={async (subjectId, grade) => {
+                    await onAddGrade(subjectId, grade);
+                    // Ensure the Collapsible remains open when a grade is added
+                    const collapsible = document.querySelector(`[data-subject-id="${subjectId}"]`);
+                    if (collapsible) {
+                      collapsible.setAttribute('data-state', 'open');
+                    }
+                  }}
                   onUpdateGrade={onUpdateGrade}
                   onDeleteGrade={onDeleteGrade}
                   onDeleteSubject={onDeleteSubject}
