@@ -50,7 +50,7 @@ export const SubjectCard = ({
   const [isOpen, setIsOpen] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   
-  const { written, oral, total } = subject.type === 'main' 
+  const averages = subject.type === 'main' 
     ? calculateMainSubjectAverages(subject.grades, subject.writtenWeight || 2)
     : calculateSecondarySubjectAverage(subject.grades);
 
@@ -94,7 +94,7 @@ export const SubjectCard = ({
               {subject.type === 'main' ? (
                 <>
                   <div className="flex items-center gap-2">
-                    <span>Schulaufgaben: ∅ {written}</span>
+                    <span>Schulaufgaben: ∅ {averages.written}</span>
                     <div className="flex items-center gap-1">
                       {isEditingWeight ? (
                         <Select
@@ -124,13 +124,13 @@ export const SubjectCard = ({
                       )}
                     </div>
                   </div>
-                  <div>Mündlich: ∅ {oral}</div>
-                  <div className="font-semibold text-base">Gesamt: ∅ {total}</div>
+                  <div>Mündlich: ∅ {averages.oral}</div>
+                  <div className="font-semibold text-base">Gesamt: ∅ {averages.total}</div>
                 </>
               ) : (
                 <>
-                  <div>Mündlich: ∅ {oral}</div>
-                  <div className="font-semibold text-base">Gesamt: ∅ {total}</div>
+                  <div>Mündlich: ∅ {averages.oral}</div>
+                  <div className="font-semibold text-base">Gesamt: ∅ {averages.total}</div>
                 </>
               )}
             </div>
