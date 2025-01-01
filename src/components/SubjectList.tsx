@@ -2,7 +2,7 @@ import { Subject, Grade } from '@/types';
 import { SubjectCard } from './SubjectCard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
-import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import { ChevronDownIcon } from 'lucide-react';
 
 interface SubjectListProps {
   subjects: Subject[];
@@ -42,7 +42,7 @@ export const SubjectList = ({
     return (
       <Collapsible>
         <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-          <div className="flex items-center justify-between border-b pb-2 mb-4">
+          <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100">
