@@ -80,11 +80,11 @@ export const SubjectForm = ({ onSubmit }: SubjectFormProps) => {
                 defaultValue={field.value}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="overflow-hidden">
                     <SelectValue placeholder="Wähle die Art des Fachs" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
+                <SelectContent className="overflow-hidden">
                   <SelectItem value="main">Hauptfach</SelectItem>
                   <SelectItem value="secondary">Nebenfach</SelectItem>
                 </SelectContent>

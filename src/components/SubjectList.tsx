@@ -44,13 +44,13 @@ export const SubjectList = ({
         <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
-            <CollapsibleTrigger asChild>
+            <CollapsibleTrigger asChild className="overflow-hidden">
               <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100">
                 <ChevronDownIcon className="h-4 w-4" />
               </Button>
             </CollapsibleTrigger>
           </div>
-          <CollapsibleContent>
+          <CollapsibleContent className="overflow-hidden">
             <div className="grid gap-4">
               {subjects.map((subject) => (
                 <SubjectCard
