@@ -77,7 +77,7 @@ export const SubjectCard = ({
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0 p-4 sm:p-6">
           <div className="flex items-center gap-2">
-            <CollapsibleTrigger asChild>
+            <CollapsibleTrigger asChild className="overflow-hidden">
               <Button variant="ghost" size="icon" className="h-8 w-8">
                 {isOpen ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
               </Button>
@@ -157,7 +157,7 @@ export const SubjectCard = ({
             </div>
           </div>
         </CardHeader>
-        <CollapsibleContent>
+        <CollapsibleContent className="overflow-hidden">
           <CardContent className="space-y-4 p-4 sm:p-6">
             {isAddingGrade && (
               <div className="bg-gray-50 p-4 rounded-lg">
