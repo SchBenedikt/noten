@@ -136,6 +136,7 @@ const Index = () => {
               onDeleteGrade={deleteGrade}
               onDeleteSubject={deleteSubject}
               onUpdateSubject={handleUpdateSubject}
+              searchQuery={searchQuery}
             />
           </div>
         </div>
