@@ -12,6 +12,7 @@ import { PlusIcon, MinusIcon } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Input } from '@/components/ui/input';
 
 const Index = () => {
   const {
@@ -22,10 +23,12 @@ const Index = () => {
     deleteGrade,
     deleteSubject,
     updateSubject,
+    searchSubjects,
   } = useSubjects();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [isAddingSubject, setIsAddingSubject] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -115,6 +118,17 @@ const Index = () => {
           </div>
 
           <div className="space-y-6">
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <Input
+                type="text"
+                placeholder="Fächer durchsuchen..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  searchSubjects(e.target.value);
+                }}
+              />
+            </div>
             <SubjectList
               subjects={subjects}
               onAddGrade={addGrade}

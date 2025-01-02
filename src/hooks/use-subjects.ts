@@ -44,6 +44,7 @@ const mapDatabaseGradeToGrade = (dbGrade: DatabaseGrade): Grade => ({
 
 export const useSubjects = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   const fetchSubjects = async () => {
@@ -283,17 +284,26 @@ export const useSubjects = () => {
     });
   };
 
+  const searchSubjects = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  const filteredSubjects = subjects.filter(subject =>
+    subject.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   useEffect(() => {
     fetchSubjects();
   }, []);
 
   return {
-    subjects,
+    subjects: filteredSubjects,
     addSubject,
     addGrade,
     updateGrade,
     deleteGrade,
     deleteSubject,
     updateSubject,
+    searchSubjects,
   };
 };
