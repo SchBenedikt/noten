@@ -3,6 +3,7 @@ import { SubjectCard } from './SubjectCard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { ChevronDownIcon } from 'lucide-react';
+import { useState } from 'react';
 
 interface SubjectListProps {
   subjects: Subject[];
@@ -23,6 +24,9 @@ export const SubjectList = ({
   onUpdateSubject,
   isDemo = false
 }: SubjectListProps) => {
+  const [mainSubjectsOpen, setMainSubjectsOpen] = useState(true);
+  const [secondarySubjectsOpen, setSecondarySubjectsOpen] = useState(true);
+
   if (subjects.length === 0) {
     return (
       <div className="bg-white p-8 rounded-lg shadow-sm">
@@ -36,11 +40,28 @@ export const SubjectList = ({
   const mainSubjects = subjects.filter(subject => subject.type === 'main');
   const secondarySubjects = subjects.filter(subject => subject.type === 'secondary');
 
-  const SubjectSection = ({ title, subjects, type }: { title: string; subjects: Subject[]; type: 'main' | 'secondary' }) => {
+  const handleAddGrade = async (subjectId: string, grade: Omit<Grade, 'id'>) => {
+    await onAddGrade(subjectId, grade);
+    // Keep sections open after adding a grade
+    const subject = subjects.find(s => s.id === subjectId);
+    if (subject?.type === 'main') {
+      setMainSubjectsOpen(true);
+    } else {
+      setSecondarySubjectsOpen(true);
+    }
+  };
+
+  const SubjectSection = ({ title, subjects, type, isOpen, setIsOpen }: { 
+    title: string; 
+    subjects: Subject[]; 
+    type: 'main' | 'secondary';
+    isOpen: boolean;
+    setIsOpen: (open: boolean) => void;
+  }) => {
     if (subjects.length === 0) return null;
     
     return (
-      <Collapsible>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
@@ -56,7 +77,7 @@ export const SubjectList = ({
                 <SubjectCard
                   key={subject.id}
                   subject={subject}
-                  onAddGrade={onAddGrade}
+                  onAddGrade={handleAddGrade}
                   onUpdateGrade={onUpdateGrade}
                   onDeleteGrade={onDeleteGrade}
                   onDeleteSubject={onDeleteSubject}
@@ -73,8 +94,20 @@ export const SubjectList = ({
 
   return (
     <div className="space-y-6">
-      <SubjectSection title="Hauptfächer" subjects={mainSubjects} type="main" />
-      <SubjectSection title="Nebenfächer" subjects={secondarySubjects} type="secondary" />
+      <SubjectSection 
+        title="Hauptfächer" 
+        subjects={mainSubjects} 
+        type="main" 
+        isOpen={mainSubjectsOpen}
+        setIsOpen={setMainSubjectsOpen}
+      />
+      <SubjectSection 
+        title="Nebenfächer" 
+        subjects={secondarySubjects} 
+        type="secondary" 
+        isOpen={secondarySubjectsOpen}
+        setIsOpen={setSecondarySubjectsOpen}
+      />
     </div>
   );
 };

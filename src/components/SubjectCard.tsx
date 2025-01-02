@@ -72,6 +72,49 @@ export const SubjectCard = ({
     setIsAddingGrade(!isAddingGrade);
   };
 
+  const renderAverages = () => {
+    if (subject.type === 'main') {
+      const mainAverages = averages as ReturnType<typeof calculateMainSubjectAverages>;
+      return (
+        <>
+          <div className="flex items-center gap-2">
+            <span>Schulaufgaben: ∅ {mainAverages.written}</span>
+            <div className="flex items-center gap-1">
+              {isEditingWeight ? (
+                <Select
+                  defaultValue={subject.writtenWeight?.toString() || "2"}
+                  onValueChange={handleWeightChange}
+                >
+                  <SelectTrigger className="w-20">
+                    <SelectValue placeholder="×2" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">×1</SelectItem>
+                    <SelectItem value="2">×2</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <>
+                  <span>(×{subject.writtenWeight || 2})</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsEditingWeight(true)}
+                    className="h-6 w-6"
+                  >
+                    <Edit2Icon className="h-3 w-3" />
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+          <div>Mündlich: ∅ {mainAverages.oral}</div>
+        </>
+      );
+    }
+    return <div>Mündlich: ∅ {averages.oral}</div>;
+  };
+
   return (
     <Card className="w-full bg-white shadow-sm">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -91,44 +134,7 @@ export const SubjectCard = ({
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="text-sm space-y-1 sm:space-y-0 sm:text-right bg-gray-50 p-2 rounded-md w-full sm:w-auto">
-              {subject.type === 'main' ? (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span>Schulaufgaben: ∅ {averages.written}</span>
-                    <div className="flex items-center gap-1">
-                      {isEditingWeight ? (
-                        <Select
-                          defaultValue={subject.writtenWeight?.toString() || "2"}
-                          onValueChange={handleWeightChange}
-                        >
-                          <SelectTrigger className="w-20">
-                            <SelectValue placeholder="×2" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">×1</SelectItem>
-                            <SelectItem value="2">×2</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <>
-                          <span>(×{subject.writtenWeight || 2})</span>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setIsEditingWeight(true)}
-                            className="h-6 w-6"
-                          >
-                            <Edit2Icon className="h-3 w-3" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div>Mündlich: ∅ {averages.oral}</div>
-                </>
-              ) : (
-                <div>Mündlich: ∅ {averages.oral}</div>
-              )}
+              {renderAverages()}
               <div className="font-semibold text-base">Gesamt: ∅ {averages.total}</div>
             </div>
             <div className="flex gap-2 w-full sm:w-auto justify-end">
