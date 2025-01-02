@@ -10,8 +10,9 @@ import { Subject } from '@/types';
 import { Button } from '@/components/ui/button';
 import { PlusIcon, MinusIcon } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import CountUp from 'react-countup';
 
 const Index = () => {
   const {
@@ -26,6 +27,11 @@ const Index = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [isAddingSubject, setIsAddingSubject] = useState(false);
+  const [startCount, setStartCount] = useState(false);
+
+  useEffect(() => {
+    setStartCount(true);
+  }, []);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -89,9 +95,9 @@ const Index = () => {
                     className="space-y-3 p-2"
                   >
                     <div className="text-sm text-gray-600 space-y-2">
-                      <p>Hauptfächer: {mainSubjectsCount}</p>
-                      <p>Nebenfächer: {secondarySubjectsCount}</p>
-                      <p>Gesamt Noten: {totalGrades}</p>
+                      <p>Hauptfächer: <CountUp start={0} end={mainSubjectsCount} duration={2} startOnMount={startCount} /></p>
+                      <p>Nebenfächer: <CountUp start={0} end={secondarySubjectsCount} duration={2} startOnMount={startCount} /></p>
+                      <p>Gesamt Noten: <CountUp start={0} end={totalGrades} duration={2} startOnMount={startCount} /></p>
                     </div>
                     <Button 
                       onClick={() => setIsAddingSubject(true)}
