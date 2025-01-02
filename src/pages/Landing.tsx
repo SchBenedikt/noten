@@ -136,6 +136,11 @@ const Landing = () => {
               />
             </div>
           </div>
+
+          <footer className="mt-16 text-center text-sm text-muted-foreground">
+            <p className="contrast-text">© 2024 Benedikt Schächner. Alle Rechte vorbehalten.</p>
+            <p className="contrast-text">Domain: benedikt.schächner.de</p>
+          </footer>
         </div>
       </div>
     </div>

@@ -49,6 +49,8 @@
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    --contrast: 340 65% 47%; /* P10b6 */
   }
 
   .dark {
@@ -87,6 +89,7 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --contrast: 340 65% 47%; /* P10b6 */
   }
 
   /* Always show scrollbar to prevent layout shifts */
@@ -115,4 +118,8 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  .contrast-text { /* Pdac9 */
+    color: hsl(var(--contrast)); /* Pdac9 */
+  } /* Pdac9 */
 }
