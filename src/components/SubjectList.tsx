@@ -24,8 +24,9 @@ export const SubjectList = ({
   onUpdateSubject,
   isDemo = false
 }: SubjectListProps) => {
-  const [mainSubjectsOpen, setMainSubjectsOpen] = useState(true);
-  const [secondarySubjectsOpen, setSecondarySubjectsOpen] = useState(true);
+  const [mainSubjectsOpen, setMainSubjectsOpen] = useState(false);
+  const [secondarySubjectsOpen, setSecondarySubjectsOpen] = useState(false);
+  const [lastActiveSubjectId, setLastActiveSubjectId] = useState<string | null>(null);
 
   if (subjects.length === 0) {
     return (
@@ -42,13 +43,15 @@ export const SubjectList = ({
 
   const handleAddGrade = async (subjectId: string, grade: Omit<Grade, 'id'>) => {
     await onAddGrade(subjectId, grade);
-    // Keep sections open after adding a grade
+    // Keep the subject's category open after adding a grade
     const subject = subjects.find(s => s.id === subjectId);
     if (subject?.type === 'main') {
       setMainSubjectsOpen(true);
     } else {
       setSecondarySubjectsOpen(true);
     }
+    // Keep track of the last active subject
+    setLastActiveSubjectId(subjectId);
   };
 
   const SubjectSection = ({ title, subjects, type, isOpen, setIsOpen }: { 
@@ -83,6 +86,7 @@ export const SubjectList = ({
                   onDeleteSubject={onDeleteSubject}
                   onUpdateSubject={onUpdateSubject}
                   isDemo={isDemo}
+                  isInitiallyOpen={subject.id === lastActiveSubjectId}
                 />
               ))}
             </div>

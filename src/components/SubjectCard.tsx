@@ -33,6 +33,7 @@ interface SubjectCardProps {
   onDeleteSubject: (subjectId: string) => void;
   onUpdateSubject?: (subjectId: string, updates: Partial<Subject>) => void;
   isDemo?: boolean;
+  isInitiallyOpen?: boolean;
 }
 
 export const SubjectCard = ({ 
@@ -42,12 +43,13 @@ export const SubjectCard = ({
   onDeleteGrade,
   onDeleteSubject,
   onUpdateSubject,
-  isDemo = false
+  isDemo = false,
+  isInitiallyOpen = false
 }: SubjectCardProps) => {
   const [isAddingGrade, setIsAddingGrade] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditingWeight, setIsEditingWeight] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(isInitiallyOpen);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   const averages = subject.type === 'main' 
