@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { ChevronDownIcon } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Input } from '@/components/ui/input';
 
 interface SubjectListProps {
   subjects: Subject[];
@@ -26,16 +25,11 @@ export const SubjectList = ({
   onUpdateSubject,
   isDemo = false
 }: SubjectListProps) => {
-  const [mainSubjectsOpen, setMainSubjectsOpen] = useState(false);
-  const [secondarySubjectsOpen, setSecondarySubjectsOpen] = useState(false);
+  const [mainSubjectsOpen, setMainSubjectsOpen] = useState(true);
+  const [secondarySubjectsOpen, setSecondarySubjectsOpen] = useState(true);
   const [lastActiveSubjectId, setLastActiveSubjectId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredSubjects = subjects.filter(subject =>
-    subject.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  if (filteredSubjects.length === 0) {
+  if (subjects.length === 0) {
     return (
       <div className="bg-white p-8 rounded-lg shadow-sm">
         <p className="text-center text-gray-500">
@@ -45,8 +39,8 @@ export const SubjectList = ({
     );
   }
 
-  const mainSubjects = filteredSubjects.filter(subject => subject.type === 'main');
-  const secondarySubjects = filteredSubjects.filter(subject => subject.type === 'secondary');
+  const mainSubjects = subjects.filter(subject => subject.type === 'main');
+  const secondarySubjects = subjects.filter(subject => subject.type === 'secondary');
 
   const handleAddGrade = async (subjectId: string, grade: Omit<Grade, 'id'>) => {
     await onAddGrade(subjectId, grade);
@@ -144,14 +138,6 @@ export const SubjectList = ({
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-4 rounded-lg shadow-sm">
-        <Input
-          type="text"
-          placeholder="Fächer durchsuchen..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
       <SubjectSection 
         title="Hauptfächer" 
         subjects={mainSubjects} 
