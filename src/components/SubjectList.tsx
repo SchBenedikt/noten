@@ -4,6 +4,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Button } from '@/components/ui/button';
 import { ChevronDownIcon } from 'lucide-react';
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 
 interface SubjectListProps {
   subjects: Subject[];
@@ -43,18 +44,37 @@ export const SubjectList = ({
 
   const handleAddGrade = async (subjectId: string, grade: Omit<Grade, 'id'>) => {
     await onAddGrade(subjectId, grade);
-    // Keep the subject's category open after adding a grade
     const subject = subjects.find(s => s.id === subjectId);
     if (subject?.type === 'main') {
       setMainSubjectsOpen(true);
     } else {
       setSecondarySubjectsOpen(true);
     }
-    // Keep track of the last active subject
     setLastActiveSubjectId(subjectId);
   };
 
-  const SubjectSection = ({ title, subjects, type, isOpen, setIsOpen }: { 
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
+  const SubjectSection = ({ 
+    title, 
+    subjects, 
+    type, 
+    isOpen, 
+    setIsOpen 
+  }: { 
     title: string; 
     subjects: Subject[]; 
     type: 'main' | 'secondary';
@@ -65,31 +85,48 @@ export const SubjectList = ({
     
     return (
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
-            <CollapsibleTrigger asChild className="overflow-hidden">
-              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-gray-100">
-                <ChevronDownIcon className="h-4 w-4" />
-              </Button>
-            </CollapsibleTrigger>
-          </div>
-          <CollapsibleContent className="overflow-hidden">
-            <div className="grid gap-4">
-              {subjects.map((subject) => (
-                <SubjectCard
-                  key={subject.id}
-                  subject={subject}
-                  onAddGrade={handleAddGrade}
-                  onUpdateGrade={onUpdateGrade}
-                  onDeleteGrade={onDeleteGrade}
-                  onDeleteSubject={onDeleteSubject}
-                  onUpdateSubject={onUpdateSubject}
-                  isDemo={isDemo}
-                  isInitiallyOpen={subject.id === lastActiveSubjectId}
-                />
-              ))}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md">
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+              <CollapsibleTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={`h-8 w-8 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                >
+                  <ChevronDownIcon className="h-4 w-4" />
+                </Button>
+              </CollapsibleTrigger>
             </div>
+            {!isOpen && (
+              <p className="text-sm text-gray-500 mt-1">
+                {subjects.length} {subjects.length === 1 ? 'Fach' : 'Fächer'}
+              </p>
+            )}
+          </div>
+          <CollapsibleContent>
+            <motion.div 
+              className="p-4 grid gap-4"
+              variants={container}
+              initial="hidden"
+              animate={isOpen ? "show" : "hidden"}
+            >
+              {subjects.map((subject, index) => (
+                <motion.div key={subject.id} variants={item}>
+                  <SubjectCard
+                    subject={subject}
+                    onAddGrade={handleAddGrade}
+                    onUpdateGrade={onUpdateGrade}
+                    onDeleteGrade={onDeleteGrade}
+                    onDeleteSubject={onDeleteSubject}
+                    onUpdateSubject={onUpdateSubject}
+                    isDemo={isDemo}
+                    isInitiallyOpen={subject.id === lastActiveSubjectId}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
           </CollapsibleContent>
         </div>
       </Collapsible>
