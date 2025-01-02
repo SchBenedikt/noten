@@ -7,6 +7,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { Subject } from '@/types';
+import { Button } from '@/components/ui/button';
+import { PlusIcon, MinusIcon } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 
 const Index = () => {
   const {
@@ -20,6 +25,7 @@ const Index = () => {
   } = useSubjects();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const [isAddingSubject, setIsAddingSubject] = useState(false);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -39,6 +45,9 @@ const Index = () => {
   };
 
   const overallAverage = calculateOverallAverage(subjects);
+  const totalGrades = subjects.reduce((sum, subject) => sum + subject.grades.length, 0);
+  const mainSubjectsCount = subjects.filter(s => s.type === 'main').length;
+  const secondarySubjectsCount = subjects.filter(s => s.type === 'secondary').length;
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
@@ -61,13 +70,51 @@ const Index = () => {
         </div>
 
         <div className={`${isMobile ? 'space-y-6' : 'grid grid-cols-[300px,1fr] gap-8'}`}>
-          <div className="space-y-4 bg-white p-4 rounded-lg shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">Neues Fach</h2>
-            <SubjectForm onSubmit={addSubject} />
+          <div className="space-y-4">
+            <Collapsible open={isAddingSubject} onOpenChange={setIsAddingSubject}>
+              <div className="bg-white p-4 rounded-lg shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-semibold">Fächer</h2>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      {isAddingSubject ? <MinusIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+                
+                {!isAddingSubject ? (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-3 p-2"
+                  >
+                    <div className="text-sm text-gray-600 space-y-2">
+                      <p>Hauptfächer: {mainSubjectsCount}</p>
+                      <p>Nebenfächer: {secondarySubjectsCount}</p>
+                      <p>Gesamt Noten: {totalGrades}</p>
+                    </div>
+                    <Button 
+                      onClick={() => setIsAddingSubject(true)}
+                      className="w-full"
+                    >
+                      Neues Fach hinzufügen
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <CollapsibleContent>
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                    >
+                      <SubjectForm onSubmit={addSubject} />
+                    </motion.div>
+                  </CollapsibleContent>
+                )}
+              </div>
+            </Collapsible>
           </div>
 
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold mb-4">Meine Fächer</h2>
             <SubjectList
               subjects={subjects}
               onAddGrade={addGrade}

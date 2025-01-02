@@ -83,6 +83,8 @@ export const SubjectList = ({
   }) => {
     if (subjects.length === 0) return null;
     
+    const totalGrades = subjects.reduce((sum, subject) => sum + subject.grades.length, 0);
+    
     return (
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <div className="bg-white rounded-lg shadow-sm overflow-hidden transition-all duration-200 hover:shadow-md">
@@ -100,9 +102,10 @@ export const SubjectList = ({
               </CollapsibleTrigger>
             </div>
             {!isOpen && (
-              <p className="text-sm text-gray-500 mt-1">
-                {subjects.length} {subjects.length === 1 ? 'Fach' : 'Fächer'}
-              </p>
+              <div className="text-sm text-gray-500 mt-1 space-y-1">
+                <p>{subjects.length} {subjects.length === 1 ? 'Fach' : 'Fächer'}</p>
+                <p>{totalGrades} {totalGrades === 1 ? 'Note' : 'Noten'}</p>
+              </div>
             )}
           </div>
           <CollapsibleContent>
@@ -112,7 +115,7 @@ export const SubjectList = ({
               initial="hidden"
               animate={isOpen ? "show" : "hidden"}
             >
-              {subjects.map((subject, index) => (
+              {subjects.map((subject) => (
                 <motion.div key={subject.id} variants={item}>
                   <SubjectCard
                     subject={subject}
