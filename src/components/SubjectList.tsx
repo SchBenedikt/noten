@@ -25,8 +25,8 @@ export const SubjectList = ({
   onUpdateSubject,
   isDemo = false
 }: SubjectListProps) => {
-  const [mainSubjectsOpen, setMainSubjectsOpen] = useState(true);
-  const [secondarySubjectsOpen, setSecondarySubjectsOpen] = useState(true);
+  const [mainSubjectsOpen, setMainSubjectsOpen] = useState(false);
+  const [secondarySubjectsOpen, setSecondarySubjectsOpen] = useState(false);
   const [lastActiveSubjectId, setLastActiveSubjectId] = useState<string | null>(null);
 
   if (subjects.length === 0) {
@@ -142,14 +142,14 @@ export const SubjectList = ({
         title="Hauptfächer" 
         subjects={mainSubjects} 
         type="main" 
-        isOpen={mainSubjectsOpen}
+        isOpen={mainSubjectsOpen || subjects.some(subject => subject.type === 'main' && subject.name.toLowerCase().includes(searchQuery.toLowerCase()))}
         setIsOpen={setMainSubjectsOpen}
       />
       <SubjectSection 
         title="Nebenfächer" 
         subjects={secondarySubjects} 
         type="secondary" 
-        isOpen={secondarySubjectsOpen}
+        isOpen={secondarySubjectsOpen || subjects.some(subject => subject.type === 'secondary' && subject.name.toLowerCase().includes(searchQuery.toLowerCase()))}
         setIsOpen={setSecondarySubjectsOpen}
       />
     </div>
