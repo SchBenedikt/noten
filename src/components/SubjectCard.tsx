@@ -1,14 +1,29 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Subject, Grade } from '@/types';
+import { calculateMainSubjectAverages, calculateSecondarySubjectAverages } from '@/lib/calculations';
 import { GradeList } from './GradeList';
 import { GradeForm } from './GradeForm';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import { PlusIcon, MinusIcon, Trash2Icon, Edit2Icon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { SubjectAverages } from './SubjectAverages';
-import { SubjectDialogs } from './SubjectDialogs';
-import { SubjectActions } from './SubjectActions';
 
 interface SubjectCardProps {
   subject: Subject;
@@ -37,6 +52,17 @@ export const SubjectCard = ({
   const [isOpen, setIsOpen] = useState(isInitiallyOpen);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
 
+  const averages = subject.type === 'main' 
+    ? calculateMainSubjectAverages(subject.grades, subject.writtenWeight || 2)
+    : calculateSecondarySubjectAverages(subject.grades);
+
+  const handleWeightChange = (value: string) => {
+    if (onUpdateSubject) {
+      onUpdateSubject(subject.id, { writtenWeight: Number(value) });
+      setIsEditingWeight(false);
+    }
+  };
+
   const handleGradeAction = () => {
     if (isDemo) {
       setShowLoginDialog(true);
@@ -48,12 +74,47 @@ export const SubjectCard = ({
     setIsAddingGrade(!isAddingGrade);
   };
 
-  const handleDeleteClick = () => {
-    if (isDemo) {
-      setShowLoginDialog(true);
-      return;
+  const renderAverages = () => {
+    if (subject.type === 'main') {
+      const mainAverages = averages as ReturnType<typeof calculateMainSubjectAverages>;
+      return (
+        <>
+          <div className="flex items-center gap-2">
+            <span>Schulaufgaben: ∅ {mainAverages.written}</span>
+            <div className="flex items-center gap-1">
+              {isEditingWeight ? (
+                <Select
+                  defaultValue={subject.writtenWeight?.toString() || "2"}
+                  onValueChange={handleWeightChange}
+                >
+                  <SelectTrigger className="w-20">
+                    <SelectValue placeholder="×2" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">×1</SelectItem>
+                    <SelectItem value="2">×2</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <>
+                  <span>(×{subject.writtenWeight || 2})</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsEditingWeight(true)}
+                    className="h-6 w-6"
+                  >
+                    <Edit2Icon className="h-3 w-3" />
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+          <div>Mündlich: ∅ {mainAverages.oral}</div>
+        </>
+      );
     }
-    setShowDeleteDialog(true);
+    return <div>Mündlich: ∅ {averages.oral}</div>;
   };
 
   return (
@@ -74,17 +135,34 @@ export const SubjectCard = ({
             </CardTitle>
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <SubjectAverages
-              subject={subject}
-              isEditingWeight={isEditingWeight}
-              setIsEditingWeight={setIsEditingWeight}
-              onUpdateSubject={onUpdateSubject}
-            />
-            <SubjectActions
-              isAddingGrade={isAddingGrade}
-              onGradeActionClick={handleGradeAction}
-              onDeleteClick={handleDeleteClick}
-            />
+            <div className="text-sm space-y-1 sm:space-y-0 sm:text-right bg-gray-50 p-2 rounded-md w-full sm:w-auto">
+              {renderAverages()}
+              <div className="font-semibold text-base">Gesamt: ∅ {averages.total}</div>
+            </div>
+            <div className="flex gap-2 w-full sm:w-auto justify-end">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleGradeAction}
+                className="hover:bg-gray-100"
+              >
+                {isAddingGrade ? <MinusIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  if (isDemo) {
+                    setShowLoginDialog(true);
+                    return;
+                  }
+                  setShowDeleteDialog(true);
+                }}
+                className="hover:bg-red-50"
+              >
+                <Trash2Icon className="h-4 w-4 text-red-500" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CollapsibleContent className="overflow-hidden">
@@ -110,14 +188,46 @@ export const SubjectCard = ({
         </CollapsibleContent>
       </Collapsible>
 
-      <SubjectDialogs
-        showLoginDialog={showLoginDialog}
-        setShowLoginDialog={setShowLoginDialog}
-        showDeleteDialog={showDeleteDialog}
-        setShowDeleteDialog={setShowDeleteDialog}
-        subjectName={subject.name}
-        onDeleteSubject={() => onDeleteSubject(subject.id)}
-      />
+      <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Registrierung erforderlich</AlertDialogTitle>
+            <AlertDialogDescription>
+              Um Noten zu bearbeiten und zu speichern, erstellen Sie bitte ein kostenloses Konto. 
+              So können Sie Ihre Noten dauerhaft speichern und von überall darauf zugreifen.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button onClick={() => window.location.href = '/login'}>
+                Jetzt registrieren
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Fach löschen</AlertDialogTitle>
+            <AlertDialogDescription>
+              Möchten Sie das Fach "{subject.name}" wirklich löschen? 
+              Diese Aktion kann nicht rückgängig gemacht werden.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => onDeleteSubject(subject.id)}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };
