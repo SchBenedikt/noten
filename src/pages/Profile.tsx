@@ -9,7 +9,6 @@ import { ArrowLeft, Mail, KeyRound } from "lucide-react";
 const Profile = () => {
   const navigate = useNavigate();
   const [newEmail, setNewEmail] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -24,7 +23,7 @@ const Profile = () => {
       
       if (error) {
         if (error.message.includes("email_exists")) {
-          toast.error("Diese E-Mail-Adresse wird bereits verwendet");
+          toast.error("Diese E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet");
         } else {
           toast.error(error.message || "Ein Fehler ist aufgetreten");
         }
@@ -34,7 +33,7 @@ const Profile = () => {
       toast.success("E-Mail-Adresse wurde aktualisiert. Bitte bestätige die Änderung in deinem E-Mail-Postfach.");
       setNewEmail("");
     } catch (error: any) {
-      toast.error(error.message || "Ein Fehler ist aufgetreten");
+      toast.error("Ein unerwarteter Fehler ist aufgetreten");
     } finally {
       setIsLoading(false);
     }
@@ -52,7 +51,6 @@ const Profile = () => {
       if (error) throw error;
       
       toast.success("Passwort wurde erfolgreich aktualisiert");
-      setCurrentPassword("");
       setNewPassword("");
     } catch (error: any) {
       toast.error(error.message || "Ein Fehler ist aufgetreten");
