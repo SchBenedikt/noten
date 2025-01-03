@@ -18,9 +18,18 @@ const Profile = () => {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase.auth.updateUser({ email: newEmail });
+      const { error } = await supabase.auth.updateUser({ 
+        email: newEmail 
+      });
       
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("email_exists")) {
+          toast.error("Diese E-Mail-Adresse wird bereits verwendet");
+        } else {
+          toast.error(error.message || "Ein Fehler ist aufgetreten");
+        }
+        return;
+      }
       
       toast.success("E-Mail-Adresse wurde aktualisiert. Bitte bestätige die Änderung in deinem E-Mail-Postfach.");
       setNewEmail("");
