@@ -2,9 +2,10 @@ import { Subject, Grade } from '@/types';
 import { SubjectCard } from './SubjectCard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
-import { ChevronDownIcon } from 'lucide-react';
+import { ChevronDownIcon, SearchIcon } from 'lucide-react';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Input } from '@/components/ui/input';
 
 interface SubjectListProps {
   subjects: Subject[];
@@ -28,6 +29,7 @@ export const SubjectList = ({
   const [mainSubjectsOpen, setMainSubjectsOpen] = useState(false);
   const [secondarySubjectsOpen, setSecondarySubjectsOpen] = useState(false);
   const [lastActiveSubjectId, setLastActiveSubjectId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   if (subjects.length === 0) {
     return (
@@ -39,8 +41,12 @@ export const SubjectList = ({
     );
   }
 
-  const mainSubjects = subjects.filter(subject => subject.type === 'main');
-  const secondarySubjects = subjects.filter(subject => subject.type === 'secondary');
+  const filteredSubjects = subjects.filter(subject => 
+    subject.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const mainSubjects = filteredSubjects.filter(subject => subject.type === 'main');
+  const secondarySubjects = filteredSubjects.filter(subject => subject.type === 'secondary');
 
   const handleAddGrade = async (subjectId: string, grade: Omit<Grade, 'id'>) => {
     await onAddGrade(subjectId, grade);
@@ -138,20 +144,38 @@ export const SubjectList = ({
 
   return (
     <div className="space-y-6">
-      <SubjectSection 
-        title="Hauptfächer" 
-        subjects={mainSubjects} 
-        type="main" 
-        isOpen={mainSubjectsOpen}
-        setIsOpen={setMainSubjectsOpen}
-      />
-      <SubjectSection 
-        title="Nebenfächer" 
-        subjects={secondarySubjects} 
-        type="secondary" 
-        isOpen={secondarySubjectsOpen}
-        setIsOpen={setSecondarySubjectsOpen}
-      />
+      <div className="relative">
+        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Input
+          type="text"
+          placeholder="Fächer suchen..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10 bg-white"
+        />
+      </div>
+      {searchQuery && filteredSubjects.length === 0 ? (
+        <div className="bg-white p-8 rounded-lg shadow-sm text-center text-gray-500">
+          Keine Fächer gefunden für "{searchQuery}"
+        </div>
+      ) : (
+        <>
+          <SubjectSection 
+            title="Hauptfächer" 
+            subjects={mainSubjects} 
+            type="main" 
+            isOpen={mainSubjectsOpen}
+            setIsOpen={setMainSubjectsOpen}
+          />
+          <SubjectSection 
+            title="Nebenfächer" 
+            subjects={secondarySubjects} 
+            type="secondary" 
+            isOpen={secondarySubjectsOpen}
+            setIsOpen={setSecondarySubjectsOpen}
+          />
+        </>
+      )}
     </div>
   );
 };
