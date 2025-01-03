@@ -31,7 +31,7 @@ export const SubjectList = ({
   const [lastActiveSubjectId, setLastActiveSubjectId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Automatically expand sections based on search results
+  // Automatically expand or collapse sections based on search results
   useEffect(() => {
     if (searchQuery) {
       const hasMainMatches = subjects.some(subject => 
@@ -45,6 +45,10 @@ export const SubjectList = ({
       
       setMainSubjectsOpen(hasMainMatches);
       setSecondarySubjectsOpen(hasSecondaryMatches);
+    } else {
+      // Close both sections when search is cleared
+      setMainSubjectsOpen(false);
+      setSecondarySubjectsOpen(false);
     }
   }, [searchQuery, subjects]);
 
