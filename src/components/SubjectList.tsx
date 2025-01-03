@@ -3,7 +3,7 @@ import { SubjectCard } from './SubjectCard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { ChevronDownIcon, SearchIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 
@@ -30,6 +30,23 @@ export const SubjectList = ({
   const [secondarySubjectsOpen, setSecondarySubjectsOpen] = useState(false);
   const [lastActiveSubjectId, setLastActiveSubjectId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Automatically expand sections based on search results
+  useEffect(() => {
+    if (searchQuery) {
+      const hasMainMatches = subjects.some(subject => 
+        subject.type === 'main' && 
+        subject.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      const hasSecondaryMatches = subjects.some(subject => 
+        subject.type === 'secondary' && 
+        subject.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      
+      setMainSubjectsOpen(hasMainMatches);
+      setSecondarySubjectsOpen(hasSecondaryMatches);
+    }
+  }, [searchQuery, subjects]);
 
   if (subjects.length === 0) {
     return (
