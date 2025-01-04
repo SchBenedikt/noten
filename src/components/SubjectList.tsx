@@ -2,10 +2,10 @@ import { Subject, Grade } from '@/types';
 import { SubjectCard } from './SubjectCard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
-import { ChevronDownIcon, SearchIcon } from 'lucide-react';
+import { ChevronDownIcon } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Input } from '@/components/ui/input';
+import { SubjectSearch } from './SubjectSearch';
 
 interface SubjectListProps {
   subjects: Subject[];
@@ -30,27 +30,44 @@ export const SubjectList = ({
   const [secondarySubjectsOpen, setSecondarySubjectsOpen] = useState(false);
   const [lastActiveSubjectId, setLastActiveSubjectId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchType, setSearchType] = useState<'subject' | 'grade' | 'note'>('subject');
 
   // Automatically expand or collapse sections based on search results
   useEffect(() => {
     if (searchQuery) {
       const hasMainMatches = subjects.some(subject => 
-        subject.type === 'main' && 
-        subject.name.toLowerCase().includes(searchQuery.toLowerCase())
+        hasMatch(subject, searchQuery, searchType)
       );
       const hasSecondaryMatches = subjects.some(subject => 
-        subject.type === 'secondary' && 
-        subject.name.toLowerCase().includes(searchQuery.toLowerCase())
+        subject.type === 'secondary' && hasMatch(subject, searchQuery, searchType)
       );
       
       setMainSubjectsOpen(hasMainMatches);
       setSecondarySubjectsOpen(hasSecondaryMatches);
     } else {
-      // Close both sections when search is cleared
       setMainSubjectsOpen(false);
       setSecondarySubjectsOpen(false);
     }
-  }, [searchQuery, subjects]);
+  }, [searchQuery, searchType, subjects]);
+
+  const hasMatch = (subject: Subject, query: string, type: 'subject' | 'grade' | 'note') => {
+    const lowercaseQuery = query.toLowerCase();
+    
+    switch (type) {
+      case 'subject':
+        return subject.name.toLowerCase().includes(lowercaseQuery);
+      case 'grade':
+        return subject.grades.some(grade => 
+          grade.value.toString().includes(lowercaseQuery)
+        );
+      case 'note':
+        return subject.grades.some(grade => 
+          grade.notes?.toLowerCase().includes(lowercaseQuery)
+        );
+      default:
+        return false;
+    }
+  };
 
   if (subjects.length === 0) {
     return (
@@ -63,7 +80,7 @@ export const SubjectList = ({
   }
 
   const filteredSubjects = subjects.filter(subject => 
-    subject.name.toLowerCase().includes(searchQuery.toLowerCase())
+    hasMatch(subject, searchQuery, searchType)
   );
 
   const mainSubjects = filteredSubjects.filter(subject => subject.type === 'main');
@@ -165,19 +182,15 @@ export const SubjectList = ({
 
   return (
     <div className="space-y-6">
-      <div className="relative">
-        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-        <Input
-          type="text"
-          placeholder="Fächer suchen..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 bg-white"
-        />
-      </div>
+      <SubjectSearch
+        searchQuery={searchQuery}
+        searchType={searchType}
+        onSearchChange={setSearchQuery}
+        onSearchTypeChange={setSearchType}
+      />
       {searchQuery && filteredSubjects.length === 0 ? (
         <div className="bg-white p-8 rounded-lg shadow-sm text-center text-gray-500">
-          Keine Fächer gefunden für "{searchQuery}"
+          Keine {searchType === 'subject' ? 'Fächer' : searchType === 'grade' ? 'Noten' : 'Notizen'} gefunden für "{searchQuery}"
         </div>
       ) : (
         <>
