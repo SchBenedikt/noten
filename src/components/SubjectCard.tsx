@@ -34,6 +34,8 @@ interface SubjectCardProps {
   onUpdateSubject?: (subjectId: string, updates: Partial<Subject>) => void;
   isDemo?: boolean;
   isInitiallyOpen?: boolean;
+  searchQuery?: string;
+  searchType?: 'subject' | 'grade' | 'note';
 }
 
 export const SubjectCard = ({ 
@@ -44,7 +46,9 @@ export const SubjectCard = ({
   onDeleteSubject,
   onUpdateSubject,
   isDemo = false,
-  isInitiallyOpen = false
+  isInitiallyOpen = false,
+  searchQuery = '',
+  searchType = 'subject'
 }: SubjectCardProps) => {
   const [isAddingGrade, setIsAddingGrade] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -52,9 +56,22 @@ export const SubjectCard = ({
   const [isOpen, setIsOpen] = useState(isInitiallyOpen);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
 
+  const filteredGrades = subject.grades.filter(grade => {
+    if (!searchQuery) return true;
+    
+    switch (searchType) {
+      case 'grade':
+        return grade.value.toString().includes(searchQuery);
+      case 'note':
+        return grade.notes?.toLowerCase().includes(searchQuery.toLowerCase());
+      default:
+        return true;
+    }
+  });
+
   const averages = subject.type === 'main' 
-    ? calculateMainSubjectAverages(subject.grades, subject.writtenWeight || 2)
-    : calculateSecondarySubjectAverages(subject.grades);
+    ? calculateMainSubjectAverages(filteredGrades, subject.writtenWeight || 2)
+    : calculateSecondarySubjectAverages(filteredGrades);
 
   const handleWeightChange = (value: string) => {
     if (onUpdateSubject) {
@@ -179,7 +196,7 @@ export const SubjectCard = ({
               </div>
             )}
             <GradeList 
-              grades={subject.grades} 
+              grades={filteredGrades}
               onUpdateGrade={(gradeId, grade) => onUpdateGrade(subject.id, gradeId, grade)}
               onDeleteGrade={(gradeId) => onDeleteGrade(subject.id, gradeId)}
               isDemo={isDemo}

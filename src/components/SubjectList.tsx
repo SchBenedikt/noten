@@ -170,6 +170,8 @@ export const SubjectList = ({
                     onUpdateSubject={onUpdateSubject}
                     isDemo={isDemo}
                     isInitiallyOpen={subject.id === lastActiveSubjectId}
+                    searchQuery={searchQuery}
+                    searchType={searchType}
                   />
                 </motion.div>
               ))}
