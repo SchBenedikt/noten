@@ -73,18 +73,18 @@ export const SubjectForm = ({ onSubmit }: SubjectFormProps) => {
           control={form.control}
           name="type"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="relative">
               <FormLabel>Art</FormLabel>
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
               >
                 <FormControl>
-                  <SelectTrigger className="overflow-hidden">
+                  <SelectTrigger className="w-full bg-background">
                     <SelectValue placeholder="Wähle die Art des Fachs" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="overflow-hidden">
+                <SelectContent className="w-full bg-popover shadow-lg">
                   <SelectItem value="main">Hauptfach</SelectItem>
                   <SelectItem value="secondary">Nebenfach</SelectItem>
                 </SelectContent>
@@ -99,18 +99,18 @@ export const SubjectForm = ({ onSubmit }: SubjectFormProps) => {
             control={form.control}
             name="writtenWeight"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="relative">
                 <FormLabel>Gewichtung der Schulaufgaben</FormLabel>
                 <Select
                   onValueChange={(value) => field.onChange(Number(value))}
                   defaultValue={field.value?.toString()}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full bg-background">
                       <SelectValue placeholder="Wähle die Gewichtung" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="w-full bg-popover shadow-lg">
                     <SelectItem value="1">Einfach</SelectItem>
                     <SelectItem value="2">Doppelt</SelectItem>
                   </SelectContent>
