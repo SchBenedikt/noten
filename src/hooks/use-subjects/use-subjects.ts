@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from '@/hooks/use-profile';
-import { mapDatabaseSubjectToSubject } from './mappers';
+import { mapDatabaseSubjectToSubject, mapDatabaseGradeToGrade } from './mappers';
 import { UseSubjectsHook } from './types';
 
 export const useSubjects = (): UseSubjectsHook => {
