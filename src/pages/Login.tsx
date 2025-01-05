@@ -2,21 +2,41 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LogIn } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [gradeLevel, setGradeLevel] = useState<string>("5");
+  const [view, setView] = useState<"sign_in" | "sign_up">("sign_in");
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN') {
+        // Update the profile with the selected grade level
+        if (view === "sign_up") {
+          const { error } = await supabase
+            .from('profiles')
+            .update({ grade_level: parseInt(gradeLevel) })
+            .eq('id', session?.user.id);
+
+          if (error) {
+            console.error('Error updating grade level:', error);
+          }
+        }
         navigate("/");
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, gradeLevel, view]);
 
   return (
     <div className="min-h-[100dvh] bg-gray-50 flex items-center justify-center p-4 sm:p-6">
@@ -31,8 +51,33 @@ const Login = () => {
           </p>
         </div>
         
+        {view === "sign_up" && (
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Klassenstufe
+            </label>
+            <Select
+              value={gradeLevel}
+              onValueChange={setGradeLevel}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Wähle deine Klassenstufe" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 13 }, (_, i) => i + 1).map((grade) => (
+                  <SelectItem key={grade} value={grade.toString()}>
+                    {grade}. Klasse
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+        
         <Auth
           supabaseClient={supabase}
+          view={view}
+          onViewChange={({ view }) => setView(view as "sign_in" | "sign_up")}
           appearance={{
             theme: ThemeSupa,
             variables: {
