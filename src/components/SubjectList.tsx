@@ -32,6 +32,7 @@ export const SubjectList = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'subject' | 'grade' | 'note'>('subject');
 
+  // Automatically expand or collapse sections based on search results
   useEffect(() => {
     if (searchQuery) {
       const hasMainMatches = subjects.some(subject => 

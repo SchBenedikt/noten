@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { PlusIcon, MinusIcon, Trash2Icon } from 'lucide-react';
+import { PlusIcon, MinusIcon, Trash2Icon, GraduationCapIcon, BookOpenIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface SubjectActionButtonsProps {
