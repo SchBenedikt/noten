@@ -9,86 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      archived_grades: {
-        Row: {
-          archived_subject_id: string
-          created_at: string
-          date: string
-          id: string
-          notes: string | null
-          original_grade_id: string
-          type: string
-          value: number
-          weight: number
-        }
-        Insert: {
-          archived_subject_id: string
-          created_at?: string
-          date: string
-          id?: string
-          notes?: string | null
-          original_grade_id: string
-          type: string
-          value: number
-          weight: number
-        }
-        Update: {
-          archived_subject_id?: string
-          created_at?: string
-          date?: string
-          id?: string
-          notes?: string | null
-          original_grade_id?: string
-          type?: string
-          value?: number
-          weight?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "archived_grades_archived_subject_id_fkey"
-            columns: ["archived_subject_id"]
-            isOneToOne: false
-            referencedRelation: "archived_subjects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      archived_subjects: {
-        Row: {
-          archived_at: string
-          created_at: string
-          grade_level: number
-          id: string
-          name: string
-          original_subject_id: string
-          type: string
-          user_id: string
-          written_weight: number | null
-        }
-        Insert: {
-          archived_at?: string
-          created_at?: string
-          grade_level: number
-          id?: string
-          name: string
-          original_subject_id: string
-          type: string
-          user_id: string
-          written_weight?: number | null
-        }
-        Update: {
-          archived_at?: string
-          created_at?: string
-          grade_level?: number
-          id?: string
-          name?: string
-          original_subject_id?: string
-          type?: string
-          user_id?: string
-          written_weight?: number | null
-        }
-        Relationships: []
-      }
       grades: {
         Row: {
           created_at: string
@@ -133,17 +53,14 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
-          grade_level: number
           id: string
         }
         Insert: {
           created_at?: string
-          grade_level?: number
           id: string
         }
         Update: {
           created_at?: string
-          grade_level?: number
           id?: string
         }
         Relationships: []
@@ -151,7 +68,6 @@ export type Database = {
       subjects: {
         Row: {
           created_at: string
-          grade_level: number
           id: string
           name: string
           school_id: string | null
@@ -161,7 +77,6 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          grade_level?: number
           id?: string
           name: string
           school_id?: string | null
@@ -171,7 +86,6 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          grade_level?: number
           id?: string
           name?: string
           school_id?: string | null
@@ -186,12 +100,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      archive_subjects_for_user: {
-        Args: {
-          user_uuid: string
-        }
-        Returns: undefined
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
