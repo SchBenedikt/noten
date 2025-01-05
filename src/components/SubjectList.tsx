@@ -3,7 +3,7 @@ import { SubjectCard } from './SubjectCard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { ChevronDownIcon } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { SubjectSearch } from './SubjectSearch';
 
@@ -31,7 +31,6 @@ export const SubjectList = ({
   const [lastActiveSubjectId, setLastActiveSubjectId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'subject' | 'grade' | 'note'>('subject');
-  const lastGradeRef = useRef<HTMLDivElement>(null);
 
   // Automatically expand or collapse sections based on search results
   useEffect(() => {
@@ -50,16 +49,6 @@ export const SubjectList = ({
       setSecondarySubjectsOpen(false);
     }
   }, [searchQuery, searchType, subjects]);
-
-  // Scroll to the last added grade
-  useEffect(() => {
-    if (lastGradeRef.current) {
-      lastGradeRef.current.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }
-  }, [lastActiveSubjectId]);
 
   const hasMatch = (subject: Subject, query: string, type: 'subject' | 'grade' | 'note') => {
     const lowercaseQuery = query.toLowerCase();
@@ -80,17 +69,6 @@ export const SubjectList = ({
     }
   };
 
-  const handleAddGrade = async (subjectId: string, grade: Omit<Grade, 'id'>) => {
-    await onAddGrade(subjectId, grade);
-    const subject = subjects.find(s => s.id === subjectId);
-    if (subject?.type === 'main') {
-      setMainSubjectsOpen(true);
-    } else {
-      setSecondarySubjectsOpen(true);
-    }
-    setLastActiveSubjectId(subjectId);
-  };
-
   if (subjects.length === 0) {
     return (
       <div className="bg-white p-8 rounded-lg shadow-sm">
@@ -107,6 +85,17 @@ export const SubjectList = ({
 
   const mainSubjects = filteredSubjects.filter(subject => subject.type === 'main');
   const secondarySubjects = filteredSubjects.filter(subject => subject.type === 'secondary');
+
+  const handleAddGrade = async (subjectId: string, grade: Omit<Grade, 'id'>) => {
+    await onAddGrade(subjectId, grade);
+    const subject = subjects.find(s => s.id === subjectId);
+    if (subject?.type === 'main') {
+      setMainSubjectsOpen(true);
+    } else {
+      setSecondarySubjectsOpen(true);
+    }
+    setLastActiveSubjectId(subjectId);
+  };
 
   const container = {
     hidden: { opacity: 0 },
@@ -171,11 +160,7 @@ export const SubjectList = ({
               animate={isOpen ? "show" : "hidden"}
             >
               {subjects.map((subject) => (
-                <motion.div 
-                  key={subject.id} 
-                  variants={item}
-                  ref={subject.id === lastActiveSubjectId ? lastGradeRef : null}
-                >
+                <motion.div key={subject.id} variants={item}>
                   <SubjectCard
                     subject={subject}
                     onAddGrade={handleAddGrade}

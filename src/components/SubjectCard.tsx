@@ -4,8 +4,8 @@ import { calculateMainSubjectAverages, calculateSecondarySubjectAverages } from 
 import { GradeList } from './GradeList';
 import { GradeForm } from './GradeForm';
 import { useState } from 'react';
+import { ChevronDownIcon, ChevronUpIcon, BookOpenIcon, BookIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, MinusIcon, Trash2Icon, Edit2Icon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +24,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { motion, AnimatePresence } from 'framer-motion';
+import { SubjectActionButtons } from './SubjectActionButtons';
+import { SubjectAverages } from './SubjectAverages';
 
 interface SubjectCardProps {
   subject: Subject;
@@ -91,160 +94,155 @@ export const SubjectCard = ({
     setIsAddingGrade(!isAddingGrade);
   };
 
-  const renderAverages = () => {
-    if (subject.type === 'main') {
-      const mainAverages = averages as ReturnType<typeof calculateMainSubjectAverages>;
-      return (
-        <>
-          <div className="flex items-center gap-2">
-            <span>Schulaufgaben: ∅ {mainAverages.written}</span>
-            <div className="flex items-center gap-1">
-              {isEditingWeight ? (
-                <Select
-                  defaultValue={subject.writtenWeight?.toString() || "2"}
-                  onValueChange={handleWeightChange}
-                >
-                  <SelectTrigger className="w-20">
-                    <SelectValue placeholder="×2" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">×1</SelectItem>
-                    <SelectItem value="2">×2</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <>
-                  <span>(×{subject.writtenWeight || 2})</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsEditingWeight(true)}
-                    className="h-6 w-6"
-                  >
-                    <Edit2Icon className="h-3 w-3" />
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-          <div>Mündlich: ∅ {mainAverages.oral}</div>
-        </>
-      );
-    }
-    return <div>Mündlich: ∅ {averages.oral}</div>;
-  };
+  const weightSelector = isEditingWeight ? (
+    <Select
+      defaultValue={subject.writtenWeight?.toString() || "2"}
+      onValueChange={handleWeightChange}
+    >
+      <SelectTrigger className="w-20">
+        <SelectValue placeholder="×2" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="1">×1</SelectItem>
+        <SelectItem value="2">×2</SelectItem>
+      </SelectContent>
+    </Select>
+  ) : null;
 
   return (
-    <Card className="w-full bg-white shadow-sm">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0 p-4 sm:p-6">
-          <div className="flex items-center gap-2">
-            <CollapsibleTrigger asChild className="overflow-hidden">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                {isOpen ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
-              </Button>
-            </CollapsibleTrigger>
-            <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 text-xl sm:text-2xl">
-              {subject.name}
-              <span className="text-sm font-normal text-muted-foreground">
-                ({subject.type === 'main' ? 'Hauptfach' : 'Nebenfach'})
-              </span>
-            </CardTitle>
-          </div>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="text-sm space-y-1 sm:space-y-0 sm:text-right bg-gray-50 p-2 rounded-md w-full sm:w-auto">
-              {renderAverages()}
-              <div className="font-semibold text-base">Gesamt: ∅ {averages.total}</div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Card className="w-full bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0 p-4 sm:p-6">
+            <div className="flex items-center gap-2">
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <motion.div
+                    animate={{ rotate: isOpen ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {isOpen ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
+                  </motion.div>
+                </Button>
+              </CollapsibleTrigger>
+              <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 text-xl sm:text-2xl">
+                {subject.name}
+                <span className="text-sm font-normal text-muted-foreground flex items-center gap-1">
+                  {subject.type === 'main' ? (
+                    <BookOpenIcon className="h-4 w-4" />
+                  ) : (
+                    <BookIcon className="h-4 w-4" />
+                  )}
+                  ({subject.type === 'main' ? 'Hauptfach' : 'Nebenfach'})
+                </span>
+              </CardTitle>
             </div>
-            <div className="flex gap-2 w-full sm:w-auto justify-end">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleGradeAction}
-                className="hover:bg-gray-100"
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <SubjectAverages
+                type={subject.type}
+                averages={averages}
+                writtenWeight={subject.writtenWeight}
               >
-                {isAddingGrade ? <MinusIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
+                {weightSelector}
+              </SubjectAverages>
+              <SubjectActionButtons
+                isAddingGrade={isAddingGrade}
+                onAddGradeClick={handleGradeAction}
+                onDeleteClick={() => {
                   if (isDemo) {
                     setShowLoginDialog(true);
                     return;
                   }
                   setShowDeleteDialog(true);
                 }}
-                className="hover:bg-red-50"
-              >
-                <Trash2Icon className="h-4 w-4 text-red-500" />
-              </Button>
+                isDemo={isDemo}
+              />
             </div>
-          </div>
-        </CardHeader>
-        <CollapsibleContent className="overflow-hidden">
-          <CardContent className="space-y-4 p-4 sm:p-6">
-            {isAddingGrade && (
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <GradeForm
-                  onSubmit={(grade) => {
-                    onAddGrade(subject.id, grade);
-                    setIsAddingGrade(false);
-                  }}
-                  subjectType={subject.type}
-                />
-              </div>
-            )}
-            <GradeList 
-              grades={filteredGrades}
-              onUpdateGrade={(gradeId, grade) => onUpdateGrade(subject.id, gradeId, grade)}
-              onDeleteGrade={(gradeId) => onDeleteGrade(subject.id, gradeId)}
-              isDemo={isDemo}
-            />
-          </CardContent>
-        </CollapsibleContent>
-      </Collapsible>
+          </CardHeader>
+          <CollapsibleContent>
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <CardContent className="space-y-4 p-4 sm:p-6">
+                    {isAddingGrade && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="bg-gray-50 p-4 rounded-lg"
+                      >
+                        <GradeForm
+                          onSubmit={(grade) => {
+                            onAddGrade(subject.id, grade);
+                            setIsAddingGrade(false);
+                          }}
+                          subjectType={subject.type}
+                        />
+                      </motion.div>
+                    )}
+                    <GradeList 
+                      grades={filteredGrades}
+                      onUpdateGrade={(gradeId, grade) => onUpdateGrade(subject.id, gradeId, grade)}
+                      onDeleteGrade={(gradeId) => onDeleteGrade(subject.id, gradeId)}
+                      isDemo={isDemo}
+                    />
+                  </CardContent>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </CollapsibleContent>
+        </Collapsible>
 
-      <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Registrierung erforderlich</AlertDialogTitle>
-            <AlertDialogDescription>
-              Um Noten zu bearbeiten und zu speichern, erstellen Sie bitte ein kostenloses Konto. 
-              So können Sie Ihre Noten dauerhaft speichern und von überall darauf zugreifen.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-            <AlertDialogAction asChild>
-              <Button onClick={() => window.location.href = '/login'}>
-                Jetzt registrieren
-              </Button>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        <AlertDialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Registrierung erforderlich</AlertDialogTitle>
+              <AlertDialogDescription>
+                Um Noten zu bearbeiten und zu speichern, erstellen Sie bitte ein kostenloses Konto. 
+                So können Sie Ihre Noten dauerhaft speichern und von überall darauf zugreifen.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+              <AlertDialogAction asChild>
+                <Button onClick={() => window.location.href = '/login'}>
+                  Jetzt registrieren
+                </Button>
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Fach löschen</AlertDialogTitle>
-            <AlertDialogDescription>
-              Möchten Sie das Fach "{subject.name}" wirklich löschen? 
-              Diese Aktion kann nicht rückgängig gemacht werden.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => onDeleteSubject(subject.id)}
-              className="bg-red-500 hover:bg-red-600"
-            >
-              Löschen
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </Card>
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Fach löschen</AlertDialogTitle>
+              <AlertDialogDescription>
+                Möchten Sie das Fach "{subject.name}" wirklich löschen? 
+                Diese Aktion kann nicht rückgängig gemacht werden.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={() => onDeleteSubject(subject.id)}
+                className="bg-red-500 hover:bg-red-600"
+              >
+                Löschen
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </Card>
+    </motion.div>
   );
 };
