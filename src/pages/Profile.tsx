@@ -44,7 +44,7 @@ const Profile = () => {
         .from('profiles')
         .select('grade_level')
         .eq('id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         toast.error("Fehler beim Laden der Profildaten");
@@ -54,6 +54,19 @@ const Profile = () => {
       if (profile) {
         setGradeLevel(profile.grade_level);
         setNewGradeLevel(profile.grade_level);
+      } else {
+        // Create profile if it doesn't exist
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({ id: session.user.id, grade_level: 5 });
+        
+        if (insertError) {
+          toast.error("Fehler beim Erstellen des Profils");
+          return;
+        }
+        
+        setGradeLevel(5);
+        setNewGradeLevel(5);
       }
     };
 
@@ -116,18 +129,7 @@ const Profile = () => {
         return;
       }
 
-      // First archive existing subjects
-      const { error: archiveError } = await supabase
-        .rpc('archive_subjects_for_user', {
-          user_uuid: session.user.id
-        });
-
-      if (archiveError) {
-        toast.error("Fehler beim Archivieren der Fächer");
-        return;
-      }
-
-      // Then update grade level
+      // First update grade level
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ grade_level: newGradeLevel })
@@ -135,6 +137,17 @@ const Profile = () => {
 
       if (updateError) {
         toast.error("Fehler beim Aktualisieren der Klassenstufe");
+        return;
+      }
+
+      // Then archive existing subjects
+      const { error: archiveError } = await supabase
+        .rpc('archive_subjects_for_user', {
+          user_uuid: session.user.id
+        });
+
+      if (archiveError) {
+        toast.error("Fehler beim Archivieren der Fächer");
         return;
       }
 
