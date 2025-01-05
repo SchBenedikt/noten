@@ -151,6 +151,7 @@ export type Database = {
       subjects: {
         Row: {
           created_at: string
+          grade_level: number
           id: string
           name: string
           school_id: string | null
@@ -160,6 +161,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          grade_level?: number
           id?: string
           name: string
           school_id?: string | null
@@ -169,6 +171,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          grade_level?: number
           id?: string
           name?: string
           school_id?: string | null

@@ -18,6 +18,7 @@ export interface Subject {
   type: SubjectType;
   grades: Grade[];
   writtenWeight?: number;
+  gradeLevel?: number;
   user_id?: string;
   created_at?: string;
 }
