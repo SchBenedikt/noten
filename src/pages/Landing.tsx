@@ -12,6 +12,7 @@ const Landing = () => {
       name: "Mathematik",
       type: "main",
       writtenWeight: 2,
+      grade_level: 5,
       grades: [
         {
           id: "grade-1",
@@ -36,6 +37,7 @@ const Landing = () => {
       name: "Deutsch",
       type: "main",
       writtenWeight: 2,
+      grade_level: 5,
       grades: [
         {
           id: "grade-3",
