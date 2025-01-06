@@ -4,13 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Mail, KeyRound } from "lucide-react";
+import { ArrowLeft, Mail, KeyRound, GraduationCap } from "lucide-react";
+import { GradeLevelSelector } from "@/components/GradeLevelSelector";
+import { useSubjects } from "@/hooks/use-subjects";
 
 const Profile = () => {
   const navigate = useNavigate();
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { currentGradeLevel, setCurrentGradeLevel } = useSubjects();
 
   const handleUpdateEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,6 +79,17 @@ const Profile = () => {
             <h1 className="text-2xl font-bold mb-6">Profil Einstellungen</h1>
             
             <div className="space-y-6">
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h2 className="text-lg font-semibold mb-4 flex items-center">
+                  <GraduationCap className="mr-2 h-5 w-5" />
+                  Klassenstufe
+                </h2>
+                <GradeLevelSelector
+                  currentGradeLevel={currentGradeLevel}
+                  onGradeLevelChange={setCurrentGradeLevel}
+                />
+              </div>
+
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h2 className="text-lg font-semibold mb-4 flex items-center">
                   <Mail className="mr-2 h-5 w-5" />

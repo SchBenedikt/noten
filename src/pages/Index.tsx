@@ -1,6 +1,5 @@
 import { SubjectForm } from '@/components/SubjectForm';
 import { SubjectList } from '@/components/SubjectList';
-import { GradeLevelSelector } from '@/components/GradeLevelSelector';
 import { calculateOverallAverage } from '@/lib/calculations';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSubjects } from '@/hooks/use-subjects';
@@ -25,7 +24,6 @@ const Index = () => {
     deleteSubject,
     updateSubject,
     currentGradeLevel,
-    setCurrentGradeLevel,
   } = useSubjects();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -87,13 +85,6 @@ const Index = () => {
               Abmelden
             </button>
           </div>
-        </div>
-
-        <div className="mb-6">
-          <GradeLevelSelector
-            currentGradeLevel={currentGradeLevel}
-            onGradeLevelChange={setCurrentGradeLevel}
-          />
         </div>
 
         <div className={`${isMobile ? 'space-y-6' : 'grid grid-cols-[300px,1fr] gap-8'}`}>
