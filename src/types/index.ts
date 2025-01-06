@@ -20,4 +20,5 @@ export interface Subject {
   writtenWeight?: number;
   user_id?: string;
   created_at?: string;
+  grade_level: number;
 }

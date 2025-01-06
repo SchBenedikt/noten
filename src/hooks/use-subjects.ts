@@ -11,6 +11,7 @@ interface DatabaseSubject {
   written_weight: number | null;
   user_id: string;
   created_at: string;
+  grade_level: number;
   grades: DatabaseGrade[];
 }
 
@@ -30,6 +31,7 @@ const mapDatabaseSubjectToSubject = (dbSubject: DatabaseSubject): Subject => ({
   name: dbSubject.name,
   type: dbSubject.type as SubjectType,
   writtenWeight: dbSubject.written_weight || undefined,
+  grade_level: dbSubject.grade_level,
   grades: dbSubject.grades.map(mapDatabaseGradeToGrade),
 });
 
@@ -44,6 +46,7 @@ const mapDatabaseGradeToGrade = (dbGrade: DatabaseGrade): Grade => ({
 
 export const useSubjects = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [currentGradeLevel, setCurrentGradeLevel] = useState<number>(5);
   const navigate = useNavigate();
 
   const fetchSubjects = async () => {
@@ -52,6 +55,16 @@ export const useSubjects = () => {
     if (!session?.session?.user) {
       navigate('/login');
       return;
+    }
+
+    // First, get the user's current grade level
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('grade_level')
+      .single();
+
+    if (profileData) {
+      setCurrentGradeLevel(profileData.grade_level);
     }
 
     const { data: subjectsData, error: subjectsError } = await supabase
@@ -63,6 +76,7 @@ export const useSubjects = () => {
         written_weight,
         user_id,
         created_at,
+        grade_level,
         grades (
           id,
           subject_id,
@@ -102,6 +116,7 @@ export const useSubjects = () => {
         name: newSubject.name,
         type: newSubject.type,
         written_weight: newSubject.writtenWeight,
+        grade_level: newSubject.grade_level,
         user_id: session.session.user.id,
       })
       .select()
@@ -295,5 +310,7 @@ export const useSubjects = () => {
     deleteGrade,
     deleteSubject,
     updateSubject,
+    currentGradeLevel,
+    setCurrentGradeLevel,
   };
 };

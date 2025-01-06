@@ -28,9 +28,10 @@ const formSchema = z.object({
 
 interface SubjectFormProps {
   onSubmit: (subject: Omit<Subject, "id" | "grades">) => void;
+  currentGradeLevel: number;
 }
 
-export const SubjectForm = ({ onSubmit }: SubjectFormProps) => {
+export const SubjectForm = ({ onSubmit, currentGradeLevel }: SubjectFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -50,6 +51,7 @@ export const SubjectForm = ({ onSubmit }: SubjectFormProps) => {
             name: data.name,
             type: data.type,
             writtenWeight: data.type === "main" ? data.writtenWeight : undefined,
+            grade_level: currentGradeLevel,
           });
           form.reset();
         })}
@@ -122,7 +124,7 @@ export const SubjectForm = ({ onSubmit }: SubjectFormProps) => {
         )}
 
         <Button type="submit" className="w-full">
-          Fach hinzufügen
+          Fach für {currentGradeLevel}. Klasse hinzufügen
         </Button>
       </form>
     </Form>

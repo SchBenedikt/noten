@@ -1,5 +1,6 @@
 import { SubjectForm } from '@/components/SubjectForm';
 import { SubjectList } from '@/components/SubjectList';
+import { GradeLevelSelector } from '@/components/GradeLevelSelector';
 import { calculateOverallAverage } from '@/lib/calculations';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSubjects } from '@/hooks/use-subjects';
@@ -23,6 +24,8 @@ const Index = () => {
     deleteGrade,
     deleteSubject,
     updateSubject,
+    currentGradeLevel,
+    setCurrentGradeLevel,
   } = useSubjects();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -50,10 +53,11 @@ const Index = () => {
     await updateSubject(subjectId, updates);
   };
 
-  const overallAverage = calculateOverallAverage(subjects);
-  const totalGrades = subjects.reduce((sum, subject) => sum + subject.grades.length, 0);
-  const mainSubjectsCount = subjects.filter(s => s.type === 'main').length;
-  const secondarySubjectsCount = subjects.filter(s => s.type === 'secondary').length;
+  const currentSubjects = subjects.filter(s => s.grade_level === currentGradeLevel);
+  const overallAverage = calculateOverallAverage(currentSubjects);
+  const totalGrades = currentSubjects.reduce((sum, subject) => sum + subject.grades.length, 0);
+  const mainSubjectsCount = currentSubjects.filter(s => s.type === 'main').length;
+  const secondarySubjectsCount = currentSubjects.filter(s => s.type === 'secondary').length;
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
@@ -83,6 +87,13 @@ const Index = () => {
               Abmelden
             </button>
           </div>
+        </div>
+
+        <div className="mb-6">
+          <GradeLevelSelector
+            currentGradeLevel={currentGradeLevel}
+            onGradeLevelChange={setCurrentGradeLevel}
+          />
         </div>
 
         <div className={`${isMobile ? 'space-y-6' : 'grid grid-cols-[300px,1fr] gap-8'}`}>
@@ -122,7 +133,7 @@ const Index = () => {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                     >
-                      <SubjectForm onSubmit={addSubject} />
+                      <SubjectForm onSubmit={addSubject} currentGradeLevel={currentGradeLevel} />
                     </motion.div>
                   </CollapsibleContent>
                 )}
@@ -132,7 +143,7 @@ const Index = () => {
 
           <div className="space-y-6">
             <SubjectList
-              subjects={subjects}
+              subjects={currentSubjects}
               onAddGrade={addGrade}
               onUpdateGrade={updateGrade}
               onDeleteGrade={deleteGrade}
