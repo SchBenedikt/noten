@@ -20,7 +20,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -63,7 +62,7 @@ export const SchoolSelector = ({ selectedSchoolId, onSchoolSelect }: SchoolSelec
         .from("schools")
         .select("name")
         .eq("id", selectedSchoolId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -73,9 +72,15 @@ export const SchoolSelector = ({ selectedSchoolId, onSchoolSelect }: SchoolSelec
 
   const handleCreateSchool = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
       const { data, error } = await supabase
         .from("schools")
-        .insert([{ name: newSchoolName }])
+        .insert([{ 
+          name: newSchoolName,
+          created_by: user.id
+        }])
         .select()
         .single();
 
