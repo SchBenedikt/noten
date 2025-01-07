@@ -1,10 +1,17 @@
 import { useState } from "react";
-import { Check, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface School {
   id: string;
@@ -97,22 +104,21 @@ export const SchoolSelector = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col space-y-2">
-        {schools.map((school) => (
-          <button
-            key={school.id}
-            onClick={() => handleSelectSchool(school.id)}
-            className={`flex items-center justify-between p-2 text-left rounded-lg hover:bg-gray-100 ${
-              currentSchoolId === school.id ? "bg-gray-100" : ""
-            }`}
-          >
-            <span>{school.name}</span>
-            {currentSchoolId === school.id && (
-              <Check className="h-4 w-4 text-green-500" />
-            )}
-          </button>
-        ))}
-      </div>
+      <Select
+        value={currentSchoolId || undefined}
+        onValueChange={handleSelectSchool}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Wähle eine Schule" />
+        </SelectTrigger>
+        <SelectContent>
+          {schools.map((school) => (
+            <SelectItem key={school.id} value={school.id}>
+              {school.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
       {isCreating ? (
         <div className="space-y-2">
