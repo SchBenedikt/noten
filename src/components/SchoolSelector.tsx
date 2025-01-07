@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, QuestionMarkCircle } from "lucide-react";
+import { Plus, Help } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -115,7 +115,7 @@ export const SchoolSelector = ({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <QuestionMarkCircle className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help" />
+              <Help className="h-4 w-4 text-muted-foreground hover:text-foreground cursor-help" />
             </TooltipTrigger>
             <TooltipContent>
               <p>Die Noten werden nach Auswahl einer Schule verarbeitet</p>
