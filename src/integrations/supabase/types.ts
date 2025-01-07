@@ -135,48 +135,16 @@ export type Database = {
           created_at: string
           grade_level: number
           id: string
-          school_id: string | null
         }
         Insert: {
           created_at?: string
           grade_level?: number
           id: string
-          school_id?: string | null
         }
         Update: {
           created_at?: string
           grade_level?: number
           id?: string
-          school_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_school_id_fkey"
-            columns: ["school_id"]
-            isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      schools: {
-        Row: {
-          created_at: string
-          created_by: string
-          id: string
-          name: string
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          id?: string
-          name: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          id?: string
-          name?: string
         }
         Relationships: []
       }

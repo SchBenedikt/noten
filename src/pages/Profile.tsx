@@ -4,11 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Mail, KeyRound, GraduationCap, School } from "lucide-react";
+import { ArrowLeft, Mail, KeyRound, GraduationCap } from "lucide-react";
 import { GradeLevelSelector } from "@/components/GradeLevelSelector";
 import { useSubjects } from "@/hooks/use-subjects";
-import { SchoolSelector } from "@/components/SchoolSelector";
-import { useQuery } from "@tanstack/react-query";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -16,23 +14,6 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { currentGradeLevel, setCurrentGradeLevel } = useSubjects();
-
-  const { data: profile } = useQuery({
-    queryKey: ["profile"],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("school_id")
-        .eq("id", user.id)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-  });
 
   const handleUpdateEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,24 +62,6 @@ const Profile = () => {
     }
   };
 
-  const handleSchoolSelect = async (schoolId: string | null) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
-
-      const { error } = await supabase
-        .from("profiles")
-        .update({ school_id: schoolId })
-        .eq("id", user.id);
-
-      if (error) throw error;
-      toast.success("Schule wurde erfolgreich aktualisiert");
-    } catch (error: any) {
-      toast.error("Fehler beim Aktualisieren der Schule");
-      console.error("Error updating school:", error);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-2xl">
@@ -124,17 +87,6 @@ const Profile = () => {
                 <GradeLevelSelector
                   currentGradeLevel={currentGradeLevel}
                   onGradeLevelChange={setCurrentGradeLevel}
-                />
-              </div>
-
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h2 className="text-lg font-semibold mb-4 flex items-center">
-                  <School className="mr-2 h-5 w-5" />
-                  Schule
-                </h2>
-                <SchoolSelector
-                  selectedSchoolId={profile?.school_id || null}
-                  onSchoolSelect={handleSchoolSelect}
                 />
               </div>
 
