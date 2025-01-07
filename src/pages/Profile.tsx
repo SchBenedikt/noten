@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Mail, KeyRound, GraduationCap } from "lucide-react";
+import { ArrowLeft, Mail, KeyRound, GraduationCap, Building2 } from "lucide-react";
 import { GradeLevelSelector } from "@/components/GradeLevelSelector";
+import { SchoolSelector } from "@/components/SchoolSelector";
 import { useSubjects } from "@/hooks/use-subjects";
+import { useQuery } from "@tanstack/react-query";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -14,6 +16,30 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { currentGradeLevel, setCurrentGradeLevel } = useSubjects();
+
+  const { data: currentSchool, refetch: refetchSchool } = useQuery({
+    queryKey: ["currentSchool"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("school_id")
+        .eq("id", user.id)
+        .single();
+
+      if (!profile?.school_id) return null;
+
+      const { data: school } = await supabase
+        .from("schools")
+        .select("id, name")
+        .eq("id", profile.school_id)
+        .single();
+
+      return school;
+    },
+  });
 
   const handleUpdateEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +113,17 @@ const Profile = () => {
                 <GradeLevelSelector
                   currentGradeLevel={currentGradeLevel}
                   onGradeLevelChange={setCurrentGradeLevel}
+                />
+              </div>
+
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h2 className="text-lg font-semibold mb-4 flex items-center">
+                  <Building2 className="mr-2 h-5 w-5" />
+                  Schule
+                </h2>
+                <SchoolSelector
+                  currentSchoolId={currentSchool?.id ?? null}
+                  onSchoolChange={() => refetchSchool()}
                 />
               </div>
 
