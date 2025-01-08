@@ -1,5 +1,6 @@
 import { SubjectForm } from '@/components/SubjectForm';
 import { SubjectList } from '@/components/SubjectList';
+import { DynamicGreeting } from '@/components/DynamicGreeting';
 import { calculateOverallAverage } from '@/lib/calculations';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSubjects } from '@/hooks/use-subjects';
@@ -63,6 +64,7 @@ const Index = () => {
         <div className="flex justify-between items-center mb-6">
           <div className="text-center flex-1">
             <h1 className="text-3xl sm:text-4xl font-bold mb-2">Notenverwaltung</h1>
+            <DynamicGreeting />
             {subjects.length > 0 && (
               <p className="text-lg sm:text-xl text-gray-600">
                 Gesamtdurchschnitt: <span className="font-semibold">{overallAverage}</span>
