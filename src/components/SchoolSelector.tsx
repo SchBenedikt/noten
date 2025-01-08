@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
@@ -12,6 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface School {
   id: string;
@@ -80,7 +86,7 @@ export const SchoolSelector = ({
     refetchSchools();
   };
 
-  const handleSelectSchool = async (schoolId: string) => {
+  const handleSelectSchool = async (schoolId: string | null) => {
     const { error } = await supabase
       .from("profiles")
       .update({ school_id: schoolId })
@@ -98,12 +104,28 @@ export const SchoolSelector = ({
     onSchoolChange(schoolId);
     toast({
       title: "Erfolg",
-      description: "Schule wurde geändert",
+      description: schoolId ? "Schule wurde geändert" : "Schule wurde entfernt",
     });
   };
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <h2 className="text-lg font-semibold">Schule</h2>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-6 w-6">
+                <HelpCircle className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Wird für schulübergreifende Statistiken genutzt</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+
       <Select
         value={currentSchoolId || undefined}
         onValueChange={handleSelectSchool}
@@ -112,6 +134,7 @@ export const SchoolSelector = ({
           <SelectValue placeholder="Wähle eine Schule" />
         </SelectTrigger>
         <SelectContent>
+          <SelectItem value="">Keine Schule</SelectItem>
           {schools.map((school) => (
             <SelectItem key={school.id} value={school.id}>
               {school.name}

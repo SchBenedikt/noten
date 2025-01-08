@@ -133,18 +133,21 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          first_name: string | null
           grade_level: number
           id: string
           school_id: string | null
         }
         Insert: {
           created_at?: string
+          first_name?: string | null
           grade_level?: number
           id: string
           school_id?: string | null
         }
         Update: {
           created_at?: string
+          first_name?: string | null
           grade_level?: number
           id?: string
           school_id?: string | null

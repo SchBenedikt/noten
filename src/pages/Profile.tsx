@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Mail, KeyRound, GraduationCap, Building2 } from "lucide-react";
+import { ArrowLeft, Mail, KeyRound, GraduationCap } from "lucide-react";
 import { GradeLevelSelector } from "@/components/GradeLevelSelector";
 import { SchoolSelector } from "@/components/SchoolSelector";
+import { FirstNameInput } from "@/components/FirstNameInput";
 import { useSubjects } from "@/hooks/use-subjects";
 import { useQuery } from "@tanstack/react-query";
 
@@ -17,27 +18,37 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { currentGradeLevel, setCurrentGradeLevel } = useSubjects();
 
-  const { data: currentSchool, refetch: refetchSchool } = useQuery({
-    queryKey: ["currentSchool"],
+  const { data: profile, refetch: refetchProfile } = useQuery({
+    queryKey: ["profile"],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
-      const { data: profile } = await supabase
+      const { data, error } = await supabase
         .from("profiles")
-        .select("school_id")
+        .select("school_id, first_name")
         .eq("id", user.id)
         .single();
 
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: currentSchool } = useQuery({
+    queryKey: ["currentSchool", profile?.school_id],
+    enabled: !!profile?.school_id,
+    queryFn: async () => {
       if (!profile?.school_id) return null;
 
-      const { data: school } = await supabase
+      const { data, error } = await supabase
         .from("schools")
         .select("id, name")
         .eq("id", profile.school_id)
         .single();
 
-      return school;
+      if (error) throw error;
+      return data;
     },
   });
 
@@ -106,6 +117,13 @@ const Profile = () => {
             
             <div className="space-y-6">
               <div className="bg-gray-50 p-6 rounded-lg">
+                <FirstNameInput
+                  currentFirstName={profile?.first_name || null}
+                  onFirstNameChange={() => refetchProfile()}
+                />
+              </div>
+
+              <div className="bg-gray-50 p-6 rounded-lg">
                 <h2 className="text-lg font-semibold mb-4 flex items-center">
                   <GraduationCap className="mr-2 h-5 w-5" />
                   Klassenstufe
@@ -117,13 +135,9 @@ const Profile = () => {
               </div>
 
               <div className="bg-gray-50 p-6 rounded-lg">
-                <h2 className="text-lg font-semibold mb-4 flex items-center">
-                  <Building2 className="mr-2 h-5 w-5" />
-                  Schule
-                </h2>
                 <SchoolSelector
                   currentSchoolId={currentSchool?.id ?? null}
-                  onSchoolChange={() => refetchSchool()}
+                  onSchoolChange={() => refetchProfile()}
                 />
               </div>
 
