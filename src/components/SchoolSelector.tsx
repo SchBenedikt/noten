@@ -114,8 +114,10 @@ export const SchoolSelector = ({
         <h2 className="text-lg font-semibold">Schule</h2>
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger>
-              <HelpCircle className="h-4 w-4 text-muted-foreground" />
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-4 w-4 p-0">
+                <HelpCircle className="h-4 w-4 text-muted-foreground" />
+              </Button>
             </TooltipTrigger>
             <TooltipContent>
               <p>Die Schulauswahl wird für schulübergreifende Statistiken verwendet.</p>
