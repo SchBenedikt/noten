@@ -86,7 +86,9 @@ export const SchoolSelector = ({
     refetchSchools();
   };
 
-  const handleSelectSchool = async (schoolId: string | null) => {
+  const handleSelectSchool = async (value: string) => {
+    const schoolId = value === "none" ? null : value;
+    
     const { error } = await supabase
       .from("profiles")
       .update({ school_id: schoolId })
@@ -127,14 +129,14 @@ export const SchoolSelector = ({
       </div>
 
       <Select
-        value={currentSchoolId || undefined}
+        value={currentSchoolId || "none"}
         onValueChange={handleSelectSchool}
       >
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Wähle eine Schule" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Keine Schule</SelectItem>
+          <SelectItem value="none">Keine Schule</SelectItem>
           {schools.map((school) => (
             <SelectItem key={school.id} value={school.id}>
               {school.name}
