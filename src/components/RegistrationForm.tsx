@@ -84,13 +84,20 @@ export const RegistrationForm = () => {
   const handleRegistration = async () => {
     setIsLoading(true);
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
+      // First sign up the user
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
       });
 
       if (signUpError) throw signUpError;
+      
+      // Make sure we have a user ID before proceeding
+      if (!authData.user?.id) {
+        throw new Error("User ID not available after signup");
+      }
 
+      // Now update the profile with the user ID
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
@@ -98,7 +105,7 @@ export const RegistrationForm = () => {
           school_id: formData.schoolId,
           grade_level: formData.gradeLevel,
         })
-        .eq("id", (await supabase.auth.getUser()).data.user?.id);
+        .eq("id", authData.user.id);
 
       if (profileError) throw profileError;
 
