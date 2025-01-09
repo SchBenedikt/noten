@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface RegistrationData {
   email: string;
@@ -42,10 +43,28 @@ const getErrorMessage = (error: any) => {
   return error.message || "Ein Fehler ist aufgetreten. Bitte versuche es später erneut.";
 };
 
+const slideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 1000 : -1000,
+    opacity: 0
+  }),
+  center: {
+    zIndex: 1,
+    x: 0,
+    opacity: 1
+  },
+  exit: (direction: number) => ({
+    zIndex: 0,
+    x: direction < 0 ? 1000 : -1000,
+    opacity: 0
+  })
+};
+
 export const RegistrationForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
+  const [direction, setDirection] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<RegistrationData>({
     email: "",
@@ -75,6 +94,7 @@ export const RegistrationForm = () => {
         });
         return;
       }
+      setDirection(1);
       setStep(2);
     } else if (step === 2) {
       if (!formData.firstName) {
@@ -86,6 +106,7 @@ export const RegistrationForm = () => {
         return;
       }
       await fetchSchools();
+      setDirection(1);
       setStep(3);
     } else if (step === 3) {
       await handleRegistration();
@@ -93,6 +114,7 @@ export const RegistrationForm = () => {
   };
 
   const handleBack = () => {
+    setDirection(-1);
     setStep(step - 1);
   };
 
@@ -141,6 +163,104 @@ export const RegistrationForm = () => {
     }
   };
 
+  const renderStepContent = (stepNumber: number) => {
+    switch (stepNumber) {
+      case 1:
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Input
+                type="email"
+                placeholder="E-Mail"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Input
+                type="password"
+                placeholder="Passwort"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+              />
+            </div>
+          </div>
+        );
+      case 2:
+        return (
+          <div className="space-y-2">
+            <Input
+              type="text"
+              placeholder="Vorname"
+              value={formData.firstName || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, firstName: e.target.value })
+              }
+            />
+          </div>
+        );
+      case 3:
+        return (
+          <>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Schule (optional)</label>
+              <Select
+                value={formData.schoolId || "none"}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    schoolId: value === "none" ? null : value,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Wähle eine Schule" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Keine Schule</SelectItem>
+                  {schools.map((school) => (
+                    <SelectItem key={school.id} value={school.id}>
+                      {school.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Klassenstufe</label>
+              <Select
+                value={formData.gradeLevel.toString()}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    gradeLevel: parseInt(value),
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Wähle eine Klassenstufe" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 13 }, (_, i) => i + 1).map((grade) => (
+                    <SelectItem key={grade} value={grade.toString()}>
+                      {grade}. Klasse
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -152,112 +272,38 @@ export const RegistrationForm = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {step === 1 && (
-            <>
-              <div className="space-y-2">
-                <Input
-                  type="email"
-                  placeholder="E-Mail"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Input
-                  type="password"
-                  placeholder="Passwort"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                />
-              </div>
-            </>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-2">
-              <Input
-                type="text"
-                placeholder="Vorname"
-                value={formData.firstName || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, firstName: e.target.value })
-                }
-              />
-            </div>
-          )}
-
-          {step === 3 && (
-            <>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Schule (optional)</label>
-                <Select
-                  value={formData.schoolId || "none"}
-                  onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
-                      schoolId: value === "none" ? null : value,
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wähle eine Schule" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Keine Schule</SelectItem>
-                    {schools.map((school) => (
-                      <SelectItem key={school.id} value={school.id}>
-                        {school.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Klassenstufe</label>
-                <Select
-                  value={formData.gradeLevel.toString()}
-                  onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
-                      gradeLevel: parseInt(value),
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wähle eine Klassenstufe" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({ length: 13 }, (_, i) => i + 1).map((grade) => (
-                      <SelectItem key={grade} value={grade.toString()}>
-                        {grade}. Klasse
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </>
-          )}
-
-          <div className="flex justify-between pt-4">
-            {step > 1 && (
-              <Button variant="outline" onClick={handleBack}>
-                Zurück
-              </Button>
-            )}
-            <Button
-              className={step === 1 ? "w-full" : ""}
-              onClick={handleNext}
-              disabled={isLoading}
+        <div className="relative overflow-hidden">
+          <AnimatePresence initial={false} custom={direction}>
+            <motion.div
+              key={step}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{
+                x: { type: "spring", stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 }
+              }}
             >
-              {step === 3 ? "Registrieren" : "Weiter"}
+              {renderStepContent(step)}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className="flex justify-between pt-4 mt-4">
+          {step > 1 && (
+            <Button variant="outline" onClick={handleBack}>
+              Zurück
             </Button>
-          </div>
+          )}
+          <Button
+            className={step === 1 ? "w-full" : ""}
+            onClick={handleNext}
+            disabled={isLoading}
+          >
+            {step === 3 ? "Registrieren" : "Weiter"}
+          </Button>
         </div>
       </CardContent>
     </Card>
