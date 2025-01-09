@@ -269,5 +269,4 @@ export const SubjectCard = ({
         </AlertDialog>
       </Card>
     </motion.div>
-  );
 };

@@ -3,6 +3,7 @@ import { SubjectCard } from './SubjectCard';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useMemo } from 'react';
 import { SubjectSearch } from './SubjectSearch';
+import { SubjectSection } from './SubjectSection';
 
 interface SubjectListProps {
   subjects: Subject[];
