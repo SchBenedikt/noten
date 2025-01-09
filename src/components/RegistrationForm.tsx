@@ -27,6 +27,21 @@ interface RegistrationData {
   gradeLevel: number;
 }
 
+const getErrorMessage = (error: any) => {
+  if (error?.body) {
+    try {
+      const body = JSON.parse(error.body);
+      if (body.code === "over_email_send_rate_limit") {
+        const seconds = body.message.match(/\d+/)?.[0] || "60";
+        return `Bitte warte ${seconds} Sekunden, bevor du es erneut versuchst.`;
+      }
+    } catch (e) {
+      // If JSON parsing fails, fall back to default message
+    }
+  }
+  return error.message || "Ein Fehler ist aufgetreten. Bitte versuche es später erneut.";
+};
+
 export const RegistrationForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -118,7 +133,7 @@ export const RegistrationForm = () => {
     } catch (error: any) {
       toast({
         title: "Fehler",
-        description: error.message,
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
