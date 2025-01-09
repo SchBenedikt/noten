@@ -113,6 +113,14 @@ const Login = () => {
           providers={[]}
           view="sign_in"
         />
+        
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => setShowRegistration(true)}
+        >
+          Neu hier? Registriere dich
+        </Button>
       </div>
     </div>
   );
