@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { SubjectList } from "@/components/SubjectList";
 import { Subject, Grade } from "@/types";
+import { BookOpen, BarChart2, LineChart, ArrowRight } from "lucide-react";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -74,11 +75,11 @@ const Landing = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-background overflow-x-hidden">
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="flex flex-col items-center justify-center space-y-8 md:space-y-12 text-center">
           <div className="space-y-4">
-            <h1 className="animate-fade-in text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <h1 className="animate-fade-in text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl text-primary">
               Notenverwaltung
             </h1>
             
@@ -90,10 +91,10 @@ const Landing = () => {
           <div className="animate-fade-in animation-delay-300 flex flex-col w-full px-4 space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0 sm:px-0 sm:w-auto">
             <Button
               size="lg"
-              className="w-full sm:w-auto hover:scale-105 transition-transform duration-200 bg-gradient-to-r from-primary to-accent hover:opacity-90"
+              className="w-full sm:w-auto hover:scale-105 transition-transform duration-200 bg-primary text-primary-foreground"
               onClick={() => navigate("/login")}
             >
-              Jetzt starten
+              Jetzt starten <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <Button
               variant="outline"
@@ -112,23 +113,23 @@ const Landing = () => {
             <FeatureCard
               title="Fächerverwaltung"
               description="Organisiere deine Fächer übersichtlich und effizient."
-              icon="📚"
+              icon={<BookOpen className="h-8 w-8" />}
             />
             <FeatureCard
               title="Notenübersicht"
               description="Behalte den Überblick über deine Leistungen."
-              icon="📊"
+              icon={<BarChart2 className="h-8 w-8" />}
             />
             <FeatureCard
               title="Statistiken"
               description="Analysiere deinen Lernfortschritt mit detaillierten Auswertungen."
-              icon="📈"
+              icon={<LineChart className="h-8 w-8" />}
             />
           </div>
 
           <div id="demo-section" className="w-full max-w-6xl mt-16 animate-fade-in scroll-mt-16">
             <div className="bg-card rounded-lg shadow-lg p-6 border">
-              <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <h2 className="text-2xl font-bold mb-6 text-primary">
                 Demo-Version
               </h2>
               <p className="text-muted-foreground mb-8">
@@ -151,10 +152,18 @@ const Landing = () => {
   );
 };
 
-const FeatureCard = ({ title, description, icon }: { title: string; description: string; icon: string }) => {
+const FeatureCard = ({ 
+  title, 
+  description, 
+  icon 
+}: { 
+  title: string; 
+  description: string; 
+  icon: React.ReactNode;
+}) => {
   return (
     <div className="group hover:scale-105 transition-all duration-300 rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
-      <div className="mb-4 text-4xl">{icon}</div>
+      <div className="mb-4 text-primary">{icon}</div>
       <h3 className="mb-2 text-xl font-semibold group-hover:text-primary transition-colors">{title}</h3>
       <p className="text-sm text-muted-foreground">{description}</p>
     </div>
