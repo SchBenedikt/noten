@@ -74,21 +74,23 @@ const Landing = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-br from-primary/5 to-secondary/5 overflow-x-hidden">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 overflow-x-hidden">
       <div className="container mx-auto px-4 py-8 md:py-16">
         <div className="flex flex-col items-center justify-center space-y-8 md:space-y-12 text-center">
-          <h1 className="animate-fade-in text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl">
-            Notenverwaltung
-          </h1>
-          
-          <p className="animate-fade-in animation-delay-200 max-w-[600px] text-base md:text-lg text-muted-foreground sm:text-xl px-4">
-            Gestalte dein Lernerlebnis. Verwalte deine Fächer und Noten einfach und effizient.
-          </p>
+          <div className="space-y-4">
+            <h1 className="animate-fade-in text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Notenverwaltung
+            </h1>
+            
+            <p className="animate-fade-in animation-delay-200 max-w-[600px] text-base md:text-lg text-muted-foreground sm:text-xl">
+              Gestalte dein Lernerlebnis. Verwalte deine Fächer und Noten einfach und effizient.
+            </p>
+          </div>
 
           <div className="animate-fade-in animation-delay-300 flex flex-col w-full px-4 space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0 sm:px-0 sm:w-auto">
             <Button
               size="lg"
-              className="w-full sm:w-auto hover-scale"
+              className="w-full sm:w-auto hover:scale-105 transition-transform duration-200 bg-gradient-to-r from-primary to-accent hover:opacity-90"
               onClick={() => navigate("/login")}
             >
               Jetzt starten
@@ -96,7 +98,7 @@ const Landing = () => {
             <Button
               variant="outline"
               size="lg"
-              className="w-full sm:w-auto hover-scale"
+              className="w-full sm:w-auto hover:scale-105 transition-transform duration-200 border-2"
               onClick={() => {
                 const demoSection = document.getElementById('demo-section');
                 demoSection?.scrollIntoView({ behavior: 'smooth' });
@@ -110,20 +112,25 @@ const Landing = () => {
             <FeatureCard
               title="Fächerverwaltung"
               description="Organisiere deine Fächer übersichtlich und effizient."
+              icon="📚"
             />
             <FeatureCard
               title="Notenübersicht"
               description="Behalte den Überblick über deine Leistungen."
+              icon="📊"
             />
             <FeatureCard
               title="Statistiken"
               description="Analysiere deinen Lernfortschritt mit detaillierten Auswertungen."
+              icon="📈"
             />
           </div>
 
-          <div id="demo-section" className="w-full max-w-6xl mt-16 animate-fade-in">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <h2 className="text-2xl font-bold mb-6">Demo-Version</h2>
+          <div id="demo-section" className="w-full max-w-6xl mt-16 animate-fade-in scroll-mt-16">
+            <div className="bg-card rounded-lg shadow-lg p-6 border">
+              <h2 className="text-2xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Demo-Version
+              </h2>
               <p className="text-muted-foreground mb-8">
                 Probiere die Notenverwaltung direkt aus! Diese Demo-Version zeigt dir die wichtigsten Funktionen.
               </p>
@@ -144,10 +151,11 @@ const Landing = () => {
   );
 };
 
-const FeatureCard = ({ title, description }: { title: string; description: string }) => {
+const FeatureCard = ({ title, description, icon }: { title: string; description: string; icon: string }) => {
   return (
-    <div className="hover-scale rounded-lg border bg-card p-4 md:p-6 text-card-foreground shadow-sm transition-all">
-      <h3 className="mb-2 text-lg md:text-xl font-semibold">{title}</h3>
+    <div className="group hover:scale-105 transition-all duration-300 rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
+      <div className="mb-4 text-4xl">{icon}</div>
+      <h3 className="mb-2 text-xl font-semibold group-hover:text-primary transition-colors">{title}</h3>
       <p className="text-sm text-muted-foreground">{description}</p>
     </div>
   );
