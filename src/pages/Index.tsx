@@ -9,8 +9,14 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { Subject } from '@/types';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, MinusIcon, UserCircle } from 'lucide-react';
+import { PlusIcon, MinusIcon, UserCircle, Menu, LogOut } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -58,6 +64,45 @@ const Index = () => {
   const mainSubjectsCount = currentSubjects.filter(s => s.type === 'main').length;
   const secondarySubjectsCount = currentSubjects.filter(s => s.type === 'secondary').length;
 
+  const MobileMenu = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="md:hidden">
+          <Menu className="h-5 w-5" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => navigate('/profile')}>
+          <UserCircle className="mr-2 h-4 w-4" />
+          Profil
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>
+          <LogOut className="mr-2 h-4 w-4" />
+          Abmelden
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  const DesktopMenu = () => (
+    <div className="hidden md:flex items-center gap-2">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => navigate('/profile')}
+        className="text-gray-700 hover:text-gray-900"
+      >
+        <UserCircle className="h-5 w-5" />
+      </Button>
+      <button
+        onClick={handleLogout}
+        className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+      >
+        Abmelden
+      </button>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="container mx-auto px-2 sm:px-4">
@@ -72,20 +117,8 @@ const Index = () => {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/profile')}
-              className="text-gray-700 hover:text-gray-900"
-            >
-              <UserCircle className="h-5 w-5" />
-            </Button>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900"
-            >
-              Abmelden
-            </button>
+            <MobileMenu />
+            <DesktopMenu />
           </div>
         </div>
 
@@ -97,7 +130,11 @@ const Index = () => {
                   <h2 className="text-xl font-semibold">Fächer</h2>
                   <CollapsibleTrigger asChild>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
-                      {isAddingSubject ? <MinusIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
+                      {isAddingSubject ? (
+                        <MinusIcon className="h-4 w-4 mx-auto" />
+                      ) : (
+                        <PlusIcon className="h-4 w-4 mx-auto" />
+                      )}
                     </Button>
                   </CollapsibleTrigger>
                 </div>
