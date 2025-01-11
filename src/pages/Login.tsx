@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [showRegistration, setShowRegistration] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -86,6 +87,14 @@ const Login = () => {
           providers={[]}
           view="sign_in"
         />
+
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => setShowRegistration(true)}
+        >
+          Neu hier? Registriere dich
+        </Button>
       </div>
     </div>
   );
