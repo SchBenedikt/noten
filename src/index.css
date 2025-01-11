@@ -89,11 +89,6 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  /* Always show scrollbar to prevent layout shifts */
-  html {
-    overflow-y: scroll;
-  }
-
   .animation-delay-200 {
     animation-delay: 200ms;
   }
