@@ -87,6 +87,15 @@ const Login = () => {
                 social_provider_text: "Anmelden mit {{provider}}",
                 link_text: "Bereits registriert? Anmelden",
               },
+                sign_up: {
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => setShowRegistration(true)}
+        >
+          Neu hier? Registriere dich
+        </Button>
+              },
               magic_link: {
                 email_input_label: "E-Mail Adresse",
                 button_label: "Link senden",
