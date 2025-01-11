@@ -87,6 +87,14 @@ const Login = () => {
                 social_provider_text: "Anmelden mit {{provider}}",
                 link_text: "Bereits registriert? Anmelden",
               },
+              sign_up: {
+                email_label: "E-Mail Adresse",
+                password_label: "Passwort",
+                button_label: "Registrieren",
+                loading_button_label: "Registrierung...",
+                social_provider_text: "Registrieren mit {{provider}}",
+                link_text: "Noch kein Konto? Registrieren",
+              },
               magic_link: {
                 email_input_label: "E-Mail Adresse",
                 button_label: "Link senden",
@@ -105,7 +113,7 @@ const Login = () => {
           providers={[]}
           view="sign_in"
         />
-
+        
         <Button
           variant="outline"
           className="w-full"
