@@ -4,12 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { LogIn } from "lucide-react";
-import { RegistrationForm } from "@/components/RegistrationForm";
 import { Button } from "@/components/ui/button";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [showRegistration, setShowRegistration] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -20,23 +18,6 @@ const Login = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  if (showRegistration) {
-    return (
-      <div className="min-h-[100dvh] bg-gray-50 flex items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-md space-y-6">
-          <RegistrationForm />
-          <Button
-            variant="ghost"
-            className="w-full"
-            onClick={() => setShowRegistration(false)}
-          >
-            Zurück zum Login
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-[100dvh] bg-gray-50 flex items-center justify-center p-4 sm:p-6">
@@ -87,15 +68,6 @@ const Login = () => {
                 social_provider_text: "Anmelden mit {{provider}}",
                 link_text: "Bereits registriert? Anmelden",
               },
-                sign_up: {
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => setShowRegistration(true)}
-        >
-          Neu hier? Registriere dich
-        </Button>
-              },
               magic_link: {
                 email_input_label: "E-Mail Adresse",
                 button_label: "Link senden",
@@ -114,14 +86,6 @@ const Login = () => {
           providers={[]}
           view="sign_in"
         />
-        
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => setShowRegistration(true)}
-        >
-          Neu hier? Registriere dich
-        </Button>
       </div>
     </div>
   );
