@@ -67,7 +67,6 @@ const Login = () => {
                 button_label: "Anmelden",
                 loading_button_label: "Wird angemeldet...",
                 social_provider_text: "Anmelden mit {{provider}}",
-                link_text: "Bereits registriert? Anmelden",
               },
               magic_link: {
                 email_input_label: "E-Mail Adresse",
