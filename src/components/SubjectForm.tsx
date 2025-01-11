@@ -82,11 +82,11 @@ export const SubjectForm = ({ onSubmit, currentGradeLevel }: SubjectFormProps) =
                 defaultValue={field.value}
               >
                 <FormControl>
-                  <SelectTrigger className="overflow-hidden">
+                  <SelectTrigger>
                     <SelectValue placeholder="Wähle die Art des Fachs" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent className="overflow-hidden">
+                <SelectContent className="w-full">
                   <SelectItem value="main">Hauptfach</SelectItem>
                   <SelectItem value="secondary">Nebenfach</SelectItem>
                 </SelectContent>
@@ -112,7 +112,7 @@ export const SubjectForm = ({ onSubmit, currentGradeLevel }: SubjectFormProps) =
                       <SelectValue placeholder="Wähle die Gewichtung" />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="w-full">
                     <SelectItem value="1">Einfach</SelectItem>
                     <SelectItem value="2">Doppelt</SelectItem>
                   </SelectContent>
