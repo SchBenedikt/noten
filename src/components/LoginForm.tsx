@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { LogIn } from "lucide-react";
 
 export const LoginForm = () => {
   const navigate = useNavigate();
@@ -18,8 +19,33 @@ export const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
 
   const handleLogin = async () => {
+    setEmailError(false);
+    setPasswordError(false);
+
+    if (!email) {
+      setEmailError(true);
+      toast({
+        title: "Fehler",
+        description: "Bitte gib eine E-Mail-Adresse ein",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!password) {
+      setPasswordError(true);
+      toast({
+        title: "Fehler",
+        description: "Bitte gib ein Passwort ein",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -27,7 +53,11 @@ export const LoginForm = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        setEmailError(true);
+        setPasswordError(true);
+        throw new Error("Ungültige Anmeldedaten");
+      }
 
       toast({
         title: "Erfolg",
@@ -48,7 +78,10 @@ export const LoginForm = () => {
   return (
     <Card className="w-full max-w-md mx-auto transition-transform transform hover:scale-105">
       <CardHeader>
-        <CardTitle>Anmelden</CardTitle>
+        <CardTitle className="flex items-center">
+          <LogIn className="mr-2 h-5 w-5" />
+          Anmelden
+        </CardTitle>
         <CardDescription>
           Melde dich mit deiner E-Mail und deinem Passwort an
         </CardDescription>
@@ -61,7 +94,7 @@ export const LoginForm = () => {
               placeholder="E-Mail"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="transition-colors focus:border-primary focus:ring-primary"
+              className={`transition-colors focus:border-primary focus:ring-primary ${emailError ? 'border-red-500' : ''}`}
             />
           </div>
           <div className="space-y-2">
@@ -70,7 +103,7 @@ export const LoginForm = () => {
               placeholder="Passwort"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="transition-colors focus:border-primary focus:ring-primary"
+              className={`transition-colors focus:border-primary focus:ring-primary ${passwordError ? 'border-red-500' : ''}`}
             />
           </div>
           <Button
