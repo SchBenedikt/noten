@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { UserPlus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -55,6 +56,10 @@ export const RegistrationForm = () => {
     gradeLevel: 5,
   });
 
+  const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
+  const [firstNameError, setFirstNameError] = useState(false);
+
   const [schools, setSchools] = useState<Array<{ id: string; name: string }>>([]);
 
   const fetchSchools = async () => {
@@ -66,17 +71,23 @@ export const RegistrationForm = () => {
   };
 
   const handleNext = async () => {
+    setEmailError(false);
+    setPasswordError(false);
+    setFirstNameError(false);
+
     if (step === 1) {
-      if (!formData.email || !formData.password) {
+      if (!formData.email) {
+        setEmailError(true);
         toast({
           title: "Fehler",
-          description: "Bitte fülle alle Felder aus",
+          description: "Bitte gib eine E-Mail-Adresse ein",
           variant: "destructive",
         });
         return;
       }
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
+        setEmailError(true);
         toast({
           title: "Fehler",
           description: "Bitte gib eine gültige E-Mail-Adresse ein",
@@ -84,7 +95,17 @@ export const RegistrationForm = () => {
         });
         return;
       }
+      if (!formData.password) {
+        setPasswordError(true);
+        toast({
+          title: "Fehler",
+          description: "Bitte gib ein Passwort ein",
+          variant: "destructive",
+        });
+        return;
+      }
       if (formData.password.length < 6) {
+        setPasswordError(true);
         toast({
           title: "Fehler",
           description: "Das Passwort muss mindestens 6 Zeichen lang sein",
@@ -95,6 +116,7 @@ export const RegistrationForm = () => {
       setStep(2);
     } else if (step === 2) {
       if (!formData.firstName) {
+        setFirstNameError(true);
         toast({
           title: "Fehler",
           description: "Bitte gib deinen Vornamen ein",
@@ -161,7 +183,10 @@ export const RegistrationForm = () => {
   return (
     <Card className="w-full max-w-md mx-auto transition-transform transform hover:scale-105">
       <CardHeader>
-        <CardTitle>Registrierung</CardTitle>
+        <CardTitle className="flex items-center">
+          <UserPlus className="mr-2 h-5 w-5" />
+          Registrierung
+        </CardTitle>
         <CardDescription>
           {step === 1 && "Gib deine E-Mail und ein Passwort ein"}
           {step === 2 && "Wie heißt du?"}
@@ -180,7 +205,7 @@ export const RegistrationForm = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="transition-colors focus:border-primary focus:ring-primary"
+                  className={`transition-colors focus:border-primary focus:ring-primary ${emailError ? 'border-red-500' : ''}`}
                 />
               </div>
               <div className="space-y-2">
@@ -191,7 +216,7 @@ export const RegistrationForm = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
-                  className="transition-colors focus:border-primary focus:ring-primary"
+                  className={`transition-colors focus:border-primary focus:ring-primary ${passwordError ? 'border-red-500' : ''}`}
                 />
               </div>
             </>
@@ -206,7 +231,7 @@ export const RegistrationForm = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, firstName: e.target.value })
                 }
-                className="transition-colors focus:border-primary focus:ring-primary"
+                className={`transition-colors focus:border-primary focus:ring-primary ${firstNameError ? 'border-red-500' : ''}`}
               />
             </div>
           )}
