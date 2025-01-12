@@ -75,6 +75,23 @@ export const RegistrationForm = () => {
         });
         return;
       }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        toast({
+          title: "Fehler",
+          description: "Bitte gib eine gültige E-Mail-Adresse ein",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (formData.password.length < 6) {
+        toast({
+          title: "Fehler",
+          description: "Das Passwort muss mindestens 6 Zeichen lang sein",
+          variant: "destructive",
+        });
+        return;
+      }
       setStep(2);
     } else if (step === 2) {
       if (!formData.firstName) {
@@ -142,7 +159,7 @@ export const RegistrationForm = () => {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto transition-transform transform hover:scale-105">
       <CardHeader>
         <CardTitle>Registrierung</CardTitle>
         <CardDescription>
@@ -163,6 +180,7 @@ export const RegistrationForm = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
+                  className="transition-colors focus:border-primary focus:ring-primary"
                 />
               </div>
               <div className="space-y-2">
@@ -173,6 +191,7 @@ export const RegistrationForm = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
+                  className="transition-colors focus:border-primary focus:ring-primary"
                 />
               </div>
             </>
@@ -187,6 +206,7 @@ export const RegistrationForm = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, firstName: e.target.value })
                 }
+                className="transition-colors focus:border-primary focus:ring-primary"
               />
             </div>
           )}
@@ -251,7 +271,7 @@ export const RegistrationForm = () => {
               </Button>
             )}
             <Button
-              className={step === 1 ? "w-full" : ""}
+              className={step === 1 ? "w-full transition-transform transform hover:scale-105" : ""}
               onClick={handleNext}
               disabled={isLoading}
             >
