@@ -32,6 +32,7 @@ type SidebarContext = {
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
   toggleSidebar: () => void
+  handleSubjectAdd: (subject: Omit<Subject, "id" | "grades">) => void
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
@@ -114,6 +115,12 @@ const SidebarProvider = React.forwardRef<
     // This makes it easier to style the sidebar with Tailwind classes.
     const state = open ? "expanded" : "collapsed"
 
+    const handleSubjectAdd = (subject: Omit<Subject, "id" | "grades">) => {
+      // Add your logic to handle the addition of a new subject here
+      console.log("Subject added:", subject)
+      setOpen(false)
+    }
+
     const contextValue = React.useMemo<SidebarContext>(
       () => ({
         state,
@@ -123,6 +130,7 @@ const SidebarProvider = React.forwardRef<
         openMobile,
         setOpenMobile,
         toggleSidebar,
+        handleSubjectAdd,
       }),
       [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
     )

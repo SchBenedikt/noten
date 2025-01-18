@@ -32,6 +32,11 @@ export const SubjectSearch = ({
 }: SubjectSearchProps) => {
   const [isSheetOpen, setSheetOpen] = useState(false);
 
+  const handleSubjectAdd = (subject: Omit<Subject, "id" | "grades">) => {
+    onSubjectAdd(subject);
+    setSheetOpen(false);
+  };
+
   return (
     <div className="relative flex gap-2">
       <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
@@ -43,10 +48,7 @@ export const SubjectSearch = ({
             <SheetTitle>Fach hinzufügen</SheetTitle>
           </SheetHeader>
           <SubjectForm
-            onSubmit={(subject) => {
-              onSubjectAdd(subject);
-              setSheetOpen(false);
-            }}
+            onSubmit={handleSubjectAdd}
             currentGradeLevel={currentGradeLevel}
           />
         </SheetContent>

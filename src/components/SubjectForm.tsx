@@ -29,9 +29,10 @@ const formSchema = z.object({
 interface SubjectFormProps {
   onSubmit: (subject: Omit<Subject, "id" | "grades">) => void;
   currentGradeLevel: number;
+  onSuccess?: () => void;
 }
 
-export const SubjectForm = ({ onSubmit, currentGradeLevel }: SubjectFormProps) => {
+export const SubjectForm = ({ onSubmit, currentGradeLevel, onSuccess }: SubjectFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,6 +55,9 @@ export const SubjectForm = ({ onSubmit, currentGradeLevel }: SubjectFormProps) =
             grade_level: currentGradeLevel,
           });
           form.reset();
+          if (onSuccess) {
+            onSuccess();
+          }
         })}
         className="space-y-4"
       >
