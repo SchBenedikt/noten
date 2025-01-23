@@ -177,14 +177,6 @@ const Index = () => {
           </div>
 
           <div className="space-y-6">
-            <SubjectSearch
-              searchQuery=""
-              searchType="subject"
-              onSearchChange={() => {}}
-              onSearchTypeChange={() => {}}
-              onSubjectAdd={onSubjectAdd}
-              currentGradeLevel={currentGradeLevel}
-            />
             <SubjectList
               subjects={currentSubjects}
               onAddGrade={addGrade}
