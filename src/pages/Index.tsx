@@ -20,6 +20,7 @@ import {
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
+import { SubjectSearch } from '@/components/SubjectSearch';
 
 const Index = () => {
   const {
@@ -56,6 +57,10 @@ const Index = () => {
 
   const handleUpdateSubject = async (subjectId: string, updates: Partial<Subject>) => {
     await updateSubject(subjectId, updates);
+  };
+
+  const onSubjectAdd = async (subject: Omit<Subject, 'id' | 'grades'>) => {
+    await addSubject(subject);
   };
 
   const currentSubjects = subjects.filter(s => s.grade_level === currentGradeLevel);
@@ -172,6 +177,14 @@ const Index = () => {
           </div>
 
           <div className="space-y-6">
+            <SubjectSearch
+              searchQuery=""
+              searchType="subject"
+              onSearchChange={() => {}}
+              onSearchTypeChange={() => {}}
+              onSubjectAdd={onSubjectAdd}
+              currentGradeLevel={currentGradeLevel}
+            />
             <SubjectList
               subjects={currentSubjects}
               onAddGrade={addGrade}
