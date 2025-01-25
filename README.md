@@ -1,69 +1,43 @@
-# Welcome to your Lovable project
+# Notenverwaltung
+[![Netlify Status](https://api.netlify.com/api/v1/badges/398dd1fa-bb9f-473b-ad51-eb967c032514/deploy-status)](https://app.netlify.com/sites/noten-gym/deploys)
 
-## Project info
+Eine Anwendung zur Verwaltung von Noten für verschiedene Fächer und Klassenstufen.
 
-**URL**: https://lovable.dev/projects/6797e4a9-1684-4f06-94d6-342506b40464
+## Funktionen
 
-## How can I edit this code?
+- **Fächer hinzufügen und verwalten**: Erstellen und bearbeiten Sie Fächer.
+- **Noten hinzufügen und verwalten**: Fügen Sie Noten zu den Fächern hinzu und bearbeiten Sie diese.
+- **Durchschnittsberechnung**: Berechnen Sie den Gesamtdurchschnitt und die Durchschnittsnoten für jedes Fach.
+- **Exportieren**: Exportieren Sie Ihre Daten als CSV, XLSX oder PDF.
+- **Suche und Filter**: Suchen und filtern Sie Fächer und Noten nach verschiedenen Kriterien.
+- **Benutzerprofile**: Verwalten Sie Ihre Klassenstufe und andere Profileinstellungen.
 
-There are several ways of editing your application.
+## Installation
 
-**Use Lovable**
+1. Klonen Sie das Repository:
+    ```bash
+    git clone https://github.com/benedikt-schaechner/notenverwaltung.git
+    ```
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6797e4a9-1684-4f06-94d6-342506b40464) and start prompting.
+2. Wechseln Sie in das Projektverzeichnis:
+    ```bash
+    cd notenverwaltung
+    ```
 
-Changes made via Lovable will be committed automatically to this repo.
+3. Installieren Sie die Abhängigkeiten:
+    ```bash
+    npm install
+    ```
 
-**Use your preferred IDE**
+4. Starten Sie die Anwendung:
+    ```bash
+    npm start
+    ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Verwendete Technologien
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/6797e4a9-1684-4f06-94d6-342506b40464) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+- **React**: ![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=white&style=flat) Eine JavaScript-Bibliothek für den Aufbau von Benutzeroberflächen.
+- **TypeScript**: ![TypeScript](https://img.shields.io/badge/-TypeScript-007ACC?logo=typescript&logoColor=white&style=flat) Ein typisiertes Superset von JavaScript, das die Entwicklung von großen Anwendungen erleichtert.
+- **Supabase**: ![Supabase](https://img.shields.io/badge/-Supabase-3ECF8E?logo=supabase&logoColor=white&style=flat) Eine Open-Source-Alternative zu Firebase, die Authentifizierung und Datenbankdienste bietet.
+- **Framer Motion**: ![Framer Motion](https://img.shields.io/badge/-Framer%20Motion-0055FF?logo=framer&logoColor=white&style=flat) Eine Bibliothek für Animationen in React.
+- **Lucide Icons**: ![Lucide Icons](https://img.shields.io/badge/-Lucide%20Icons-000000?logo=lucide&logoColor=white&style=flat) Eine Sammlung von Icons für React-Anwendungen.
