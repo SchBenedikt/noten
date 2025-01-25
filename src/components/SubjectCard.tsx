@@ -80,17 +80,6 @@ export const SubjectCard = ({
     }
   };
 
-  const handleGradeAction = () => {
-    if (isDemo) {
-      setShowLoginDialog(true);
-      return;
-    }
-    if (!isOpen) {
-      setIsOpen(true);
-    }
-    setIsAddingGrade(!isAddingGrade);
-  };
-
   const renderAverages = () => {
     if (subject.type === 'main') {
       const mainAverages = averages as ReturnType<typeof calculateMainSubjectAverages>;
@@ -146,9 +135,6 @@ export const SubjectCard = ({
             </CollapsibleTrigger>
             <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 text-xl sm:text-2xl">
               {subject.name}
-              <span className="text-sm font-normal text-muted-foreground">
-                ({subject.type === 'main' ? 'Hauptfach' : 'Nebenfach'})
-              </span>
             </CardTitle>
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -157,14 +143,6 @@ export const SubjectCard = ({
               <div className="font-semibold text-base">Gesamt: ∅ {averages.total}</div>
             </div>
             <div className="flex gap-2 w-full sm:w-auto justify-end">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleGradeAction}
-                className="hover:bg-gray-100"
-              >
-                {isAddingGrade ? <MinusIcon className="h-4 w-4" /> : <PlusIcon className="h-4 w-4" />}
-              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -184,17 +162,6 @@ export const SubjectCard = ({
         </CardHeader>
         <CollapsibleContent className="overflow-hidden">
           <CardContent className="space-y-4 p-4 sm:p-6">
-            {isAddingGrade && (
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <GradeForm
-                  onSubmit={(grade) => {
-                    onAddGrade(subject.id, grade);
-                    setIsAddingGrade(false);
-                  }}
-                  subjectType={subject.type}
-                />
-              </div>
-            )}
             <GradeList 
               grades={filteredGrades}
               onUpdateGrade={(gradeId, grade) => onUpdateGrade(subject.id, gradeId, grade)}

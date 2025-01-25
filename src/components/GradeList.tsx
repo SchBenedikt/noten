@@ -2,8 +2,9 @@ import { Grade } from '@/types';
 import { useState } from 'react';
 import { GradeForm } from './GradeForm';
 import { GradeListItem } from './grade/GradeListItem';
-import { GradeTable } from './grade/GradeTable';
+import { DataTable } from './grade/DataTable';
 import { GradeDialogs } from './grade/GradeDialogs';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 interface GradeListProps {
   grades: Grade[];
@@ -21,6 +22,7 @@ export const GradeList = ({
   const [editingGradeId, setEditingGradeId] = useState<string | null>(null);
   const [deletingGradeId, setDeletingGradeId] = useState<string | null>(null);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [isEditSheetOpen, setEditSheetOpen] = useState(false);
   
   const sortedGrades = [...grades].sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -37,63 +39,57 @@ export const GradeList = ({
     }
   };
 
+  const handleEdit = (gradeId: string) => {
+    setEditingGradeId(gradeId);
+    setEditSheetOpen(true);
+  };
+
   return (
     <div className="overflow-x-auto -mx-4 sm:mx-0">
       <div className="min-w-full divide-y divide-gray-200">
         {/* Mobile View */}
         <div className="block sm:hidden">
           {sortedGrades.map((grade) => (
-            editingGradeId === grade.id ? (
-              <div key={grade.id} className="p-4 bg-gray-50">
-                <GradeForm
-                  initialGrade={grade}
-                  onSubmit={(updatedGrade) => {
-                    onUpdateGrade(grade.id, updatedGrade);
-                    setEditingGradeId(null);
-                  }}
-                  onCancel={() => setEditingGradeId(null)}
-                />
-              </div>
-            ) : (
-              <GradeListItem
-                key={grade.id}
-                grade={grade}
-                onEdit={setEditingGradeId}
-                onDelete={setDeletingGradeId}
-                isDemo={isDemo}
-                onDemoAction={handleDemoAction}
-              />
-            )
+            <GradeListItem
+              key={grade.id}
+              grade={grade}
+              onEdit={handleEdit}
+              onDelete={setDeletingGradeId}
+              isDemo={isDemo}
+              onDemoAction={handleDemoAction}
+            />
           ))}
         </div>
 
         {/* Desktop View */}
         <div className="hidden sm:block">
-          {sortedGrades.map((grade) => (
-            editingGradeId === grade.id ? (
-              <div key={grade.id} className="p-4 bg-gray-50">
-                <GradeForm
-                  initialGrade={grade}
-                  onSubmit={(updatedGrade) => {
-                    onUpdateGrade(grade.id, updatedGrade);
-                    setEditingGradeId(null);
-                  }}
-                  onCancel={() => setEditingGradeId(null)}
-                />
-              </div>
-            ) : (
-              <GradeTable
-                key={grade.id}
-                grades={[grade]}
-                onEdit={setEditingGradeId}
-                onDelete={setDeletingGradeId}
-                isDemo={isDemo}
-                onDemoAction={handleDemoAction}
-              />
-            )
-          ))}
+          <DataTable
+            grades={sortedGrades}
+            onEdit={handleEdit}
+            onDelete={setDeletingGradeId}
+            isDemo={isDemo}
+            onDemoAction={handleDemoAction}
+          />
         </div>
       </div>
+
+      <Sheet open={isEditSheetOpen} onOpenChange={setEditSheetOpen}>
+        <SheetContent side="left">
+          <SheetHeader>
+            <SheetTitle>Note bearbeiten</SheetTitle>
+          </SheetHeader>
+          {editingGradeId && (
+            <GradeForm
+              initialGrade={grades.find(grade => grade.id === editingGradeId)}
+              onSubmit={(updatedGrade) => {
+                onUpdateGrade(editingGradeId, updatedGrade);
+                setEditSheetOpen(false);
+              }}
+              onCancel={() => setEditSheetOpen(false)}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
 
       <GradeDialogs
         showLoginDialog={showLoginDialog}

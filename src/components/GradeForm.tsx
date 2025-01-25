@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { de } from 'date-fns/locale';
 
 import { cn } from '@/lib/utils';
 // import { toast } from '@/components/hooks/toast';
@@ -150,7 +151,7 @@ export const GradeForm = ({
                             !field.value && 'text-muted-foreground'
                           )}
                         >
-                          {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                          {field.value ? format(field.value, 'PPP', { locale: de }) : <span>Datum auswählen</span>}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
@@ -162,6 +163,7 @@ export const GradeForm = ({
                         onSelect={field.onChange}
                         disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
                         initialFocus
+                        locale={de}
                       />
                     </PopoverContent>
                   </Popover>

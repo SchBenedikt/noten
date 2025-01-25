@@ -1,5 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from 'react';
+
+const greetings = [
+  { message: "Guten Morgen", emoji: "☀️" },
+  { message: "Guten Tag", emoji: "🌞" },
+  { message: "Guten Abend", emoji: "🌜" },
+  { message: "Gute Nacht", emoji: "🌙" },
+  { message: "Hallo", emoji: "👋" },
+  { message: "Willkommen zurück", emoji: "😊" },
+  { message: "Schön dich zu sehen", emoji: "👀" },
+  { message: "Wie geht's?", emoji: "🤔" },
+  { message: "Alles klar?", emoji: "👌" },
+  { message: "Hey", emoji: "🙌" },
+];
+
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return greetings[0];
+  if (hour < 18) return greetings[1];
+  if (hour < 22) return greetings[2];
+  return greetings[3];
+};
 
 export const DynamicGreeting = () => {
   const { data: profile } = useQuery({
@@ -19,25 +41,21 @@ export const DynamicGreeting = () => {
     },
   });
 
-  const getTimeBasedGreeting = () => {
-    const hour = new Date().getHours();
-    
-    if (hour >= 5 && hour < 12) {
-      return "Guten Morgen";
-    } else if (hour >= 12 && hour < 18) {
-      return "Guten Tag";
-    } else if (hour >= 18 && hour < 22) {
-      return "Guten Abend";
-    } else {
-      return "Gute Nacht";
-    }
-  };
+  const [greeting, setGreeting] = useState(getGreeting());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGreeting(getGreeting());
+    }, 60000); // Update every minute
+    return () => clearInterval(interval);
+  }, []);
 
   if (!profile?.first_name) return null;
 
   return (
-    <h2 className="text-xl text-gray-700 mb-4">
-      {getTimeBasedGreeting()}, {profile.first_name}!
-    </h2>
+    <div className="text-xl font-semibold">
+      {greeting.message}, {profile.first_name}! {greeting.emoji}
+      <hr className="my-4" />
+    </div>
   );
 };
