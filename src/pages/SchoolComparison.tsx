@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Award, TrendingUp } from "lucide-react";
+import { Award, TrendingUp, AlertCircle } from "lucide-react";
 import { calculateSubjectAverage } from "@/lib/calculations";
 import { Grade } from "@/types";
 
@@ -20,21 +20,27 @@ interface SchoolSubjectAverage {
 }
 
 const SchoolComparison = () => {
-  const { data: schoolAverages, isLoading } = useQuery({
+  const { data: schoolAverages, isLoading, error } = useQuery({
     queryKey: ["schoolAverages"],
     queryFn: async () => {
       // First, get all schools
-      const { data: schools } = await supabase
+      const { data: schools, error: schoolsError } = await supabase
         .from("schools")
         .select("id, name");
 
-      if (!schools) return [];
+      if (schoolsError) {
+        throw new Error("Failed to fetch schools");
+      }
+
+      if (!schools || schools.length === 0) {
+        return [];
+      }
 
       // For each school, get subjects and their grades
       const averages: SchoolSubjectAverage[] = [];
 
       for (const school of schools) {
-        const { data: subjects } = await supabase
+        const { data: subjects, error: subjectsError } = await supabase
           .from("subjects")
           .select(`
             id,
@@ -52,16 +58,24 @@ const SchoolComparison = () => {
           `)
           .eq("school_id", school.id);
 
+        if (subjectsError) {
+          console.error("Error fetching subjects:", subjectsError);
+          continue;
+        }
+
         if (subjects) {
           // Calculate average for each subject in this school
           subjects.forEach((subject) => {
             if (subject.grades && subject.grades.length > 0) {
-              averages.push({
-                schoolId: school.id,
-                schoolName: school.name,
-                subjectName: subject.name,
-                average: calculateSubjectAverage(subject.grades as Grade[]),
-              });
+              const average = calculateSubjectAverage(subject.grades as Grade[]);
+              if (!isNaN(average)) {
+                averages.push({
+                  schoolId: school.id,
+                  schoolName: school.name,
+                  subjectName: subject.name,
+                  average: average,
+                });
+              }
             }
           });
         }
@@ -79,8 +93,31 @@ const SchoolComparison = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <AlertCircle className="h-12 w-12 text-red-500" />
+        <p className="text-lg text-red-500">Fehler beim Laden der Daten</p>
+      </div>
+    );
+  }
+
+  if (!schoolAverages || schoolAverages.length === 0) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="flex flex-col items-center justify-center gap-4">
+          <AlertCircle className="h-12 w-12 text-yellow-500" />
+          <p className="text-lg">Keine Daten verfügbar</p>
+          <p className="text-gray-600">
+            Es wurden noch keine Noten für Schulen eingetragen.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   // Group averages by subject
-  const subjectGroups = schoolAverages?.reduce((groups, item) => {
+  const subjectGroups = schoolAverages.reduce((groups, item) => {
     if (!groups[item.subjectName]) {
       groups[item.subjectName] = [];
     }
@@ -96,7 +133,7 @@ const SchoolComparison = () => {
       </div>
 
       <div className="space-y-8">
-        {Object.entries(subjectGroups || {}).map(([subject, schools]) => {
+        {Object.entries(subjectGroups).map(([subject, schools]) => {
           // Sort schools by average grade (ascending, better grades first)
           const sortedSchools = [...schools].sort((a, b) => a.average - b.average);
           const bestSchool = sortedSchools[0];
