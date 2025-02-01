@@ -8,9 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { School } from "@/components/ui/school";
 import { Award, TrendingUp } from "lucide-react";
 import { calculateSubjectAverage } from "@/lib/calculations";
+import { Grade } from "@/types";
 
 interface SchoolSubjectAverage {
   schoolId: string;
@@ -41,8 +41,13 @@ const SchoolComparison = () => {
             name,
             school_id,
             grades (
+              id,
               value,
-              weight
+              weight,
+              type,
+              date,
+              created_at,
+              notes
             )
           `)
           .eq("school_id", school.id);
@@ -55,7 +60,7 @@ const SchoolComparison = () => {
                 schoolId: school.id,
                 schoolName: school.name,
                 subjectName: subject.name,
-                average: calculateSubjectAverage(subject.grades),
+                average: calculateSubjectAverage(subject.grades as Grade[]),
               });
             }
           });
