@@ -28,6 +28,7 @@ import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/export';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { createDemoExcel, parseExcelFile } from '@/utils/import';
 
 const Index = () => {
   const {
@@ -59,6 +60,7 @@ const Index = () => {
     Notizen: true,
   });
   const [lastExportFormat, setLastExportFormat] = useState<'csv' | 'xlsx' | 'pdf'>('csv');
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   useEffect(() => {
     setStartCount(true);
@@ -130,32 +132,53 @@ const Index = () => {
     </div>
   );
 
-  const handleExport = (format: 'csv' | 'xlsx' | 'pdf') => {
-    const data = currentSubjects.map(subject => ({
-      Fach: exportFields.Fach ? subject.name : undefined,
-      Typ: exportFields.Typ ? (subject.type === 'main' ? 'Hauptfach' : 'Nebenfach') : undefined,
-      Noten: subject.grades.map(grade => ({
-        Wert: exportFields.Wert ? grade.value : undefined,
-        Gewichtung: exportFields.Gewichtung ? grade.weight : undefined,
-        Art: exportFields.Art ? (grade.type === 'oral' ? 'Mündlich' : 'Schulaufgabe') : undefined,
-        Datum: exportFields.Datum ? new Date(grade.date).toLocaleDateString() : undefined,
-        Notizen: exportFields.Notizen ? grade.notes || '' : undefined,
-      })),
-    }));
-
-    setLastExportFormat(format);
-
-    switch (format) {
-      case 'csv':
-        exportToCSV(data, 'noten.csv');
-        break;
-      case 'xlsx':
-        exportToXLSX(data, 'noten.xlsx');
-        break;
-      case 'pdf':
-        exportToPDF(data, 'noten.pdf');
-        break;
+  const handleImport = async (file: File) => {
+    try {
+      const { subjects: importedSubjects } = await parseExcelFile(file);
+      
+      // Create subjects and add grades
+      for (const [name, data] of importedSubjects.entries()) {
+        // First create the subject
+        const subject: Omit<Subject, 'id' | 'grades'> = {
+          name,
+          type: data.type,
+          grade_level: currentGradeLevel,
+          writtenWeight: data.type === 'main' ? 2 : undefined
+        };
+        
+        // Add subject and get the ID
+        await addSubject(subject).then(async (newSubject) => {
+          // Add all grades for this subject
+          for (const grade of data.grades) {
+            await addGrade(newSubject.id, grade);
+          }
+        });
+      }
+      
+      setIsImportDialogOpen(false);
+      toast({
+        title: "Import erfolgreich",
+        description: "Alle Noten wurden erfolgreich importiert",
+      });
+    } catch (error) {
+      toast({
+        title: "Fehler beim Import",
+        description: error.message,
+        variant: "destructive",
+      });
     }
+  };
+
+  const handleDownloadDemo = () => {
+    const blob = createDemoExcel();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'noten-vorlage.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -211,6 +234,17 @@ const Index = () => {
                     <CommandItem onSelect={() => { setIsExportDialogOpen(true); setLastExportFormat('pdf'); }}>
                       <FilePdf className="mr-2 h-4 w-4" />
                       Export als PDF
+                    </CommandItem>
+                  </CommandGroup>
+                  <CommandSeparator />
+                  <CommandGroup heading="Importieren">
+                    <CommandItem onSelect={() => setIsImportDialogOpen(true)}>
+                      <FileSpreadsheet className="mr-2 h-4 w-4" />
+                      Noten aus Excel importieren
+                    </CommandItem>
+                    <CommandItem onSelect={handleDownloadDemo}>
+                      <FileText className="mr-2 h-4 w-4" />
+                      Excel-Vorlage herunterladen
                     </CommandItem>
                   </CommandGroup>
                 </CommandList>
@@ -289,34 +323,31 @@ const Index = () => {
         </div>
       </div>
 
-      <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Exportieren</DialogTitle>
+            <DialogTitle>Noten importieren</DialogTitle>
             <DialogDescription>
-              Wählen Sie die Daten aus, die Sie exportieren möchten.
+              Laden Sie eine Excel-Datei hoch, um Noten zu importieren. 
+              Die Datei sollte dem Format der Vorlage entsprechen.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            {Object.keys(exportFields).map((field) => (
-              <div key={field} className="flex items-center space-x-2">
-                <Checkbox
-                  checked={exportFields[field as keyof typeof exportFields]}
-                  onCheckedChange={(checked) => setExportFields((prev) => ({
-                    ...prev,
-                    [field]: checked,
-                  }))}
-                  id={field}
-                />
-                <Label htmlFor={field}>{field}</Label>
-              </div>
-            ))}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => handleExport(lastExportFormat)}>
-              Export als {lastExportFormat.toUpperCase()}
+            <input
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  handleImport(file);
+                }
+              }}
+              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
+            />
+            <Button variant="outline" onClick={handleDownloadDemo}>
+              Vorlage herunterladen
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

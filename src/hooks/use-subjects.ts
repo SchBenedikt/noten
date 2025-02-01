@@ -3,6 +3,7 @@ import { Subject, Grade, SubjectType, GradeType } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { createDemoExcel, parseExcelFile } from '@/utils/import';
 
 interface DatabaseSubject {
   id: string;
@@ -102,12 +103,12 @@ export const useSubjects = () => {
     setSubjects((subjectsData || []).map(mapDatabaseSubjectToSubject));
   };
 
-  const addSubject = async (newSubject: Omit<Subject, 'id' | 'grades'>) => {
+  const addSubject = async (newSubject: Omit<Subject, 'id' | 'grades'>): Promise<Subject> => {
     const { data: session } = await supabase.auth.getSession();
     
     if (!session?.session?.user) {
       navigate('/login');
-      return;
+      throw new Error('Not authenticated');
     }
 
     const { data, error } = await supabase
@@ -128,43 +129,21 @@ export const useSubjects = () => {
         description: "Fehler beim Erstellen des Fachs",
         variant: "destructive",
       });
-      return;
+      throw error;
     }
 
-    setSubjects([...subjects, mapDatabaseSubjectToSubject({ ...data, grades: [] })]);
+    const newSubjectWithGrades: Subject = {
+      ...data,
+      grades: []
+    };
+
+    setSubjects([...subjects, newSubjectWithGrades]);
     toast({
       title: "Erfolg",
       description: "Fach wurde erfolgreich erstellt",
     });
-  };
 
-  const updateSubject = async (subjectId: string, updates: Partial<Subject>) => {
-    const { error } = await supabase
-      .from('subjects')
-      .update({
-        written_weight: updates.writtenWeight,
-      })
-      .eq('id', subjectId);
-
-    if (error) {
-      toast({
-        title: "Fehler",
-        description: "Fehler beim Aktualisieren des Fachs",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSubjects(subjects.map(subject => 
-      subject.id === subjectId 
-        ? { ...subject, ...updates }
-        : subject
-    ));
-
-    toast({
-      title: "Erfolg",
-      description: "Fach wurde erfolgreich aktualisiert",
-    });
+    return newSubjectWithGrades;
   };
 
   const addGrade = async (subjectId: string, grade: Omit<Grade, 'id'>) => {
@@ -203,28 +182,6 @@ export const useSubjects = () => {
     toast({
       title: "Erfolg",
       description: "Note wurde erfolgreich hinzugefügt",
-    });
-  };
-
-  const deleteSubject = async (subjectId: string) => {
-    const { error } = await supabase
-      .from('subjects')
-      .delete()
-      .eq('id', subjectId);
-
-    if (error) {
-      toast({
-        title: "Fehler",
-        description: "Fehler beim Löschen des Fachs",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSubjects(subjects.filter(subject => subject.id !== subjectId));
-    toast({
-      title: "Erfolg",
-      description: "Fach wurde erfolgreich gelöscht",
     });
   };
 
@@ -298,6 +255,93 @@ export const useSubjects = () => {
     });
   };
 
+  const deleteSubject = async (subjectId: string) => {
+    const { error } = await supabase
+      .from('subjects')
+      .delete()
+      .eq('id', subjectId);
+
+    if (error) {
+      toast({
+        title: "Fehler",
+        description: "Fehler beim Löschen des Fachs",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSubjects(subjects.filter(subject => subject.id !== subjectId));
+    toast({
+      title: "Erfolg",
+      description: "Fach wurde erfolgreich gelöscht",
+    });
+  };
+
+  const updateSubject = async (subjectId: string, updates: Partial<Subject>) => {
+    const { error } = await supabase
+      .from('subjects')
+      .update({
+        written_weight: updates.writtenWeight,
+      })
+      .eq('id', subjectId);
+
+    if (error) {
+      toast({
+        title: "Fehler",
+        description: "Fehler beim Aktualisieren des Fachs",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSubjects(subjects.map(subject => 
+      subject.id === subjectId 
+        ? { ...subject, ...updates }
+        : subject
+    ));
+
+    toast({
+      title: "Erfolg",
+      description: "Fach wurde erfolgreich aktualisiert",
+    });
+  };
+
+  const importGradesFromExcel = async (file: File) => {
+    try {
+      const { subjects: importedSubjects } = await parseExcelFile(file);
+      
+      // Create subjects and add grades
+      for (const [name, data] of importedSubjects.entries()) {
+        // First create the subject
+        const subject: Omit<Subject, 'id' | 'grades'> = {
+          name,
+          type: data.type,
+          grade_level: currentGradeLevel,
+          writtenWeight: data.type === 'main' ? 2 : undefined
+        };
+        
+        // Add subject and get the ID
+        await addSubject(subject).then(async (newSubject) => {
+          // Add all grades for this subject
+          for (const grade of data.grades) {
+            await addGrade(newSubject.id, grade);
+          }
+        });
+      }
+      
+      toast({
+        title: "Import erfolgreich",
+        description: "Alle Noten wurden erfolgreich importiert",
+      });
+    } catch (error) {
+      toast({
+        title: "Fehler beim Import",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     fetchSubjects();
   }, []);
@@ -310,6 +354,7 @@ export const useSubjects = () => {
     deleteGrade,
     deleteSubject,
     updateSubject,
+    importGradesFromExcel,
     currentGradeLevel,
     setCurrentGradeLevel,
   };
