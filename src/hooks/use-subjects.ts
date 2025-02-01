@@ -115,7 +115,7 @@ export const useSubjects = () => {
       .from('subjects')
       .insert({
         name: newSubject.name,
-        type: newSubject.type,
+        type: newSubject.type as SubjectType, // Explicitly cast the type
         written_weight: newSubject.writtenWeight,
         grade_level: newSubject.grade_level,
         user_id: session.session.user.id,
@@ -133,7 +133,11 @@ export const useSubjects = () => {
     }
 
     const newSubjectWithGrades: Subject = {
-      ...data,
+      id: data.id,
+      name: data.name,
+      type: data.type as SubjectType, // Explicitly cast the type
+      writtenWeight: data.written_weight,
+      grade_level: data.grade_level,
       grades: []
     };
 

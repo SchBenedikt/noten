@@ -1,4 +1,4 @@
-import { utils, read } from 'xlsx';
+import { utils, write } from 'xlsx';
 import { Subject, Grade, SubjectType, GradeType } from '@/types';
 
 interface ExcelGrade {
@@ -45,8 +45,8 @@ export const createDemoExcel = () => {
   const workbook = utils.book_new();
   utils.book_append_sheet(workbook, worksheet, 'Noten');
   
-  // Generate the file
-  const excelBuffer = utils.write_workbook_buffer(workbook);
+  // Generate the file using the correct XLSX function
+  const excelBuffer = write(workbook, { type: 'buffer', bookType: 'xlsx' });
   return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 };
 
@@ -68,6 +68,7 @@ export const parseExcelFile = async (file: File): Promise<{
         
         jsonData.forEach((row) => {
           const subjectName = row.Fach;
+          // Explicitly type the subject type
           const subjectType: SubjectType = row.Typ.toLowerCase() === 'hauptfach' ? 'main' : 'secondary';
           const gradeType: GradeType = row.Art.toLowerCase() === 'mündlich' ? 'oral' : 'written';
           
