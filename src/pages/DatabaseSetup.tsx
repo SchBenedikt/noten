@@ -3,6 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import Header from "@/components/Header";
 
 const DatabaseSetup = () => {
   const [copiedStates, setCopiedStates] = useState<{ [key: string]: boolean }>({});
@@ -52,10 +53,10 @@ const DatabaseSetup = () => {
   );
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-6">Datenbank Setup Guide</h1>
-      
-      <div className="space-y-8">
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header title="Datenbank Setup Guide" />
+      <div className="container mx-auto py-8 px-4 flex-1">
+        <div className="space-y-8">
         <section>
           <h2 className="text-2xl font-semibold mb-4">1. Supabase Projekt erstellen</h2>
           <ol className="list-decimal list-inside space-y-2">
@@ -329,6 +330,7 @@ $$;`}
             <li>Aktualisiere die Werte in der <code>src/integrations/supabase/client.ts</code> Datei</li>
           </ol>
         </section>
+        </div>
       </div>
     </div>
   );
