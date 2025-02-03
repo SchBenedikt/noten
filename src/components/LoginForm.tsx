@@ -56,7 +56,7 @@ export const LoginForm = () => {
       if (error) {
         setEmailError(true);
         setPasswordError(true);
-        throw new Error("Ungültige Anmeldedaten");
+        throw error;
       }
 
       toast({

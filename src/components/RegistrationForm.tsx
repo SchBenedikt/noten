@@ -29,17 +29,6 @@ interface RegistrationData {
 }
 
 const getErrorMessage = (error: any) => {
-  if (error?.body) {
-    try {
-      const body = JSON.parse(error.body);
-      if (body.code === "over_email_send_rate_limit") {
-        const seconds = body.message.match(/\d+/)?.[0] || "60";
-        return `Bitte warte ${seconds} Sekunden, bevor du es erneut versuchst.`;
-      }
-    } catch (e) {
-      // If JSON parsing fails, fall back to default message
-    }
-  }
   return error.message || "Ein Fehler ist aufgetreten. Bitte versuche es später erneut.";
 };
 
@@ -138,10 +127,16 @@ export const RegistrationForm = () => {
   const handleRegistration = async () => {
     setIsLoading(true);
     try {
-      // First sign up the user
+      // First sign up the user with email confirmation disabled
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: {
+            first_name: formData.firstName,
+          },
+        },
       });
 
       if (signUpError) throw signUpError;
@@ -163,10 +158,17 @@ export const RegistrationForm = () => {
 
       if (profileError) throw profileError;
 
+      // Sign in the user immediately after registration
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (signInError) throw signInError;
+
       toast({
         title: "Erfolg",
-        description:
-          "Registrierung erfolgreich! Bitte bestätige deine E-Mail-Adresse.",
+        description: "Registrierung erfolgreich!",
       });
       navigate("/");
     } catch (error: any) {
