@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Plus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -61,6 +61,8 @@ export const RegistrationForm = () => {
   const [firstNameError, setFirstNameError] = useState(false);
 
   const [schools, setSchools] = useState<Array<{ id: string; name: string }>>([]);
+  const [isCreatingSchool, setIsCreatingSchool] = useState(false);
+  const [newSchoolName, setNewSchoolName] = useState("");
 
   const fetchSchools = async () => {
     const { data } = await supabase
@@ -68,6 +70,44 @@ export const RegistrationForm = () => {
       .select("id, name")
       .order("name");
     if (data) setSchools(data);
+  };
+
+  const handleCreateSchool = async () => {
+    if (!newSchoolName.trim()) {
+      toast({
+        title: "Fehler",
+        description: "Bitte gib einen Schulnamen ein",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: school, error } = await supabase
+      .from("schools")
+      .insert({ name: newSchoolName.trim(), created_by: user.id })
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: "Fehler",
+        description: "Fehler beim Erstellen der Schule",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setFormData({ ...formData, schoolId: school.id });
+    await fetchSchools();
+    setIsCreatingSchool(false);
+    setNewSchoolName("");
+    toast({
+      title: "Erfolg",
+      description: "Schule wurde erstellt",
+    });
   };
 
   const handleNext = async () => {
@@ -165,8 +205,7 @@ export const RegistrationForm = () => {
 
       toast({
         title: "Erfolg",
-        description:
-          "Registrierung erfolgreich! Bitte bestätige deine E-Mail-Adresse.",
+        description: "Registrierung erfolgreich!",
       });
       navigate("/");
     } catch (error: any) {
@@ -239,28 +278,60 @@ export const RegistrationForm = () => {
           {step === 3 && (
             <>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Schule (optional)</label>
-                <Select
-                  value={formData.schoolId || "none"}
-                  onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
-                      schoolId: value === "none" ? null : value,
-                    })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Wähle eine Schule" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Keine Schule</SelectItem>
-                    {schools.map((school) => (
-                      <SelectItem key={school.id} value={school.id}>
-                        {school.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <label className="text-sm font-medium">Schule</label>
+                {isCreatingSchool ? (
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Name der Schule"
+                      value={newSchoolName}
+                      onChange={(e) => setNewSchoolName(e.target.value)}
+                    />
+                    <div className="flex gap-2">
+                      <Button onClick={handleCreateSchool}>Erstellen</Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setIsCreatingSchool(false);
+                          setNewSchoolName("");
+                        }}
+                      >
+                        Abbrechen
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Select
+                      value={formData.schoolId || "none"}
+                      onValueChange={(value) =>
+                        setFormData({
+                          ...formData,
+                          schoolId: value === "none" ? null : value,
+                        })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Wähle eine Schule" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Keine Schule</SelectItem>
+                        {schools.map((school) => (
+                          <SelectItem key={school.id} value={school.id}>
+                            {school.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => setIsCreatingSchool(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Neue Schule erstellen
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">
