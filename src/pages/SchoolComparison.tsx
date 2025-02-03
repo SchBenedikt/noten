@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartBarIcon } from 'lucide-react';
+import { ChartBarIcon, School, Users } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SchoolAverage {
   subject_name: string;
@@ -17,6 +18,7 @@ const SchoolComparison = () => {
   const [error, setError] = useState<string | null>(null);
   const [userSchoolId, setUserSchoolId] = useState<string | null>(null);
   const [userGradeLevel, setUserGradeLevel] = useState<number | null>(null);
+  const [schoolName, setSchoolName] = useState<string>("");
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -25,13 +27,14 @@ const SchoolComparison = () => {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('school_id, grade_level')
+        .select('school_id, grade_level, schools(name)')
         .eq('id', session.user.id)
         .single();
 
       if (profile) {
         setUserSchoolId(profile.school_id);
         setUserGradeLevel(profile.grade_level);
+        setSchoolName(profile.schools?.name || "");
       }
     };
 
@@ -51,7 +54,7 @@ const SchoolComparison = () => {
 
         if (error) throw error;
         setAverages(data);
-      } catch (err) {
+      } catch (err: any) {
         setError(err.message);
       } finally {
         setLoading(false);
@@ -65,7 +68,10 @@ const SchoolComparison = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Keine Schule ausgewählt</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <School className="h-6 w-6" />
+            Keine Schule ausgewählt
+          </CardTitle>
           <CardDescription>
             Bitte wählen Sie zuerst eine Schule in Ihrem Profil aus.
           </CardDescription>
@@ -76,9 +82,15 @@ const SchoolComparison = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-      </div>
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-8 w-[300px]" />
+          <Skeleton className="h-4 w-[200px] mt-2" />
+        </CardHeader>
+        <CardContent>
+          <div className="h-[400px] w-full bg-muted/10 rounded-lg animate-pulse" />
+        </CardContent>
+      </Card>
     );
   }
 
@@ -86,22 +98,31 @@ const SchoolComparison = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Fehler</CardTitle>
+          <CardTitle className="text-destructive flex items-center gap-2">
+            <ChartBarIcon className="h-6 w-6" />
+            Fehler beim Laden der Daten
+          </CardTitle>
           <CardDescription>{error}</CardDescription>
         </CardHeader>
       </Card>
     );
   }
 
+  const totalStudents = averages.length > 0 ? averages[0].student_count : 0;
+
   return (
     <Card className="w-full">
       <CardHeader>
         <div className="flex items-center space-x-2">
           <ChartBarIcon className="h-6 w-6" />
-          <div>
-            <CardTitle>Schulweiter Vergleich</CardTitle>
-            <CardDescription>
-              Durchschnittsnoten aller Schüler in der {userGradeLevel}. Klasse
+          <div className="flex-1">
+            <CardTitle>{schoolName}</CardTitle>
+            <CardDescription className="flex items-center gap-2 mt-1">
+              <span>Durchschnittsnoten {userGradeLevel}. Klasse</span>
+              <span className="flex items-center gap-1 text-muted-foreground">
+                <Users className="h-4 w-4" />
+                {totalStudents} {totalStudents === 1 ? 'Schüler' : 'Schüler'}
+              </span>
             </CardDescription>
           </div>
         </div>
@@ -109,10 +130,17 @@ const SchoolComparison = () => {
       <CardContent>
         <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={averages}>
+            <BarChart data={averages} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="subject_name" />
-              <YAxis domain={[1, 6]} reversed />
+              <XAxis 
+                dataKey="subject_name"
+                tick={{ fill: 'hsl(var(--foreground))' }}
+              />
+              <YAxis 
+                domain={[1, 6]} 
+                reversed
+                tick={{ fill: 'hsl(var(--foreground))' }}
+              />
               <Tooltip
                 content={({ active, payload }) => {
                   if (!active || !payload?.length) return null;
@@ -121,7 +149,7 @@ const SchoolComparison = () => {
                     <div className="rounded-lg border bg-background p-2 shadow-sm">
                       <div className="grid grid-cols-2 gap-2">
                         <div className="font-medium">{data.subject_name}</div>
-                        <div className="font-medium text-right">∅ {data.average_grade}</div>
+                        <div className="font-medium text-right">∅ {data.average_grade.toFixed(2)}</div>
                         <div className="text-sm text-muted-foreground">
                           Anzahl Schüler
                         </div>
@@ -135,7 +163,7 @@ const SchoolComparison = () => {
               />
               <Bar
                 dataKey="average_grade"
-                fill="var(--primary)"
+                fill="hsl(var(--primary))"
                 radius={[4, 4, 0, 0]}
               />
             </BarChart>
