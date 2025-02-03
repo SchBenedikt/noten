@@ -227,6 +227,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_school_subject_averages: {
+        Args: {
+          school_uuid: string
+          grade_level_param: number
+        }
+        Returns: {
+          subject_name: string
+          average_grade: number
+          student_count: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
