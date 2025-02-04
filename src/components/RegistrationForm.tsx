@@ -182,6 +182,11 @@ export const RegistrationForm = () => {
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          data: {
+            first_name: formData.firstName,
+          },
+        },
       });
 
       if (signUpError) throw signUpError;
@@ -202,6 +207,14 @@ export const RegistrationForm = () => {
         .eq("id", authData.user.id);
 
       if (profileError) throw profileError;
+
+      // Automatically sign in after registration
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (signInError) throw signInError;
 
       toast({
         title: "Erfolg",
