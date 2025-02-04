@@ -35,11 +35,11 @@ const Landing = () => {
           <p className="text-xl mb-8 animate-fade-in">
             Verwalten Sie Ihre Noten einfach und effizient. Beginnen Sie mit der Einrichtung Ihrer eigenen Instanz oder nutzen Sie unseren Cloud-Service.
           </p>
-          <div className="space-y-6">
-            <div className="flex flex-col items-center gap-2 animate-fade-in animation-delay-200">
+          <div className="space-y-8">
+            <div className="flex flex-col items-center gap-4 animate-fade-in animation-delay-200">
               <Button 
                 onClick={() => navigate("/login")} 
-                className="w-full max-w-sm hover:scale-105 transition-transform duration-200"
+                className="w-full max-w-sm hover:scale-105 transition-transform duration-200 bg-primary"
               >
                 Diese Version nutzen
               </Button>
@@ -48,52 +48,54 @@ const Landing = () => {
               </span>
             </div>
             
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mx-auto hover:bg-accent animate-fade-in animation-delay-300"
-                >
-                  Andere Instanz nutzen
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Instanz wechseln</DialogTitle>
-                  <DialogDescription>
-                    Geben Sie die URL der gewünschten Instanz ein.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-2 py-4">
-                  <Label htmlFor="instanceUrl">Instanz URL</Label>
-                  <Input
-                    id="instanceUrl"
-                    type="url"
-                    value={instanceUrl}
-                    onChange={(e) => setInstanceUrl(e.target.value)}
-                    placeholder="https://andere-instanz.de"
-                    className="w-full transition-all duration-200 focus:scale-[1.02]"
-                  />
-                </div>
-                <DialogFooter>
-                  <Button 
-                    onClick={handleInstanceChange}
-                    className="w-full sm:w-auto hover:scale-105 transition-transform duration-200"
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in animation-delay-300">
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="default"
+                    className="hover:bg-accent/50 transition-colors duration-200"
                   >
-                    Zu anderer Instanz wechseln
+                    Andere Instanz nutzen
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Instanz wechseln</DialogTitle>
+                    <DialogDescription>
+                      Geben Sie die URL der gewünschten Instanz ein.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-2 py-4">
+                    <Label htmlFor="instanceUrl">Instanz URL</Label>
+                    <Input
+                      id="instanceUrl"
+                      type="url"
+                      value={instanceUrl}
+                      onChange={(e) => setInstanceUrl(e.target.value)}
+                      placeholder="https://andere-instanz.de"
+                      className="w-full transition-all duration-200 focus:scale-[1.02]"
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button 
+                      onClick={handleInstanceChange}
+                      className="w-full sm:w-auto hover:scale-105 transition-transform duration-200"
+                    >
+                      Zu anderer Instanz wechseln
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
-            <Button 
-              onClick={() => navigate("/self-hosting")} 
-              variant="outline" 
-              className="w-full max-w-sm mx-auto hover:scale-105 transition-transform duration-200 animate-fade-in animation-delay-500"
-            >
-              Eigene Instanz einrichten
-            </Button>
+              <Button 
+                onClick={() => navigate("/self-hosting")} 
+                variant="outline"
+                className="hover:bg-accent/50 transition-colors duration-200"
+              >
+                Eigene Instanz einrichten
+              </Button>
+            </div>
           </div>
         </div>
       </div>
