@@ -23,7 +23,7 @@ const VerifyEmail = () => {
       try {
         const { data: profiles, error: profileError } = await supabase
           .from("profiles")
-          .select("id")
+          .select()
           .eq("verification_token", token)
           .limit(1);
 
