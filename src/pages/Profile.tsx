@@ -8,7 +8,6 @@ import { ArrowLeft, Mail, KeyRound, GraduationCap } from "lucide-react";
 import { GradeLevelSelector } from "@/components/GradeLevelSelector";
 import { SchoolSelector } from "@/components/SchoolSelector";
 import { FirstNameInput } from "@/components/FirstNameInput";
-import { SmtpSettings } from "@/components/SmtpSettings";
 import { useSubjects } from "@/hooks/use-subjects";
 import { useQuery } from "@tanstack/react-query";
 
@@ -27,7 +26,7 @@ const Profile = () => {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("school_id, first_name, smtp_host, smtp_port, smtp_user, smtp_from_email")
+        .select("school_id, first_name")
         .eq("id", user.id)
         .single();
 
@@ -141,14 +140,6 @@ const Profile = () => {
                   onSchoolChange={() => refetchProfile()}
                 />
               </div>
-
-              <SmtpSettings
-                currentSmtpHost={profile?.smtp_host || null}
-                currentSmtpPort={profile?.smtp_port || null}
-                currentSmtpUser={profile?.smtp_user || null}
-                currentSmtpFromEmail={profile?.smtp_from_email || null}
-                onSmtpSettingsChange={() => refetchProfile()}
-              />
 
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h2 className="text-lg font-semibold mb-4 flex items-center">
