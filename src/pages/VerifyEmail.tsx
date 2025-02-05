@@ -25,19 +25,16 @@ const VerifyEmail = () => {
           .from("profiles")
           .select("id")
           .eq("verification_token", token)
-          .single();
+          .limit(1);
 
-        if (profileError || !profiles) {
+        if (profileError || !profiles?.length) {
           throw new Error("Ungültiger Verifizierungstoken");
         }
 
         const { error: updateError } = await supabase
           .from("profiles")
-          .update({ 
-            verification_status: true,
-            verification_token: null 
-          })
-          .eq("id", profiles.id);
+          .update({ verification_token: null })
+          .eq("id", profiles[0].id);
 
         if (updateError) throw updateError;
 
