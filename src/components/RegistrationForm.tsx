@@ -28,27 +28,6 @@ interface RegistrationData {
   gradeLevel: number;
 }
 
-interface SmtpConfig {
-  host: string;
-  port: number;
-  username: string;
-  password: string;
-  fromEmail: string;
-}
-
-const defaultSmtpConfig: SmtpConfig = {
-  host: "smtp.gmail.com",
-  port: 587,
-  username: "",
-  password: "",
-  fromEmail: "",
-};
-
-const generateVerificationToken = () => {
-  return Math.random().toString(36).substring(2, 15) + 
-         Math.random().toString(36).substring(2, 15);
-};
-
 const getErrorMessage = (error: any) => {
   if (error?.body) {
     try {
@@ -76,7 +55,6 @@ export const RegistrationForm = () => {
     schoolId: null,
     gradeLevel: 5,
   });
-  const [smtpConfig, setSmtpConfig] = useState<SmtpConfig>(defaultSmtpConfig);
 
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
@@ -92,42 +70,6 @@ export const RegistrationForm = () => {
       .select("id, name")
       .order("name");
     if (data) setSchools(data);
-  };
-
-  const sendVerificationEmail = async (email: string, token: string) => {
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-verification-email`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            email,
-            token,
-            smtpConfig: {
-              host: smtpConfig.host,
-              port: smtpConfig.port,
-              username: smtpConfig.username,
-              password: smtpConfig.password,
-              fromEmail: smtpConfig.fromEmail,
-            },
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to send verification email');
-      }
-
-      return true;
-    } catch (error: any) {
-      console.error('Error sending verification email:', error);
-      throw error;
-    }
   };
 
   const handleCreateSchool = async () => {
@@ -225,16 +167,6 @@ export const RegistrationForm = () => {
       await fetchSchools();
       setStep(3);
     } else if (step === 3) {
-      setStep(4);
-    } else if (step === 4) {
-      if (!smtpConfig.username || !smtpConfig.password || !smtpConfig.fromEmail) {
-        toast({
-          title: "Fehler",
-          description: "Bitte fülle alle SMTP-Felder aus",
-          variant: "destructive",
-        });
-        return;
-      }
       await handleRegistration();
     }
   };
@@ -246,8 +178,6 @@ export const RegistrationForm = () => {
   const handleRegistration = async () => {
     setIsLoading(true);
     try {
-      const verificationToken = generateVerificationToken();
-
       // First sign up the user
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
@@ -261,31 +191,36 @@ export const RegistrationForm = () => {
 
       if (signUpError) throw signUpError;
       
+      // Make sure we have a user ID before proceeding
       if (!authData.user?.id) {
         throw new Error("User ID not available after signup");
       }
 
-      // Send verification email
-      await sendVerificationEmail(formData.email, verificationToken);
-
-      // Update the profile
+      // Now update the profile with the user ID
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
           first_name: formData.firstName,
           school_id: formData.schoolId,
           grade_level: formData.gradeLevel,
-          verification_token: verificationToken,
         })
         .eq("id", authData.user.id);
 
       if (profileError) throw profileError;
 
+      // Automatically sign in after registration
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (signInError) throw signInError;
+
       toast({
         title: "Erfolg",
-        description: "Registrierung erfolgreich! Bitte überprüfe deine E-Mails für den Bestätigungslink.",
+        description: "Registrierung erfolgreich!",
       });
-      navigate("/login");
+      navigate("/");
     } catch (error: any) {
       toast({
         title: "Fehler",
@@ -308,7 +243,6 @@ export const RegistrationForm = () => {
           {step === 1 && "Gib deine E-Mail und ein Passwort ein"}
           {step === 2 && "Wie heißt du?"}
           {step === 3 && "Fast geschafft! Noch ein paar Details"}
-          {step === 4 && "SMTP-Einstellungen für E-Mail-Bestätigung"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -439,51 +373,6 @@ export const RegistrationForm = () => {
             </>
           )}
 
-          {step === 4 && (
-            <div className="space-y-4">
-              <Input
-                type="text"
-                placeholder="SMTP Host"
-                value={smtpConfig.host}
-                onChange={(e) =>
-                  setSmtpConfig({ ...smtpConfig, host: e.target.value })
-                }
-              />
-              <Input
-                type="number"
-                placeholder="SMTP Port"
-                value={smtpConfig.port}
-                onChange={(e) =>
-                  setSmtpConfig({ ...smtpConfig, port: parseInt(e.target.value) })
-                }
-              />
-              <Input
-                type="text"
-                placeholder="SMTP Benutzername"
-                value={smtpConfig.username}
-                onChange={(e) =>
-                  setSmtpConfig({ ...smtpConfig, username: e.target.value })
-                }
-              />
-              <Input
-                type="password"
-                placeholder="SMTP Passwort"
-                value={smtpConfig.password}
-                onChange={(e) =>
-                  setSmtpConfig({ ...smtpConfig, password: e.target.value })
-                }
-              />
-              <Input
-                type="email"
-                placeholder="Absender E-Mail"
-                value={smtpConfig.fromEmail}
-                onChange={(e) =>
-                  setSmtpConfig({ ...smtpConfig, fromEmail: e.target.value })
-                }
-              />
-            </div>
-          )}
-
           <div className="flex justify-between pt-4">
             {step > 1 && (
               <Button variant="outline" onClick={handleBack}>
@@ -495,7 +384,7 @@ export const RegistrationForm = () => {
               onClick={handleNext}
               disabled={isLoading}
             >
-              {step === 4 ? "Registrieren" : "Weiter"}
+              {step === 3 ? "Registrieren" : "Weiter"}
             </Button>
           </div>
         </div>

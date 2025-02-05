@@ -9,7 +9,6 @@ import Landing from "./pages/Landing";
 import Profile from "./pages/Profile";
 import DatabaseSetup from "./pages/DatabaseSetup";
 import SelfHosting from "./pages/SelfHosting";
-import VerifyEmail from "./pages/VerifyEmail";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
@@ -80,7 +79,6 @@ const App = () => {
                 )
               }
             />
-            <Route path="/verify" element={<VerifyEmail />} />
             <Route path="/self-hosting" element={<SelfHosting />} />
             <Route path="/database-setup" element={<DatabaseSetup />} />
           </Routes>
