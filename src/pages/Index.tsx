@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { Subject } from '@/types';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, MinusIcon, UserCircle, Menu, LogOut, Search, FileText, FileSpreadsheet, File as FilePdf } from 'lucide-react';
+import { PlusIcon, MinusIcon, UserCircle, Menu, LogOut, Search, FileText, FileSpreadsheet, File as FilePdf, Trophy } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
@@ -103,6 +103,10 @@ const Index = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => navigate('/achievements')}>
+          <Trophy className="mr-2 h-4 w-4" />
+          Auszeichnungen
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/profile')}>
           <UserCircle className="mr-2 h-4 w-4" />
           Profil
@@ -117,6 +121,14 @@ const Index = () => {
 
   const DesktopMenu = () => (
     <div className="hidden md:flex items-center gap-2">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => navigate('/achievements')}
+        className="text-gray-700 hover:text-gray-900"
+      >
+        <Trophy className="h-5 w-5" />
+      </Button>
       <Button
         variant="ghost"
         size="icon"
