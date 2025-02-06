@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Mail, KeyRound, GraduationCap, CheckCircle } from "lucide-react";
+import { ArrowLeft, Mail, KeyRound, GraduationCap } from "lucide-react";
 import { GradeLevelSelector } from "@/components/GradeLevelSelector";
 import { SchoolSelector } from "@/components/SchoolSelector";
 import { FirstNameInput } from "@/components/FirstNameInput";
@@ -83,24 +83,16 @@ const Profile = () => {
         return;
       }
 
-      // Send verification email
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-verification-email`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            email: newEmail,
-            token: verificationToken,
-          }),
-        }
-      );
+      // Send verification email using Supabase Edge Function
+      const { error: functionError } = await supabase.functions.invoke('send-verification-email', {
+        body: JSON.stringify({
+          email: newEmail,
+          token: verificationToken,
+        })
+      });
 
-      if (!response.ok) {
-        throw new Error('Failed to send verification email');
+      if (functionError) {
+        throw functionError;
       }
       
       toast.success("E-Mail-Adresse wurde aktualisiert. Bitte bestätige die Änderung in deinem E-Mail-Postfach.");
@@ -128,23 +120,15 @@ const Profile = () => {
       
       if (updateError) throw updateError;
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-verification-email`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            email: user.email,
-            token: verificationToken,
-          }),
-        }
-      );
+      const { error: functionError } = await supabase.functions.invoke('send-verification-email', {
+        body: JSON.stringify({
+          email: user.email,
+          token: verificationToken,
+        })
+      });
 
-      if (!response.ok) {
-        throw new Error('Failed to send verification email');
+      if (functionError) {
+        throw functionError;
       }
 
       toast.success("Bestätigungs-E-Mail wurde erneut gesendet");
