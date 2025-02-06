@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Mail, KeyRound, GraduationCap } from "lucide-react";
+import { ArrowLeft, Mail, KeyRound, GraduationCap, CheckCircle } from "lucide-react";
 import { GradeLevelSelector } from "@/components/GradeLevelSelector";
 import { SchoolSelector } from "@/components/SchoolSelector";
 import { FirstNameInput } from "@/components/FirstNameInput";
@@ -16,6 +16,7 @@ const Profile = () => {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingVerification, setIsSendingVerification] = useState(false);
   const { currentGradeLevel, setCurrentGradeLevel } = useSubjects();
 
   const { data: profile, refetch: refetchProfile } = useQuery({
@@ -26,7 +27,7 @@ const Profile = () => {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("school_id, first_name")
+        .select("school_id, first_name, verification_token")
         .eq("id", user.id)
         .single();
 
@@ -57,25 +58,101 @@ const Profile = () => {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase.auth.updateUser({ 
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
+      const verificationToken = crypto.randomUUID();
+      
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ verification_token: verificationToken })
+        .eq('id', user.id);
+      
+      if (updateError) throw updateError;
+
+      const { error: emailError } = await supabase.auth.updateUser({ 
         email: newEmail 
       });
       
-      if (error) {
-        if (error.message.includes("email_exists")) {
+      if (emailError) {
+        if (emailError.message.includes("email_exists")) {
           toast.error("Diese E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet");
         } else {
-          toast.error(error.message || "Ein Fehler ist aufgetreten");
+          toast.error(emailError.message || "Ein Fehler ist aufgetreten");
         }
         return;
+      }
+
+      // Send verification email
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-verification-email`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            email: newEmail,
+            token: verificationToken,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to send verification email');
       }
       
       toast.success("E-Mail-Adresse wurde aktualisiert. Bitte bestätige die Änderung in deinem E-Mail-Postfach.");
       setNewEmail("");
     } catch (error: any) {
       toast.error("Ein unerwarteter Fehler ist aufgetreten");
+      console.error('Error:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setIsSendingVerification(true);
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
+      const verificationToken = crypto.randomUUID();
+      
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ verification_token: verificationToken })
+        .eq('id', user.id);
+      
+      if (updateError) throw updateError;
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-verification-email`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            email: user.email,
+            token: verificationToken,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to send verification email');
+      }
+
+      toast.success("Bestätigungs-E-Mail wurde erneut gesendet");
+    } catch (error) {
+      toast.error("Fehler beim Senden der Bestätigungs-E-Mail");
+      console.error('Error:', error);
+    } finally {
+      setIsSendingVerification(false);
     }
   };
 
@@ -160,9 +237,19 @@ const Profile = () => {
                       placeholder="neue@email.de"
                     />
                   </div>
-                  <Button type="submit" disabled={isLoading}>
-                    E-Mail-Adresse aktualisieren
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button type="submit" disabled={isLoading}>
+                      E-Mail-Adresse aktualisieren
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleResendVerification}
+                      disabled={isSendingVerification}
+                    >
+                      Bestätigungs-E-Mail erneut senden
+                    </Button>
+                  </div>
                 </form>
               </div>
 
