@@ -68,6 +68,47 @@ const Index = () => {
     setStartCount(true);
   }, []);
 
+  useEffect(() => {
+    const checkAndCreateAwards = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: awards, error } = await supabase
+        .from("awards")
+        .select("*")
+        .eq("user_id", user.id);
+
+      if (error) {
+        console.error("Error fetching awards:", error);
+        return;
+      }
+
+      if (awards.length === 0) {
+        await createAwards(user.id);
+      }
+    };
+
+    checkAndCreateAwards();
+  }, []);
+
+  const createAwards = async (userId: string) => {
+    const { error } = await supabase
+      .from("awards")
+      .insert([
+        { user_id: userId, type: "first_grade" },
+        { user_id: userId, type: "grade_streak" },
+        { user_id: userId, type: "perfect_grade" },
+        { user_id: userId, type: "improvement" },
+        { user_id: userId, type: "subject_master" },
+        { user_id: userId, type: "grade_collector" },
+        { user_id: userId, type: "subject_collector" },
+      ]);
+
+    if (error) {
+      console.error("Error creating awards:", error);
+    }
+  };
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
