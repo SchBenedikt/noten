@@ -16,7 +16,6 @@ const Profile = () => {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isSendingVerification, setIsSendingVerification] = useState(false);
   const { currentGradeLevel, setCurrentGradeLevel } = useSubjects();
 
   const { data: profile, refetch: refetchProfile } = useQuery({
@@ -27,7 +26,7 @@ const Profile = () => {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("school_id, first_name, verification_token")
+        .select("school_id, first_name")
         .eq("id", user.id)
         .single();
 
@@ -58,85 +57,25 @@ const Profile = () => {
     setIsLoading(true);
     
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-
-      const verificationToken = crypto.randomUUID();
-      
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ verification_token: verificationToken })
-        .eq('id', user.id);
-      
-      if (updateError) throw updateError;
-
-      const { error: emailError } = await supabase.auth.updateUser({ 
+      const { error } = await supabase.auth.updateUser({ 
         email: newEmail 
       });
       
-      if (emailError) {
-        if (emailError.message.includes("email_exists")) {
+      if (error) {
+        if (error.message.includes("email_exists")) {
           toast.error("Diese E-Mail-Adresse wird bereits von einem anderen Benutzer verwendet");
         } else {
-          toast.error(emailError.message || "Ein Fehler ist aufgetreten");
+          toast.error(error.message || "Ein Fehler ist aufgetreten");
         }
         return;
-      }
-
-      // Send verification email using Supabase Edge Function
-      const { error: functionError } = await supabase.functions.invoke('send-verification-email', {
-        body: JSON.stringify({
-          email: newEmail,
-          token: verificationToken,
-        })
-      });
-
-      if (functionError) {
-        throw functionError;
       }
       
       toast.success("E-Mail-Adresse wurde aktualisiert. Bitte bestätige die Änderung in deinem E-Mail-Postfach.");
       setNewEmail("");
     } catch (error: any) {
       toast.error("Ein unerwarteter Fehler ist aufgetreten");
-      console.error('Error:', error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleResendVerification = async () => {
-    setIsSendingVerification(true);
-    try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-
-      const verificationToken = crypto.randomUUID();
-      
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ verification_token: verificationToken })
-        .eq('id', user.id);
-      
-      if (updateError) throw updateError;
-
-      const { error: functionError } = await supabase.functions.invoke('send-verification-email', {
-        body: JSON.stringify({
-          email: user.email,
-          token: verificationToken,
-        })
-      });
-
-      if (functionError) {
-        throw functionError;
-      }
-
-      toast.success("Bestätigungs-E-Mail wurde erneut gesendet");
-    } catch (error) {
-      toast.error("Fehler beim Senden der Bestätigungs-E-Mail");
-      console.error('Error:', error);
-    } finally {
-      setIsSendingVerification(false);
     }
   };
 
@@ -221,19 +160,9 @@ const Profile = () => {
                       placeholder="neue@email.de"
                     />
                   </div>
-                  <div className="flex gap-2">
-                    <Button type="submit" disabled={isLoading}>
-                      E-Mail-Adresse aktualisieren
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleResendVerification}
-                      disabled={isSendingVerification}
-                    >
-                      Bestätigungs-E-Mail erneut senden
-                    </Button>
-                  </div>
+                  <Button type="submit" disabled={isLoading}>
+                    E-Mail-Adresse aktualisieren
+                  </Button>
                 </form>
               </div>
 
