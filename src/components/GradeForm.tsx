@@ -9,11 +9,13 @@ import { z } from 'zod';
 import { de } from 'date-fns/locale';
 
 import { cn } from '@/lib/utils';
+// import { toast } from '@/components/hooks/toast';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import {
   Form,
   FormControl,
+  // FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -71,13 +73,6 @@ export const GradeForm = ({
     }
   }, [initialGrade, form]);
 
-  // If it's a secondary subject, force type to be 'oral'
-  useEffect(() => {
-    if (subjectType === 'secondary') {
-      setType('oral');
-    }
-  }, [subjectType]);
-
   const handleSubmit = (data: z.infer<typeof FormSchema>) => {
     onSubmit({
       value: Number(value),
@@ -124,21 +119,21 @@ export const GradeForm = ({
               required
             />
           </div>
-          {subjectType === 'main' && (
-            <div className="grid gap-2">
-              <Label>Art</Label>
-              <RadioGroup value={type} onValueChange={(value) => setType(value as 'oral' | 'written')}>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="oral" id="oral" />
-                  <Label htmlFor="oral">Mündlich</Label>
-                </div>
+          <div className="grid gap-2">
+            <Label>Art</Label>
+            <RadioGroup value={type} onValueChange={(value) => setType(value as 'oral' | 'written')}>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="oral" id="oral" />
+                <Label htmlFor="oral">Mündlich</Label>
+              </div>
+              {subjectType === 'main' && (
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="written" id="written" />
                   <Label htmlFor="written">Schulaufgabe</Label>
                 </div>
-              </RadioGroup>
-            </div>
-          )}
+              )}
+            </RadioGroup>
+          </div>
           <div className="grid gap-2">
             <FormField
               control={form.control}

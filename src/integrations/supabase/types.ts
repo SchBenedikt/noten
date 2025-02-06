@@ -137,7 +137,6 @@ export type Database = {
           grade_level: number
           id: string
           school_id: string | null
-          verification_token: string | null
         }
         Insert: {
           created_at?: string
@@ -145,7 +144,6 @@ export type Database = {
           grade_level?: number
           id: string
           school_id?: string | null
-          verification_token?: string | null
         }
         Update: {
           created_at?: string
@@ -153,7 +151,6 @@ export type Database = {
           grade_level?: number
           id?: string
           school_id?: string | null
-          verification_token?: string | null
         }
         Relationships: [
           {
