@@ -24,11 +24,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { GradeForm } from '@/components/GradeForm';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { CommandDialog, CommandInput, CommandList, CommandItem, CommandEmpty, CommandGroup, CommandSeparator } from '@/components/ui/command';
-import { exportToCSV, exportToXLSX, exportToPDF } from '@/utils/export';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { createDemoExcel, parseExcelFile } from '@/utils/import';
+import { useAchievements } from '@/hooks/use-achievements';
+import { AchievementsList } from '@/components/AchievementsList';
 
 const Index = () => {
   const {
@@ -61,6 +62,7 @@ const Index = () => {
   });
   const [lastExportFormat, setLastExportFormat] = useState<'csv' | 'xlsx' | 'pdf'>('csv');
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const { data: achievements = [] } = useAchievements();
 
   useEffect(() => {
     setStartCount(true);
@@ -311,6 +313,11 @@ const Index = () => {
           </div>
 
           <div className="space-y-6">
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <h2 className="text-lg font-semibold mb-4">Auszeichnungen</h2>
+              <AchievementsList achievements={achievements} />
+            </div>
+            
             <SubjectList
               subjects={currentSubjects}
               onAddGrade={addGrade}

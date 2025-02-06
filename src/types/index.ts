@@ -22,3 +22,20 @@ export interface Subject {
   created_at?: string;
   grade_level: number;
 }
+
+export type AchievementType = 
+  | 'first_grade'
+  | 'grade_streak'
+  | 'perfect_grade'
+  | 'improvement'
+  | 'subject_master'
+  | 'grade_collector'
+  | 'subject_collector';
+
+export interface Achievement {
+  id: string;
+  type: AchievementType;
+  subject_id?: string;
+  earned_at: string;
+  school_year: number;
+}

@@ -9,6 +9,41 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          earned_at: string | null
+          id: string
+          school_year: number
+          subject_id: string | null
+          type: Database["public"]["Enums"]["achievement_type"]
+          user_id: string
+        }
+        Insert: {
+          earned_at?: string | null
+          id?: string
+          school_year: number
+          subject_id?: string | null
+          type: Database["public"]["Enums"]["achievement_type"]
+          user_id: string
+        }
+        Update: {
+          earned_at?: string | null
+          id?: string
+          school_year?: number
+          subject_id?: string | null
+          type?: Database["public"]["Enums"]["achievement_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievements_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       archived_grades: {
         Row: {
           archived_subject_id: string
@@ -241,9 +276,22 @@ export type Database = {
           student_count: number
         }[]
       }
+      get_school_year: {
+        Args: {
+          check_date: string
+        }
+        Returns: number
+      }
     }
     Enums: {
-      [_ in never]: never
+      achievement_type:
+        | "first_grade"
+        | "grade_streak"
+        | "perfect_grade"
+        | "improvement"
+        | "subject_master"
+        | "grade_collector"
+        | "subject_collector"
     }
     CompositeTypes: {
       [_ in never]: never
