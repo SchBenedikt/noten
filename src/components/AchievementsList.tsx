@@ -1,6 +1,8 @@
 import { Achievement } from "@/types";
 import { Trophy, Star, TrendingUp, GraduationCap, BookOpen, Award, Medal } from "lucide-react";
 import { motion } from "framer-motion";
+import { fetchAndCreateMissingAchievements } from "@/lib/achievements";
+import { useEffect } from "react";
 
 interface AchievementsListProps {
   achievements: Achievement[];
@@ -45,6 +47,10 @@ const achievementInfo = {
 };
 
 export const AchievementsList = ({ achievements }: AchievementsListProps) => {
+  useEffect(() => {
+    fetchAndCreateMissingAchievements();
+  }, []);
+
   if (achievements.length === 0) {
     return (
       <div className="text-center text-gray-500 py-4">
@@ -64,12 +70,12 @@ export const AchievementsList = ({ achievements }: AchievementsListProps) => {
             key={achievement.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white p-4 rounded-lg shadow-sm flex items-center gap-4"
+            className="bg-white p-4 rounded-lg shadow-sm flex items-center gap-4 border border-gray-300"
           >
             <div className="bg-primary/10 p-2 rounded-full">
               <Icon className="h-6 w-6 text-primary" />
             </div>
-            <div>
+            <div className="p-2">
               <h3 className="font-medium">{info.title}</h3>
               <p className="text-sm text-gray-500">{info.description}</p>
               <p className="text-xs text-gray-400 mt-1">

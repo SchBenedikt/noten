@@ -75,6 +75,12 @@ export const LoginForm = () => {
     }
   };
 
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleLogin();
+    }
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto transition-transform transform hover:scale-105">
       <CardHeader>
@@ -94,6 +100,7 @@ export const LoginForm = () => {
               placeholder="E-Mail"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              onKeyPress={handleKeyPress}
               className={`transition-colors focus:border-primary focus:ring-primary ${emailError ? 'border-red-500' : ''}`}
             />
           </div>
@@ -103,6 +110,7 @@ export const LoginForm = () => {
               placeholder="Passwort"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={handleKeyPress}
               className={`transition-colors focus:border-primary focus:ring-primary ${passwordError ? 'border-red-500' : ''}`}
             />
           </div>
