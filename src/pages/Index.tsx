@@ -28,8 +28,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { createDemoExcel, parseExcelFile } from '@/utils/import';
-import { useAchievements } from '@/hooks/use-achievements';
-import { AchievementsList } from '@/components/AchievementsList';
+import { fetchAndCreateMissingAchievements } from '@/lib/achievements';
 
 const Index = () => {
   const {
@@ -62,10 +61,13 @@ const Index = () => {
   });
   const [lastExportFormat, setLastExportFormat] = useState<'csv' | 'xlsx' | 'pdf'>('csv');
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const { data: achievements = [] } = useAchievements();
 
   useEffect(() => {
     setStartCount(true);
+  }, []);
+
+  useEffect(() => {
+    fetchAndCreateMissingAchievements();
   }, []);
 
   const handleLogout = async () => {
@@ -325,11 +327,6 @@ const Index = () => {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h2 className="text-lg font-semibold mb-4">Auszeichnungen</h2>
-              <AchievementsList achievements={achievements} />
-            </div>
-            
             <SubjectList
               subjects={currentSubjects}
               onAddGrade={addGrade}

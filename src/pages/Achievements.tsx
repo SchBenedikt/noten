@@ -3,10 +3,16 @@ import { AchievementsList } from "@/components/AchievementsList";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { fetchAndCreateMissingAchievements } from "@/lib/achievements";
 
 const Achievements = () => {
   const { data: achievements = [], isLoading } = useAchievements();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchAndCreateMissingAchievements();
+  }, []);
 
   if (isLoading) {
     return (
