@@ -63,3 +63,44 @@ export const fetchAndCreateMissingAchievements = async () => {
     }
   }
 };
+
+export const addAchievement = async (achievement: Achievement) => {
+  const { data, error } = await supabase
+    .from('achievements')
+    .insert([achievement]);
+
+  if (error) {
+    console.error('Error adding achievement:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const updateAchievement = async (achievement: Achievement) => {
+  const { data, error } = await supabase
+    .from('achievements')
+    .update(achievement)
+    .eq('id', achievement.id);
+
+  if (error) {
+    console.error('Error updating achievement:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const deleteAchievement = async (achievementId: string) => {
+  const { data, error } = await supabase
+    .from('achievements')
+    .delete()
+    .eq('id', achievementId);
+
+  if (error) {
+    console.error('Error deleting achievement:', error);
+    throw error;
+  }
+
+  return data;
+};

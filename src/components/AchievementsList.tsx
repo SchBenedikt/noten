@@ -1,11 +1,15 @@
 import { Achievement } from "@/types";
-import { Trophy, Star, TrendingUp, GraduationCap, BookOpen, Award, Medal } from "lucide-react";
+import { Trophy, Star, TrendingUp, GraduationCap, BookOpen, Award, Medal, Edit, Trash } from "lucide-react";
 import { motion } from "framer-motion";
 import { fetchAndCreateMissingAchievements } from "@/lib/achievements";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { useLocation } from "react-router-dom";
 
 interface AchievementsListProps {
   achievements: Achievement[];
+  onEdit?: (achievement: Achievement) => void;
+  onDelete?: (achievementId: string) => void;
 }
 
 const achievementInfo = {
@@ -46,7 +50,10 @@ const achievementInfo = {
   },
 };
 
-export const AchievementsList = ({ achievements }: AchievementsListProps) => {
+export const AchievementsList = ({ achievements, onEdit, onDelete }: AchievementsListProps) => {
+  const location = useLocation();
+  const isAdminPage = location.pathname.includes("/admin");
+
   useEffect(() => {
     fetchAndCreateMissingAchievements();
   }, []);
@@ -75,13 +82,23 @@ export const AchievementsList = ({ achievements }: AchievementsListProps) => {
             <div className="bg-primary/10 p-2 rounded-full">
               <Icon className="h-6 w-6 text-primary" />
             </div>
-            <div className="p-2">
+            <div className="p-2 flex-1">
               <h3 className="font-medium">{info.title}</h3>
               <p className="text-sm text-gray-500">{info.description}</p>
               <p className="text-xs text-gray-400 mt-1">
                 {new Date(achievement.earned_at).toLocaleDateString()}
               </p>
             </div>
+            {isAdminPage && (
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" onClick={() => onEdit?.(achievement)}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="destructive" size="icon" onClick={() => onDelete?.(achievement.id)}>
+                  <Trash className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </motion.div>
         );
       })}
