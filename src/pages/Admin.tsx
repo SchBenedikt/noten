@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { achievementInfo } from "@/components/AchievementsList";
-import { fetchAndCreateMissingAchievements } from "@/lib/achievements";
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -45,25 +44,6 @@ const Admin = () => {
       toast({
         title: "Fehler",
         description: "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleScanAchievements = async () => {
-    setIsLoading(true);
-    try {
-      await fetchAndCreateMissingAchievements();
-      toast({
-        title: "Erfolgreich",
-        description: "Alle Auszeichnungen wurden gescannt und aktualisiert.",
-      });
-    } catch (error) {
-      toast({
-        title: "Fehler",
-        description: "Fehler beim Scannen der Auszeichnungen.",
         variant: "destructive",
       });
     } finally {
@@ -118,23 +98,6 @@ const Admin = () => {
         </div>
 
         <div className="grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Auszeichnungen scannen</CardTitle>
-              <CardDescription>
-                Scannt alle Noten und weist neue Auszeichnungen zu.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button 
-                onClick={handleScanAchievements} 
-                disabled={isLoading}
-              >
-                {isLoading ? "Lädt..." : "Jetzt scannen"}
-              </Button>
-            </CardContent>
-          </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>Verfügbare Auszeichnungen</CardTitle>
