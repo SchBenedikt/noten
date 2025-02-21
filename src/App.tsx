@@ -11,6 +11,7 @@ import Profile from "./pages/Profile";
 import DatabaseSetup from "./pages/DatabaseSetup";
 import SelfHosting from "./pages/SelfHosting";
 import Achievements from "./pages/Achievements";
+import Admin from "./pages/Admin";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
@@ -122,6 +123,7 @@ const App = () => {
                 )
               }
             />
+            <Route path="/admin" element={<Admin />} />
             <Route path="/self-hosting" element={<SelfHosting />} />
             <Route path="/database-setup" element={<DatabaseSetup />} />
           </Routes>
@@ -132,4 +134,3 @@ const App = () => {
 };
 
 export default App;
-

@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { Subject } from '@/types';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, MinusIcon, UserCircle, Menu, LogOut, Search, FileText, FileSpreadsheet, File as FilePdf, Trophy } from 'lucide-react';
+import { PlusIcon, MinusIcon, UserCircle, Menu, LogOut, Search, FileText, FileSpreadsheet, File as FilePdf, Trophy, Settings } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
@@ -113,6 +113,10 @@ const Index = () => {
           <UserCircle className="mr-2 h-4 w-4" />
           Profil
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/admin')}>
+          <Settings className="mr-2 h-4 w-4" />
+          Admin
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
           Abmelden
@@ -138,6 +142,14 @@ const Index = () => {
         className="text-gray-700 hover:text-gray-900"
       >
         <UserCircle className="h-5 w-5" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => navigate('/admin')}
+        className="text-gray-700 hover:text-gray-900"
+      >
+        <Settings className="h-5 w-5" />
       </Button>
       <button
         onClick={handleLogout}

@@ -44,6 +44,24 @@ export type Database = {
           },
         ]
       }
+      admin_access: {
+        Row: {
+          created_at: string | null
+          id: string
+          password_hash: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          password_hash: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          password_hash?: string
+        }
+        Relationships: []
+      }
       archived_grades: {
         Row: {
           archived_subject_id: string
@@ -265,6 +283,12 @@ export type Database = {
         }
         Returns: undefined
       }
+      check_admin_password: {
+        Args: {
+          input_password: string
+        }
+        Returns: boolean
+      }
       get_school_subject_averages: {
         Args: {
           school_uuid: string
@@ -281,6 +305,12 @@ export type Database = {
           check_date: string
         }
         Returns: number
+      }
+      set_admin_password: {
+        Args: {
+          new_password: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
