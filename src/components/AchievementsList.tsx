@@ -1,3 +1,4 @@
+
 import { Achievement } from "@/types";
 import { Trophy, Star, TrendingUp, GraduationCap, BookOpen, Award, Medal } from "lucide-react";
 import { motion } from "framer-motion";
@@ -8,7 +9,7 @@ interface AchievementsListProps {
   achievements: Achievement[];
 }
 
-const achievementInfo = {
+export const achievementInfo = {
   first_grade: {
     title: "Erste Note",
     description: "Erste Note des Schuljahres eingetragen",

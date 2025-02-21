@@ -1,3 +1,4 @@
+
 export type SubjectType = 'main' | 'secondary';
 export type GradeType = 'oral' | 'written';
 

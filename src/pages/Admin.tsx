@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { achievementInfo } from "@/components/AchievementsList";
+import { fetchAndCreateMissingAchievements } from "@/lib/achievements";
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -54,7 +55,7 @@ const Admin = () => {
   const handleScanAchievements = async () => {
     setIsLoading(true);
     try {
-      await supabase.rpc('check_all_achievements');
+      await fetchAndCreateMissingAchievements();
       toast({
         title: "Erfolgreich",
         description: "Alle Auszeichnungen wurden gescannt und aktualisiert.",
