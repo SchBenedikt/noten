@@ -1,3 +1,4 @@
+
 import { useAchievements } from "@/hooks/use-achievements";
 import { AchievementsList } from "@/components/AchievementsList";
 import { Button } from "@/components/ui/button";
