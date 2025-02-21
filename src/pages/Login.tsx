@@ -23,7 +23,7 @@ const Login = () => {
 
   return (
     <div className="min-h-[100dvh] bg-gray-50 flex items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-sm p-6 sm:p-8 space-y-6">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-sm p-6 sm:p-8 space-y-6 transition-transform transform hover:scale-105">
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-4">
             <LogIn className="w-6 h-6 text-primary" />
@@ -40,7 +40,7 @@ const Login = () => {
 
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full transition-transform transform hover:scale-105"
           onClick={() => setShowRegistration(!showRegistration)}
         >
           {showRegistration ? "Zurück zum Login" : "Neu hier? Registriere dich"}
