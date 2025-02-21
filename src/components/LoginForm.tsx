@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -119,7 +120,7 @@ export const LoginForm = () => {
             onClick={handleLogin}
             disabled={isLoading}
           >
-            Anmelden
+            {isLoading ? "Anmelden..." : "Anmelden"}
           </Button>
         </div>
       </CardContent>
