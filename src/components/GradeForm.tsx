@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -34,7 +35,9 @@ export const GradeForm = ({
 }: GradeFormProps) => {
   const [value, setValue] = useState(initialGrade?.value.toString() || '');
   const [weight, setWeight] = useState(initialGrade?.weight.toString() || '1');
-  const [type, setType] = useState<'oral' | 'written'>(initialGrade?.type || 'oral');
+  const [type, setType] = useState<'oral' | 'written'>(
+    subjectType === 'secondary' ? 'oral' : (initialGrade?.type || 'oral')
+  );
   const [notes, setNotes] = useState(initialGrade?.notes || '');
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -55,10 +58,10 @@ export const GradeForm = ({
   }, [initialGrade, form]);
 
   useEffect(() => {
-    if (subjectType === 'secondary' && type !== 'oral') {
+    if (subjectType === 'secondary' && type === 'written') {
       setType('oral');
     }
-  }, [subjectType, type]);
+  }, [subjectType]);
 
   const handleSubmit = (data: z.infer<typeof FormSchema>) => {
     onSubmit({
@@ -71,7 +74,7 @@ export const GradeForm = ({
     if (!initialGrade) {
       setValue('');
       setWeight('1');
-      setType('oral');
+      setType(subjectType === 'secondary' ? 'oral' : 'oral');
       setNotes('');
     }
   };

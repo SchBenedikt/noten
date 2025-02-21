@@ -1,3 +1,4 @@
+
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
@@ -11,7 +12,11 @@ export const GradeTypeSelector = ({ type, onChange, subjectType = 'main' }: Grad
   return (
     <div className="grid gap-2">
       <Label>Art</Label>
-      <RadioGroup value={type} onValueChange={(value) => onChange(value as 'oral' | 'written')}>
+      <RadioGroup 
+        value={type} 
+        onValueChange={(value) => onChange(value as 'oral' | 'written')}
+        defaultValue="oral"
+      >
         <div className="flex items-center space-x-2">
           <RadioGroupItem value="oral" id="oral" />
           <Label htmlFor="oral">Mündlich</Label>
