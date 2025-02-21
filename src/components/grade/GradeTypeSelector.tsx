@@ -15,7 +15,6 @@ export const GradeTypeSelector = ({ type, onChange, subjectType = 'main' }: Grad
       <RadioGroup 
         value={type} 
         onValueChange={(value) => onChange(value as 'oral' | 'written')}
-        defaultValue="oral"
       >
         <div className="flex items-center space-x-2">
           <RadioGroupItem value="oral" id="oral" />

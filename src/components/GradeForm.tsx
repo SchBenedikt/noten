@@ -36,7 +36,7 @@ export const GradeForm = ({
   const [value, setValue] = useState(initialGrade?.value.toString() || '');
   const [weight, setWeight] = useState(initialGrade?.weight.toString() || '1');
   const [type, setType] = useState<'oral' | 'written'>(
-    subjectType === 'secondary' ? 'oral' : (initialGrade?.type || 'oral')
+    initialGrade?.type || (subjectType === 'secondary' ? 'oral' : 'oral')
   );
   const [notes, setNotes] = useState(initialGrade?.notes || '');
 
@@ -61,7 +61,7 @@ export const GradeForm = ({
     if (subjectType === 'secondary' && type === 'written') {
       setType('oral');
     }
-  }, [subjectType]);
+  }, [subjectType, type]);
 
   const handleSubmit = (data: z.infer<typeof FormSchema>) => {
     onSubmit({
@@ -74,7 +74,7 @@ export const GradeForm = ({
     if (!initialGrade) {
       setValue('');
       setWeight('1');
-      setType(subjectType === 'secondary' ? 'oral' : 'oral');
+      setType('oral');
       setNotes('');
     }
   };
