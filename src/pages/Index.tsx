@@ -41,6 +41,7 @@ const Index = () => {
     updateSubject,
     currentGradeLevel,
   } = useSubjects();
+  
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [isAddingSubject, setIsAddingSubject] = useState(false);
@@ -64,6 +65,26 @@ const Index = () => {
 
   useEffect(() => {
     setStartCount(true);
+  }, []);
+
+  useEffect(() => {
+    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleDarkModeChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    };
+
+    handleDarkModeChange(darkModeQuery);
+
+    darkModeQuery.addEventListener('change', handleDarkModeChange);
+
+    return () => {
+      darkModeQuery.removeEventListener('change', handleDarkModeChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -164,9 +185,7 @@ const Index = () => {
     try {
       const { subjects: importedSubjects } = await parseExcelFile(file);
       
-      // Create subjects and add grades
       for (const [name, data] of importedSubjects.entries()) {
-        // First create the subject
         const subject: Omit<Subject, 'id' | 'grades'> = {
           name,
           type: data.type,
@@ -174,9 +193,7 @@ const Index = () => {
           writtenWeight: data.type === 'main' ? 2 : undefined
         };
         
-        // Add subject and get the ID
         await addSubject(subject).then(async (newSubject) => {
-          // Add all grades for this subject
           for (const grade of data.grades) {
             await addGrade(newSubject.id, grade);
           }
@@ -300,7 +317,7 @@ const Index = () => {
               <Sheet open={isGradeSheetOpen} onOpenChange={setGradeSheetOpen}>
                 <SheetTrigger asChild>
                   <Button variant="outline" size="icon" className="h-10 w-full mt-2">
-                    <PlusIcon className="h-5 w-5 mr-2" />
+                    <PlusIcon className="h-5 w-4 w-4" />
                     Note hinzufügen
                   </Button>
                 </SheetTrigger>
