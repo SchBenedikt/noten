@@ -9,6 +9,25 @@ interface GradeTypeSelectorProps {
 }
 
 export const GradeTypeSelector = ({ type, onChange, subjectType = 'main' }: GradeTypeSelectorProps) => {
+  // Wenn es ein Nebenfach ist, zeigen wir nur die mündliche Option an
+  if (subjectType === 'secondary') {
+    return (
+      <div className="grid gap-2">
+        <Label>Art</Label>
+        <RadioGroup 
+          value="oral" 
+          onValueChange={(value) => onChange(value as 'oral' | 'written')}
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="oral" id="oral" />
+            <Label htmlFor="oral">Mündlich</Label>
+          </div>
+        </RadioGroup>
+      </div>
+    );
+  }
+
+  // Für Hauptfächer zeigen wir beide Optionen an
   return (
     <div className="grid gap-2">
       <Label>Art</Label>
@@ -20,12 +39,10 @@ export const GradeTypeSelector = ({ type, onChange, subjectType = 'main' }: Grad
           <RadioGroupItem value="oral" id="oral" />
           <Label htmlFor="oral">Mündlich</Label>
         </div>
-        {subjectType === 'main' && (
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="written" id="written" />
-            <Label htmlFor="written">Schulaufgabe</Label>
-          </div>
-        )}
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="written" id="written" />
+          <Label htmlFor="written">Schulaufgabe</Label>
+        </div>
       </RadioGroup>
     </div>
   );
