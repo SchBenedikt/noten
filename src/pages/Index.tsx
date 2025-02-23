@@ -66,26 +66,6 @@ const Index = () => {
     setStartCount(true);
   }, []);
 
-  useEffect(() => {
-    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
-    const handleDarkModeChange = (e: MediaQueryListEvent | MediaQueryList) => {
-      if (e.matches) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    };
-
-    handleDarkModeChange(darkModeQuery);
-
-    darkModeQuery.addEventListener('change', handleDarkModeChange);
-
-    return () => {
-      darkModeQuery.removeEventListener('change', handleDarkModeChange);
-    };
-  }, []);
-
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
