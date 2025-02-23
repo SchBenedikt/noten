@@ -7,7 +7,6 @@ import { ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { achievementInfo } from "@/components/AchievementsList";
 
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -96,30 +95,14 @@ const Admin = () => {
           </Button>
           <h1 className="text-3xl font-bold">Admin-Bereich</h1>
         </div>
-
         <div className="grid gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Verfügbare Auszeichnungen</CardTitle>
+              <CardTitle>Admin Dashboard</CardTitle>
               <CardDescription>
-                Übersicht aller möglichen Auszeichnungen.
+                Willkommen im Admin-Bereich.
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid gap-4">
-                {Object.entries(achievementInfo).map(([type, info]) => (
-                  <div key={type} className="flex items-center gap-4 p-4 border rounded-lg">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                      <info.icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{info.title}</h3>
-                      <p className="text-sm text-gray-500">{info.description}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
           </Card>
         </div>
       </div>
