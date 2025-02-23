@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { Subject } from '@/types';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, MinusIcon, UserCircle, Menu, LogOut, Search, FileText, FileSpreadsheet, File as FilePdf, Trophy, Settings } from 'lucide-react';
+import { PlusIcon, MinusIcon, UserCircle, Menu, LogOut, Search, FileText, FileSpreadsheet, File as FilePdf, Settings } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
@@ -28,7 +28,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { createDemoExcel, parseExcelFile } from '@/utils/import';
-import { fetchAndCreateMissingAchievements } from '@/lib/achievements';
 
 const Index = () => {
   const {
@@ -85,10 +84,6 @@ const Index = () => {
     return () => {
       darkModeQuery.removeEventListener('change', handleDarkModeChange);
     };
-  }, []);
-
-  useEffect(() => {
-    fetchAndCreateMissingAchievements();
   }, []);
 
   const handleLogout = async () => {
