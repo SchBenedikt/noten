@@ -1,8 +1,59 @@
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+}
+
+.dark {
+  background-color: hsl(240 10% 3.9%);
+  color: hsl(0 0% 98%);
+}
+
+.dark .glass-morphism {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .card,
+.dark .dropdown-menu,
+.dark .dialog,
+.dark .sheet,
+.dark .command {
+  background-color: hsl(240 10% 3.9%);
+  border-color: hsl(240 3.7% 15.9%);
+}
+
+.dark .button-ghost:hover {
+  background-color: hsl(240 3.7% 15.9%);
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  background-color: hsl(240 3.7% 15.9%);
+  border-color: hsl(240 3.7% 15.9%);
+  color: hsl(0 0% 98%);
+}
+
+.dark .bg-gray-50 {
+  background-color: hsl(240 10% 3.9%);
+}
+
+.dark .text-gray-600,
+.dark .text-gray-700,
+.dark .text-gray-900 {
+  color: hsl(240 5% 64.9%);
+}
+
+.dark .border-gray-300 {
+  border-color: hsl(240 3.7% 15.9%);
+}
+
+.dark .shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .logo {
@@ -11,11 +62,13 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em rgba(100, 108, 255, 0.67));
 }
+
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em rgba(97, 218, 251, 0.67));
 }
 
 @keyframes logo-spin {
