@@ -1,11 +1,9 @@
-
 import { SubjectForm } from '@/components/SubjectForm';
 import { SubjectList } from '@/components/SubjectList';
 import { DynamicGreeting } from '@/components/DynamicGreeting';
 import { calculateOverallAverage } from '@/lib/calculations';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSubjects } from '@/hooks/use-subjects';
-import { useAchievements } from '@/hooks/use-achievements';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
@@ -22,16 +20,14 @@ import {
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { GradeForm } from '@/components/GradeForm';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { CommandDialog, CommandInput, CommandList, CommandItem, CommandEmpty, CommandGroup, CommandSeparator } from '@/components/ui/command';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { createDemoExcel, parseExcelFile } from '@/utils/import';
-import { AchievementDialog } from '@/components/achievements/AchievementDialog';
-import { AchievementList } from '@/components/achievements/AchievementList';
 
 const Index = () => {
   const {
@@ -45,7 +41,6 @@ const Index = () => {
     currentGradeLevel,
   } = useSubjects();
   
-  const { achievements } = useAchievements();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [isAddingSubject, setIsAddingSubject] = useState(false);
@@ -55,7 +50,6 @@ const Index = () => {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
-  const [isAchievementsSheetOpen, setAchievementsSheetOpen] = useState(false);
   const [exportFields, setExportFields] = useState({
     Fach: true,
     Typ: true,
@@ -85,20 +79,6 @@ const Index = () => {
     navigate('/login');
   };
 
-  const handleUpdateSubject = async (subjectId: string, updates: Partial<Subject>) => {
-    await updateSubject(subjectId, updates);
-  };
-
-  const onSubjectAdd = async (subject: Omit<Subject, 'id' | 'grades'>) => {
-    await addSubject(subject);
-  };
-
-  const currentSubjects = subjects.filter(s => s.grade_level === currentGradeLevel);
-  const overallAverage = calculateOverallAverage(currentSubjects);
-  const totalGrades = currentSubjects.reduce((sum, subject) => sum + subject.grades.length, 0);
-  const mainSubjectsCount = currentSubjects.filter(s => s.type === 'main').length;
-  const secondarySubjectsCount = currentSubjects.filter(s => s.type === 'secondary').length;
-
   const MobileMenu = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -107,7 +87,7 @@ const Index = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setAchievementsSheetOpen(true)}>
+        <DropdownMenuItem onClick={() => navigate('/achievements')}>
           <Trophy className="mr-2 h-4 w-4" />
           Achievements
         </DropdownMenuItem>
@@ -132,7 +112,7 @@ const Index = () => {
       <Button
         variant="ghost"
         size="icon"
-        onClick={() => setAchievementsSheetOpen(true)}
+        onClick={() => navigate('/achievements')}
         className="text-gray-700 hover:text-gray-900"
       >
         <Trophy className="h-5 w-5" />
@@ -207,6 +187,17 @@ const Index = () => {
     URL.revokeObjectURL(url);
   };
 
+  const handleUpdateSubject = async (subjectId: string, updates: Partial<Subject>) => {
+    await updateSubject(subjectId, updates);
+  };
+
+  const onSubjectAdd = async (subject: Omit<Subject, 'id' | 'grades'>) => {
+    await addSubject(subject);
+  };
+
+  const currentSubjects = subjects.filter(s => s.grade_level === currentGradeLevel);
+  const overallAverage = calculateOverallAverage(currentSubjects);
+
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="container mx-auto px-2 sm:px-4">
@@ -263,14 +254,10 @@ const Index = () => {
                     </CommandItem>
                   </CommandGroup>
                   <CommandSeparator />
-                  <CommandGroup heading="Importieren">
-                    <CommandItem onSelect={() => setIsImportDialogOpen(true)}>
-                      <FileSpreadsheet className="mr-2 h-4 w-4" />
-                      Noten aus Excel importieren
-                    </CommandItem>
-                    <CommandItem onSelect={handleDownloadDemo}>
-                      <FileText className="mr-2 h-4 w-4" />
-                      Excel-Vorlage herunterladen
+                  <CommandGroup heading="Navigation">
+                    <CommandItem onSelect={() => navigate('/achievements')}>
+                      <Trophy className="mr-2 h-4 w-4" />
+                      Achievements anzeigen
                     </CommandItem>
                   </CommandGroup>
                 </CommandList>
@@ -348,21 +335,6 @@ const Index = () => {
           </div>
         </div>
       </div>
-
-      {/* Achievements Sheet */}
-      <Sheet open={isAchievementsSheetOpen} onOpenChange={setAchievementsSheetOpen}>
-        <SheetContent side="right" className="w-[400px] sm:w-[540px]">
-          <SheetHeader>
-            <SheetTitle>Deine Achievements 🏆</SheetTitle>
-            <SheetDescription>
-              Hier findest du alle deine freigeschalteten Achievements
-            </SheetDescription>
-          </SheetHeader>
-          <div className="mt-6">
-            <AchievementList achievements={achievements} />
-          </div>
-        </SheetContent>
-      </Sheet>
 
       <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
