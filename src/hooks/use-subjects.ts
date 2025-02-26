@@ -1,11 +1,49 @@
-
 import { useState, useEffect } from 'react';
-import { Subject, Grade } from '@/types';
+import { Subject, Grade, SubjectType, GradeType } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { SubjectsService } from '@/services/subjects.service';
-import { mapDatabaseSubjectToSubject } from '@/types/database';
+import { createDemoExcel, parseExcelFile } from '@/utils/import';
+
+interface DatabaseSubject {
+  id: string;
+  name: string;
+  type: string;
+  written_weight: number | null;
+  user_id: string;
+  created_at: string;
+  grade_level: number;
+  grades: DatabaseGrade[];
+}
+
+interface DatabaseGrade {
+  id: string;
+  subject_id: string;
+  value: number;
+  weight: number;
+  type: string;
+  date: string;
+  created_at: string;
+  notes?: string;
+}
+
+const mapDatabaseSubjectToSubject = (dbSubject: DatabaseSubject): Subject => ({
+  id: dbSubject.id,
+  name: dbSubject.name,
+  type: dbSubject.type as SubjectType,
+  writtenWeight: dbSubject.written_weight || undefined,
+  grade_level: dbSubject.grade_level,
+  grades: dbSubject.grades.map(mapDatabaseGradeToGrade),
+});
+
+const mapDatabaseGradeToGrade = (dbGrade: DatabaseGrade): Grade => ({
+  id: dbGrade.id,
+  value: dbGrade.value,
+  weight: dbGrade.weight,
+  type: dbGrade.type as GradeType,
+  date: dbGrade.date,
+  notes: dbGrade.notes,
+});
 
 export const useSubjects = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -20,27 +58,49 @@ export const useSubjects = () => {
       return;
     }
 
-    try {
-      // Fetch grade level
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('grade_level')
-        .single();
+    // First, get the user's current grade level
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('grade_level')
+      .single();
 
-      if (profileData) {
-        setCurrentGradeLevel(profileData.grade_level);
-      }
+    if (profileData) {
+      setCurrentGradeLevel(profileData.grade_level);
+    }
 
-      // Fetch subjects
-      const subjectsData = await SubjectsService.fetchSubjects();
-      setSubjects(subjectsData.map(mapDatabaseSubjectToSubject));
-    } catch (error) {
+    const { data: subjectsData, error: subjectsError } = await supabase
+      .from('subjects')
+      .select(`
+        id,
+        name,
+        type,
+        written_weight,
+        user_id,
+        created_at,
+        grade_level,
+        grades (
+          id,
+          subject_id,
+          value,
+          weight,
+          type,
+          date,
+          created_at,
+          notes
+        )
+      `)
+      .order('created_at', { ascending: true });
+
+    if (subjectsError) {
       toast({
         title: "Fehler",
         description: "Fehler beim Laden der Fächer",
         variant: "destructive",
       });
+      return;
     }
+
+    setSubjects((subjectsData || []).map(mapDatabaseSubjectToSubject));
   };
 
   const addSubject = async (newSubject: Omit<Subject, 'id' | 'grades'>): Promise<Subject> => {
@@ -51,25 +111,19 @@ export const useSubjects = () => {
       throw new Error('Not authenticated');
     }
 
-    try {
-      const data = await SubjectsService.createSubject(newSubject, session.session.user.id);
-      const newSubjectWithGrades: Subject = {
-        id: data.id,
-        name: data.name,
-        type: data.type,
-        writtenWeight: data.written_weight,
-        grade_level: data.grade_level,
-        grades: []
-      };
+    const { data, error } = await supabase
+      .from('subjects')
+      .insert({
+        name: newSubject.name,
+        type: newSubject.type as SubjectType, // Explicitly cast the type
+        written_weight: newSubject.writtenWeight,
+        grade_level: newSubject.grade_level,
+        user_id: session.session.user.id,
+      })
+      .select()
+      .single();
 
-      setSubjects([...subjects, newSubjectWithGrades]);
-      toast({
-        title: "Erfolg",
-        description: "Fach wurde erfolgreich erstellt",
-      });
-
-      return newSubjectWithGrades;
-    } catch (error) {
+    if (error) {
       toast({
         title: "Fehler",
         description: "Fehler beim Erstellen des Fachs",
@@ -77,142 +131,192 @@ export const useSubjects = () => {
       });
       throw error;
     }
+
+    const newSubjectWithGrades: Subject = {
+      id: data.id,
+      name: data.name,
+      type: data.type as SubjectType, // Explicitly cast the type
+      writtenWeight: data.written_weight,
+      grade_level: data.grade_level,
+      grades: []
+    };
+
+    setSubjects([...subjects, newSubjectWithGrades]);
+    toast({
+      title: "Erfolg",
+      description: "Fach wurde erfolgreich erstellt",
+    });
+
+    return newSubjectWithGrades;
   };
 
   const addGrade = async (subjectId: string, grade: Omit<Grade, 'id'>) => {
-    try {
-      const data = await SubjectsService.addGrade(subjectId, grade);
-      
-      setSubjects(subjects.map(subject => {
-        if (subject.id === subjectId) {
-          return {
-            ...subject,
-            grades: [...subject.grades, mapDatabaseSubjectToSubject({ 
-              ...subject, 
-              grades: [data] 
-            }).grades[0]],
-          };
-        }
-        return subject;
-      }));
+    const { data, error } = await supabase
+      .from('grades')
+      .insert({
+        subject_id: subjectId,
+        value: grade.value,
+        weight: grade.weight,
+        type: grade.type,
+        date: grade.date,
+        notes: grade.notes,
+      })
+      .select()
+      .single();
 
-      toast({
-        title: "Erfolg",
-        description: "Note wurde erfolgreich hinzugefügt",
-      });
-    } catch (error) {
+    if (error) {
       toast({
         title: "Fehler",
         description: "Fehler beim Hinzufügen der Note",
         variant: "destructive",
       });
+      return;
     }
+
+    setSubjects(subjects.map(subject => {
+      if (subject.id === subjectId) {
+        return {
+          ...subject,
+          grades: [...subject.grades, mapDatabaseGradeToGrade(data)],
+        };
+      }
+      return subject;
+    }));
+
+    toast({
+      title: "Erfolg",
+      description: "Note wurde erfolgreich hinzugefügt",
+    });
   };
 
   const updateGrade = async (subjectId: string, gradeId: string, updatedGrade: Omit<Grade, 'id'>) => {
-    try {
-      await SubjectsService.updateGrade(gradeId, updatedGrade);
+    const { error } = await supabase
+      .from('grades')
+      .update({
+        value: updatedGrade.value,
+        weight: updatedGrade.weight,
+        type: updatedGrade.type,
+        date: updatedGrade.date,
+        notes: updatedGrade.notes,
+      })
+      .eq('id', gradeId);
 
-      setSubjects(subjects.map(subject => {
-        if (subject.id === subjectId) {
-          return {
-            ...subject,
-            grades: subject.grades.map(grade => 
-              grade.id === gradeId ? { ...updatedGrade, id: gradeId } : grade
-            ),
-          };
-        }
-        return subject;
-      }));
-
-      toast({
-        title: "Erfolg",
-        description: "Note wurde erfolgreich aktualisiert",
-      });
-    } catch (error) {
+    if (error) {
       toast({
         title: "Fehler",
         description: "Fehler beim Aktualisieren der Note",
         variant: "destructive",
       });
+      return;
     }
+
+    setSubjects(subjects.map(subject => {
+      if (subject.id === subjectId) {
+        return {
+          ...subject,
+          grades: subject.grades.map(grade => 
+            grade.id === gradeId ? { ...updatedGrade, id: gradeId } : grade
+          ),
+        };
+      }
+      return subject;
+    }));
+
+    toast({
+      title: "Erfolg",
+      description: "Note wurde erfolgreich aktualisiert",
+    });
   };
 
   const deleteGrade = async (subjectId: string, gradeId: string) => {
-    try {
-      await SubjectsService.deleteGrade(gradeId);
+    const { error } = await supabase
+      .from('grades')
+      .delete()
+      .eq('id', gradeId);
 
-      setSubjects(subjects.map(subject => {
-        if (subject.id === subjectId) {
-          return {
-            ...subject,
-            grades: subject.grades.filter(grade => grade.id !== gradeId),
-          };
-        }
-        return subject;
-      }));
-
-      toast({
-        title: "Erfolg",
-        description: "Note wurde erfolgreich gelöscht",
-      });
-    } catch (error) {
+    if (error) {
       toast({
         title: "Fehler",
         description: "Fehler beim Löschen der Note",
         variant: "destructive",
       });
+      return;
     }
+
+    setSubjects(subjects.map(subject => {
+      if (subject.id === subjectId) {
+        return {
+          ...subject,
+          grades: subject.grades.filter(grade => grade.id !== gradeId),
+        };
+      }
+      return subject;
+    }));
+
+    toast({
+      title: "Erfolg",
+      description: "Note wurde erfolgreich gelöscht",
+    });
   };
 
   const deleteSubject = async (subjectId: string) => {
-    try {
-      await SubjectsService.deleteSubject(subjectId);
-      setSubjects(subjects.filter(subject => subject.id !== subjectId));
-      
-      toast({
-        title: "Erfolg",
-        description: "Fach wurde erfolgreich gelöscht",
-      });
-    } catch (error) {
+    const { error } = await supabase
+      .from('subjects')
+      .delete()
+      .eq('id', subjectId);
+
+    if (error) {
       toast({
         title: "Fehler",
         description: "Fehler beim Löschen des Fachs",
         variant: "destructive",
       });
+      return;
     }
+
+    setSubjects(subjects.filter(subject => subject.id !== subjectId));
+    toast({
+      title: "Erfolg",
+      description: "Fach wurde erfolgreich gelöscht",
+    });
   };
 
   const updateSubject = async (subjectId: string, updates: Partial<Subject>) => {
-    try {
-      await SubjectsService.updateSubject(subjectId, {
-        writtenWeight: updates.writtenWeight,
-      });
+    const { error } = await supabase
+      .from('subjects')
+      .update({
+        written_weight: updates.writtenWeight,
+      })
+      .eq('id', subjectId);
 
-      setSubjects(subjects.map(subject => 
-        subject.id === subjectId 
-          ? { ...subject, ...updates }
-          : subject
-      ));
-
-      toast({
-        title: "Erfolg",
-        description: "Fach wurde erfolgreich aktualisiert",
-      });
-    } catch (error) {
+    if (error) {
       toast({
         title: "Fehler",
         description: "Fehler beim Aktualisieren des Fachs",
         variant: "destructive",
       });
+      return;
     }
+
+    setSubjects(subjects.map(subject => 
+      subject.id === subjectId 
+        ? { ...subject, ...updates }
+        : subject
+    ));
+
+    toast({
+      title: "Erfolg",
+      description: "Fach wurde erfolgreich aktualisiert",
+    });
   };
 
   const importGradesFromExcel = async (file: File) => {
     try {
       const { subjects: importedSubjects } = await parseExcelFile(file);
       
+      // Create subjects and add grades
       for (const [name, data] of importedSubjects.entries()) {
+        // First create the subject
         const subject: Omit<Subject, 'id' | 'grades'> = {
           name,
           type: data.type,
@@ -220,7 +324,9 @@ export const useSubjects = () => {
           writtenWeight: data.type === 'main' ? 2 : undefined
         };
         
+        // Add subject and get the ID
         await addSubject(subject).then(async (newSubject) => {
+          // Add all grades for this subject
           for (const grade of data.grades) {
             await addGrade(newSubject.id, grade);
           }
