@@ -1,15 +1,17 @@
+
 import { SubjectForm } from '@/components/SubjectForm';
 import { SubjectList } from '@/components/SubjectList';
 import { DynamicGreeting } from '@/components/DynamicGreeting';
 import { calculateOverallAverage } from '@/lib/calculations';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useSubjects } from '@/hooks/use-subjects';
+import { useAchievements } from '@/hooks/use-achievements';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { Subject } from '@/types';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, MinusIcon, UserCircle, Menu, LogOut, Search, FileText, FileSpreadsheet, File as FilePdf, Settings } from 'lucide-react';
+import { PlusIcon, MinusIcon, UserCircle, Menu, LogOut, Search, FileText, FileSpreadsheet, File as FilePdf, Settings, Trophy } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
@@ -20,7 +22,7 @@ import {
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { GradeForm } from '@/components/GradeForm';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 import { CommandDialog, CommandInput, CommandList, CommandItem, CommandEmpty, CommandGroup, CommandSeparator } from '@/components/ui/command';
@@ -28,6 +30,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { createDemoExcel, parseExcelFile } from '@/utils/import';
+import { AchievementDialog } from '@/components/achievements/AchievementDialog';
+import { AchievementList } from '@/components/achievements/AchievementList';
 
 const Index = () => {
   const {
@@ -41,6 +45,7 @@ const Index = () => {
     currentGradeLevel,
   } = useSubjects();
   
+  const { achievements } = useAchievements();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [isAddingSubject, setIsAddingSubject] = useState(false);
@@ -50,6 +55,7 @@ const Index = () => {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [isAchievementsSheetOpen, setAchievementsSheetOpen] = useState(false);
   const [exportFields, setExportFields] = useState({
     Fach: true,
     Typ: true,
@@ -101,6 +107,10 @@ const Index = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => setAchievementsSheetOpen(true)}>
+          <Trophy className="mr-2 h-4 w-4" />
+          Achievements
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/profile')}>
           <UserCircle className="mr-2 h-4 w-4" />
           Profil
@@ -119,6 +129,14 @@ const Index = () => {
 
   const DesktopMenu = () => (
     <div className="hidden md:flex items-center gap-2">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setAchievementsSheetOpen(true)}
+        className="text-gray-700 hover:text-gray-900"
+      >
+        <Trophy className="h-5 w-5" />
+      </Button>
       <Button
         variant="ghost"
         size="icon"
@@ -330,6 +348,21 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      {/* Achievements Sheet */}
+      <Sheet open={isAchievementsSheetOpen} onOpenChange={setAchievementsSheetOpen}>
+        <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+          <SheetHeader>
+            <SheetTitle>Deine Achievements 🏆</SheetTitle>
+            <SheetDescription>
+              Hier findest du alle deine freigeschalteten Achievements
+            </SheetDescription>
+          </SheetHeader>
+          <div className="mt-6">
+            <AchievementList achievements={achievements} />
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
