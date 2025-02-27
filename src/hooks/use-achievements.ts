@@ -24,31 +24,43 @@ export interface Achievement {
 
 export const useAchievements = () => {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const fetchAchievements = async () => {
-    const { data: session } = await supabase.auth.getSession();
-    
-    if (!session?.session?.user) {
-      navigate('/login');
-      return;
+    try {
+      setLoading(true);
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session?.session?.user) {
+        navigate('/login');
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('achievements')
+        .select('*')
+        .eq('user_id', session.session.user.id)
+        .order('earned_at', { ascending: false });
+
+      if (error) {
+        toast({
+          title: "Fehler",
+          description: "Fehler beim Laden der Achievements",
+          variant: "destructive",
+        });
+        setError(error.message);
+        return;
+      }
+
+      setAchievements(data || []);
+    } catch (err) {
+      console.error('Error fetching achievements:', err);
+      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
+    } finally {
+      setLoading(false);
     }
-
-    const { data, error } = await supabase
-      .from('achievements')
-      .select('*')
-      .order('earned_at', { ascending: false });
-
-    if (error) {
-      toast({
-        title: "Fehler",
-        description: "Fehler beim Laden der Achievements",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setAchievements(data || []);
   };
 
   useEffect(() => {
@@ -57,6 +69,8 @@ export const useAchievements = () => {
 
   return {
     achievements,
+    loading,
+    error,
     fetchAchievements
   };
 };

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
 const Achievements = () => {
-  const { achievements } = useAchievements();
+  const { achievements, loading } = useAchievements();
   const navigate = useNavigate();
 
   return (
@@ -16,7 +16,7 @@ const Achievements = () => {
           <Button
             variant="ghost"
             className="mb-4"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/dashboard')}
           >
             ← Zurück
           </Button>
@@ -30,7 +30,7 @@ const Achievements = () => {
         </div>
         
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <AchievementList achievements={achievements} />
+          <AchievementList achievements={achievements} loading={loading} />
         </div>
       </div>
     </div>
