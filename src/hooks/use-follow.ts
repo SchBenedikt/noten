@@ -22,9 +22,14 @@ export const useFollow = () => {
       setLoading(true);
       
       const { data: session } = await supabase.auth.getSession();
-      if (!session?.session?.user) return;
+      if (!session?.session?.user) {
+        console.error('Keine Benutzer-Session gefunden');
+        return;
+      }
       
-      // Hole alle Profile
+      console.log("Aktiver Benutzer:", session.session.user.id);
+      
+      // Hole alle Profile außer dem eigenen
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select('id, first_name, grade_level')
@@ -35,6 +40,8 @@ export const useFollow = () => {
         return;
       }
       
+      console.log("Gefundene Profile:", profiles?.length || 0, profiles);
+      
       // Hole alle folgenden Benutzer für den aktuellen Benutzer
       const { data: followData, error: followError } = await supabase
         .from('user_follows')
@@ -43,8 +50,9 @@ export const useFollow = () => {
       
       if (followError) {
         console.error('Error fetching follows:', followError);
-        return;
       }
+      
+      console.log("Folgende Benutzer:", followData?.length || 0);
       
       // Erstelle einen Set mit allen IDs, denen der Benutzer folgt
       const followingIds = new Set(followData?.map(f => f.following_id) || []);
@@ -54,6 +62,8 @@ export const useFollow = () => {
         ...profile,
         following: followingIds.has(profile.id)
       })) || [];
+      
+      console.log("Benutzer mit Follow-Status:", usersWithFollowStatus.length);
       
       setUsers(usersWithFollowStatus);
     } catch (err) {
