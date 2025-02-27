@@ -84,15 +84,22 @@ export const useAchievements = () => {
           });
           
           // Add subject names to achievements
-          achievementsWithSubjects.forEach(achievement => {
+          const enhancedAchievements = achievementsWithSubjects.map(achievement => {
             if (achievement.subject_id && subjectMap.has(achievement.subject_id)) {
-              achievement.subject_name = subjectMap.get(achievement.subject_id);
+              return {
+                ...achievement,
+                subject_name: subjectMap.get(achievement.subject_id)
+              } as Achievement;
             }
+            return achievement as Achievement;
           });
+          
+          setAchievements(enhancedAchievements);
+          return;
         }
       }
 
-      setAchievements(achievementsWithSubjects);
+      setAchievements(achievementsWithSubjects as Achievement[]);
     } catch (err) {
       console.error('Error fetching achievements:', err);
       setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
