@@ -71,43 +71,41 @@ export const useFollow = () => {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) return;
       
-      // Hole alle Benutzer, denen der aktuelle Benutzer folgt
-      const { data, error } = await supabase
+      // Zuerst holen wir die IDs aller Benutzer, denen der aktuelle Benutzer folgt
+      const { data: followData, error: followError } = await supabase
         .from('user_follows')
-        .select(`
-          following_id,
-          profiles:following_id (
-            id,
-            first_name,
-            grade_level
-          )
-        `)
+        .select('following_id')
         .eq('follower_id', session.session.user.id);
       
-      if (error) {
-        console.error('Error fetching followings:', error);
+      if (followError) {
+        console.error('Error fetching following IDs:', followError);
         return;
       }
       
-      // Extrahiere die Profile-Daten und stelle sicher, dass sie dem User-Interface entsprechen
-      const followingUsers: User[] = [];
-      
-      for (const item of data) {
-        if (item && item.profiles) {
-          const profile = item.profiles as {
-            id: string;
-            first_name: string | null;
-            grade_level: number;
-          };
-          
-          followingUsers.push({
-            id: profile.id,
-            first_name: profile.first_name,
-            grade_level: profile.grade_level,
-            following: true
-          });
-        }
+      if (!followData || followData.length === 0) {
+        setFollowings([]);
+        setLoading(false);
+        return;
       }
+      
+      // Dann holen wir die Profile-Informationen dieser Benutzer
+      const followingIds = followData.map(item => item.following_id);
+      
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, grade_level')
+        .in('id', followingIds);
+      
+      if (profilesError) {
+        console.error('Error fetching following profiles:', profilesError);
+        return;
+      }
+      
+      // Alle gefolgten Benutzer haben automatisch following=true
+      const followingUsers = profiles?.map(profile => ({
+        ...profile,
+        following: true
+      })) || [];
       
       setFollowings(followingUsers);
     } catch (err) {
@@ -125,62 +123,55 @@ export const useFollow = () => {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) return;
       
-      // Hole alle Benutzer, die dem aktuellen Benutzer folgen
-      const { data, error } = await supabase
+      // Zuerst holen wir die IDs aller Benutzer, die dem aktuellen Benutzer folgen
+      const { data: followerData, error: followerError } = await supabase
         .from('user_follows')
-        .select(`
-          follower_id,
-          profiles:follower_id (
-            id,
-            first_name,
-            grade_level
-          )
-        `)
+        .select('follower_id')
         .eq('following_id', session.session.user.id);
       
-      if (error) {
-        console.error('Error fetching followers:', error);
+      if (followerError) {
+        console.error('Error fetching follower IDs:', followerError);
         return;
       }
       
-      // Extrahiere die Profile-Daten und stelle sicher, dass sie gültig sind
-      const followerProfiles: User[] = [];
+      if (!followerData || followerData.length === 0) {
+        setFollowers([]);
+        setLoading(false);
+        return;
+      }
       
-      for (const item of data) {
-        if (item && item.profiles) {
-          const profile = item.profiles as {
-            id: string;
-            first_name: string | null;
-            grade_level: number;
-          };
-          
-          followerProfiles.push({
-            id: profile.id,
-            first_name: profile.first_name,
-            grade_level: profile.grade_level
-          });
-        }
+      // Dann holen wir die Profile-Informationen dieser Benutzer
+      const followerIds = followerData.map(item => item.follower_id);
+      
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, grade_level')
+        .in('id', followerIds);
+      
+      if (profilesError) {
+        console.error('Error fetching follower profiles:', profilesError);
+        return;
       }
       
       // Prüfe, ob der aktuelle Benutzer diesen Followern auch folgt
-      const { data: followData, error: followError } = await supabase
+      const { data: followingData, error: followingError } = await supabase
         .from('user_follows')
         .select('following_id')
         .eq('follower_id', session.session.user.id);
       
-      if (followError) {
-        console.error('Error checking follows:', followError);
+      if (followingError) {
+        console.error('Error checking follows:', followingError);
         return;
       }
       
       // Erstelle einen Set mit allen IDs, denen der Benutzer folgt
-      const followingIds = new Set(followData?.map(f => f.following_id) || []);
+      const followingIds = new Set(followingData?.map(f => f.following_id) || []);
       
       // Markiere Profile, denen der Benutzer folgt
-      const followersWithStatus = followerProfiles.map(profile => ({
+      const followersWithStatus = profiles?.map(profile => ({
         ...profile,
         following: followingIds.has(profile.id)
-      }));
+      })) || [];
       
       setFollowers(followersWithStatus);
     } catch (err) {
