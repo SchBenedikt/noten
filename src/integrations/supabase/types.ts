@@ -62,6 +62,21 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_users: {
+        Row: {
+          created_at: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       archived_grades: {
         Row: {
           archived_subject_id: string
@@ -298,6 +313,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_create_user: {
+        Args: {
+          email: string
+          password: string
+          first_name: string
+          grade_level?: number
+          school_id?: string
+        }
+        Returns: string
+      }
       archive_subjects_for_user: {
         Args: {
           user_uuid: string
@@ -326,6 +351,10 @@ export type Database = {
           check_date: string
         }
         Returns: number
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       set_admin_password: {
         Args: {

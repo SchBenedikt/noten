@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Plus, Edit, Trash2, Search, Check, X } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { ArrowLeft, Plus, Edit, Trash2, Search } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import {
@@ -27,7 +27,6 @@ import {
 import { 
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -64,7 +63,6 @@ const userFormSchema = z.object({
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
@@ -89,78 +87,48 @@ const Admin = () => {
   });
 
   useEffect(() => {
-    // Prüfen, ob der Benutzer angemeldet ist
     checkAuthStatus();
-    // Laden der Schulen
     fetchSchools();
   }, []);
 
   useEffect(() => {
-    // Wenn der Benutzer authentifiziert ist, Benutzer laden
     if (isAuthenticated) {
       fetchUsers();
     }
   }, [isAuthenticated]);
 
-  // Laden der Benutzerdaten, wenn ein Benutzer zum Bearbeiten ausgewählt wird
   useEffect(() => {
     if (selectedUser && isEditing) {
       form.reset({
         email: selectedUser.email || "",
-        password: "", // Passwort wird beim Bearbeiten nicht angezeigt
+        password: "",
         first_name: selectedUser.first_name || "",
         grade_level: selectedUser.grade_level,
         school_id: selectedUser.school_id || undefined,
       });
-    } else if (!isEditing) {
-      form.reset({
-        email: "",
-        password: "",
-        first_name: "",
-        grade_level: 5,
-        school_id: undefined,
-      });
     }
-  }, [selectedUser, isEditing, form]);
+  }, [selectedUser, isEditing]);
 
-  // Authentifizierungsstatus überprüfen
   const checkAuthStatus = async () => {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
       setIsAuthenticated(true);
-      checkAdminStatus(data.session.user.id);
+      // Prüfen Sie den Admin-Status über die RPC-Funktion
+      const { data: isAdminUser } = await supabase.rpc('is_admin');
+      setIsAdmin(!!isAdminUser);
     }
   };
 
-  // Überprüfen, ob der Benutzer ein Administrator ist
-  const checkAdminStatus = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('admin_users')
-      .select('id')
-      .eq('id', userId)
-      .single();
-    
-    if (data && !error) {
-      setIsAdmin(true);
-    }
-  };
-
-  // Benutzer abrufen
   const fetchUsers = async () => {
     setIsLoading(true);
-    
     try {
-      // Profile abrufen
-      const { data: profiles, error: profilesError } = await supabase
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*');
       
-      if (profilesError) throw profilesError;
-      
-      // Benutzerdaten aus auth.users können wir nur über eine Server-Funktion abrufen
-      // Hier verwenden wir nur die Profile-Daten
+      if (error) throw error;
       setUsers(profiles || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Fehler beim Laden der Benutzer:', error);
       toast({
         title: "Fehler",
@@ -172,7 +140,6 @@ const Admin = () => {
     }
   };
 
-  // Schulen abrufen
   const fetchSchools = async () => {
     try {
       const { data, error } = await supabase
@@ -181,56 +148,17 @@ const Admin = () => {
         .order('name');
       
       if (error) throw error;
-      
       setSchools(data || []);
     } catch (error) {
       console.error('Fehler beim Laden der Schulen:', error);
     }
   };
 
-  // Admin-Login
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { data, error } = await supabase.rpc('check_admin_password', {
-        input_password: password
-      });
-
-      if (error) throw error;
-
-      if (data) {
-        setIsAuthenticated(true);
-        toast({
-          title: "Erfolgreich angemeldet",
-          description: "Sie haben jetzt Zugriff auf die Admin-Funktionen.",
-        });
-      } else {
-        toast({
-          title: "Falsches Passwort",
-          description: "Bitte versuchen Sie es erneut.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Fehler",
-        description: "Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Benutzer erstellen/bearbeiten
   const handleUserSubmit = async (values: z.infer<typeof userFormSchema>) => {
     setIsLoading(true);
     
     try {
       if (isEditing && selectedUser) {
-        // Benutzer aktualisieren
         const { error } = await supabase
           .from('profiles')
           .update({
@@ -247,15 +175,12 @@ const Admin = () => {
           description: "Benutzer wurde aktualisiert.",
         });
       } else {
-        // Neuen Benutzer erstellen
-        // Dies erfordert eine Server-Funktion mit höheren Berechtigungen
         toast({
           title: "Info",
-          description: "Das Erstellen neuer Benutzer erfordert eine Server-Funktion (Admin API). Diese Funktion ist noch in Entwicklung.",
+          description: "Das Erstellen neuer Benutzer wird in Kürze implementiert.",
         });
       }
       
-      // Formulardialog schließen und Daten aktualisieren
       setIsEditing(false);
       setSelectedUser(null);
       fetchUsers();
@@ -271,20 +196,23 @@ const Admin = () => {
     }
   };
 
-  // Benutzer löschen
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
     
     setIsLoading(true);
-    
     try {
-      // Dies erfordert eine Server-Funktion mit höheren Berechtigungen
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', selectedUser.id);
+      
+      if (error) throw error;
+      
       toast({
-        title: "Info",
-        description: "Das Löschen von Benutzern erfordert eine Server-Funktion (Admin API). Diese Funktion ist noch in Entwicklung.",
+        title: "Erfolg",
+        description: "Benutzer wurde gelöscht.",
       });
       
-      // Dialog schließen und Daten aktualisieren
       setIsDeleting(false);
       setSelectedUser(null);
       fetchUsers();
@@ -300,50 +228,11 @@ const Admin = () => {
     }
   };
 
-  // Gefilterte Benutzerliste
   const filteredUsers = users.filter(user => 
     user.first_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Login-Formular anzeigen, wenn nicht authentifiziert
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
-        <div className="container mx-auto px-4 max-w-md">
-          <div className="flex items-center gap-4 mb-6">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-3xl font-bold">Admin-Bereich</h1>
-          </div>
-          <Card>
-            <CardHeader>
-              <CardTitle>Anmeldung</CardTitle>
-              <CardDescription>
-                Bitte geben Sie das Admin-Passwort ein.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <Input
-                  type="password"
-                  placeholder="Admin-Passwort"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Lädt..." : "Anmelden"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  // Hinweis anzeigen, wenn der Benutzer kein Administrator ist
-  if (!isAdmin) {
+  if (!isAuthenticated || !isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
         <div className="container mx-auto px-4">
@@ -361,7 +250,7 @@ const Admin = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p>Sie sind mit einem regulären Benutzerkonto angemeldet und haben keinen Zugriff auf Administratorfunktionen.</p>
+              <p>Sie haben keinen Zugriff auf Administratorfunktionen.</p>
             </CardContent>
           </Card>
         </div>
@@ -369,7 +258,6 @@ const Admin = () => {
     );
   }
 
-  // Admin-Dashboard anzeigen
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="container mx-auto px-4">
@@ -380,14 +268,13 @@ const Admin = () => {
           <h1 className="text-3xl font-bold">Admin-Bereich</h1>
         </div>
         
-        <div className="grid gap-6">
-          {/* Benutzerverwaltung */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
               <div>
                 <CardTitle>Benutzerverwaltung</CardTitle>
                 <CardDescription>
-                  Benutzer verwalten, erstellen und bearbeiten
+                  Benutzer verwalten und bearbeiten
                 </CardDescription>
               </div>
               <Dialog open={isEditing} onOpenChange={(open) => {
@@ -403,54 +290,20 @@ const Admin = () => {
                     Benutzer erstellen
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>{selectedUser ? "Benutzer bearbeiten" : "Neuen Benutzer erstellen"}</DialogTitle>
+                    <DialogTitle>
+                      {selectedUser ? "Benutzer bearbeiten" : "Neuen Benutzer erstellen"}
+                    </DialogTitle>
                     <DialogDescription>
                       {selectedUser 
-                        ? "Bearbeiten Sie die Informationen des Benutzers" 
+                        ? "Bearbeiten Sie die Informationen des Benutzers"
                         : "Füllen Sie das Formular aus, um einen neuen Benutzer zu erstellen"}
                     </DialogDescription>
                   </DialogHeader>
                   
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleUserSubmit)} className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>E-Mail</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                disabled={isEditing && !!selectedUser} 
-                                placeholder="email@beispiel.de"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{selectedUser ? "Neues Passwort (optional)" : "Passwort"}</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                type="password" 
-                                placeholder={selectedUser ? "Leer lassen, um beizubehalten" : "Passwort"}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
                       <FormField
                         control={form.control}
                         name="first_name"
@@ -473,7 +326,6 @@ const Admin = () => {
                             <FormLabel>Klassenstufe</FormLabel>
                             <Select 
                               onValueChange={(value) => field.onChange(parseInt(value))}
-                              defaultValue={field.value.toString()}
                               value={field.value.toString()}
                             >
                               <FormControl>
@@ -494,6 +346,38 @@ const Admin = () => {
                         )}
                       />
                       
+                      {!selectedUser && (
+                        <>
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>E-Mail</FormLabel>
+                                <FormControl>
+                                  <Input {...field} type="email" placeholder="email@beispiel.de" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Passwort</FormLabel>
+                                <FormControl>
+                                  <Input {...field} type="password" placeholder="Passwort" />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </>
+                      )}
+                      
                       <FormField
                         control={form.control}
                         name="school_id"
@@ -501,8 +385,7 @@ const Admin = () => {
                           <FormItem>
                             <FormLabel>Schule</FormLabel>
                             <Select 
-                              onValueChange={field.onChange} 
-                              defaultValue={field.value}
+                              onValueChange={field.onChange}
                               value={field.value}
                             >
                               <FormControl>
@@ -536,112 +419,112 @@ const Admin = () => {
                   </Form>
                 </DialogContent>
               </Dialog>
-            </CardHeader>
+            </div>
+          </CardHeader>
+          
+          <CardContent>
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Input
+                placeholder="Benutzer suchen..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
             
-            <CardContent>
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <Input
-                  placeholder="Benutzer suchen..."
-                  className="pl-10"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            {isLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
-              
-              {isLoading ? (
-                <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : filteredUsers.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="px-4 py-2 text-left">Vorname</th>
-                        <th className="px-4 py-2 text-left">Klasse</th>
-                        <th className="px-4 py-2 text-left">Erstellt</th>
-                        <th className="px-4 py-2 text-right">Aktionen</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredUsers.map((user) => (
-                        <tr key={user.id} className="border-b hover:bg-gray-50">
-                          <td className="px-4 py-3">{user.first_name || "Unbenannt"}</td>
-                          <td className="px-4 py-3">{user.grade_level}. Klasse</td>
-                          <td className="px-4 py-3">
-                            {user.created_at ? new Date(user.created_at).toLocaleDateString() : "Unbekannt"}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  setIsEditing(true);
-                                }}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              
-                              <Dialog 
-                                open={isDeleting && selectedUser?.id === user.id} 
-                                onOpenChange={(open) => {
-                                  setIsDeleting(open);
-                                  if (!open) setSelectedUser(null);
-                                }}
-                              >
-                                <DialogTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="text-red-500 hover:text-red-600"
-                                    onClick={() => {
-                                      setSelectedUser(user);
-                                      setIsDeleting(true);
-                                    }}
+            ) : filteredUsers.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-4 py-2 text-left">Vorname</th>
+                      <th className="px-4 py-2 text-left">Klasse</th>
+                      <th className="px-4 py-2 text-left">Erstellt</th>
+                      <th className="px-4 py-2 text-right">Aktionen</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.map((user) => (
+                      <tr key={user.id} className="border-b hover:bg-gray-50">
+                        <td className="px-4 py-3">{user.first_name || "Unbenannt"}</td>
+                        <td className="px-4 py-3">{user.grade_level}. Klasse</td>
+                        <td className="px-4 py-3">
+                          {user.created_at ? new Date(user.created_at).toLocaleDateString() : "Unbekannt"}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setIsEditing(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            
+                            <Dialog 
+                              open={isDeleting && selectedUser?.id === user.id} 
+                              onOpenChange={(open) => {
+                                setIsDeleting(open);
+                                if (!open) setSelectedUser(null);
+                              }}
+                            >
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  className="text-red-500 hover:text-red-600"
+                                  onClick={() => {
+                                    setSelectedUser(user);
+                                    setIsDeleting(true);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Benutzer löschen</DialogTitle>
+                                  <DialogDescription>
+                                    Möchten Sie den Benutzer "{user.first_name || 'Unbenannt'}" wirklich löschen?
+                                    Diese Aktion kann nicht rückgängig gemacht werden.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                  <DialogClose asChild>
+                                    <Button variant="outline">Abbrechen</Button>
+                                  </DialogClose>
+                                  <Button 
+                                    variant="destructive" 
+                                    onClick={handleDeleteUser}
+                                    disabled={isLoading}
                                   >
-                                    <Trash2 className="h-4 w-4" />
+                                    {isLoading ? "Wird gelöscht..." : "Löschen"}
                                   </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Benutzer löschen</DialogTitle>
-                                    <DialogDescription>
-                                      Möchten Sie den Benutzer "{user.first_name || 'Unbenannt'}" wirklich löschen?
-                                      Diese Aktion kann nicht rückgängig gemacht werden.
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  <DialogFooter>
-                                    <DialogClose asChild>
-                                      <Button variant="outline">Abbrechen</Button>
-                                    </DialogClose>
-                                    <Button 
-                                      variant="destructive" 
-                                      onClick={handleDeleteUser}
-                                      disabled={isLoading}
-                                    >
-                                      {isLoading ? "Wird gelöscht..." : "Löschen"}
-                                    </Button>
-                                  </DialogFooter>
-                                </DialogContent>
-                              </Dialog>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  {searchTerm ? "Keine Benutzer gefunden." : "Keine Benutzer vorhanden."}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                {searchTerm ? "Keine Benutzer gefunden." : "Keine Benutzer vorhanden."}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
