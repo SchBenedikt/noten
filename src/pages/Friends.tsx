@@ -22,8 +22,15 @@ const Friends = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('discover');
   
+  // Beim ersten Laden der Komponente alle Daten abrufen
   useEffect(() => {
-    // Laden der Daten basierend auf dem aktiven Tab
+    fetchUsers();
+    fetchFollowings();
+    fetchFollowers();
+  }, []);
+  
+  // Laden der Daten, wenn sich der aktive Tab ändert
+  useEffect(() => {
     if (activeTab === 'discover') {
       fetchUsers();
     } else if (activeTab === 'following') {
@@ -45,6 +52,12 @@ const Friends = () => {
   const filteredFollowers = followers.filter(user => 
     user.first_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  // Debug-Logging
+  console.log('Users Count:', users.length);
+  console.log('Filtered Users Count:', filteredUsers.length);
+  console.log('Active Tab:', activeTab);
+  console.log('Loading:', loading);
   
   return (
     <div className="min-h-screen bg-gray-50">
