@@ -20,6 +20,7 @@ export interface Achievement {
   earned_at: string;
   user_id: string;
   school_year: number;
+  subject_name?: string;
 }
 
 export const useAchievements = () => {
@@ -38,23 +39,60 @@ export const useAchievements = () => {
         return;
       }
 
-      const { data, error } = await supabase
+      // Fetch achievements
+      const { data: achievementsData, error: achievementsError } = await supabase
         .from('achievements')
         .select('*')
         .eq('user_id', session.session.user.id)
         .order('earned_at', { ascending: false });
 
-      if (error) {
+      if (achievementsError) {
         toast({
           title: "Fehler",
           description: "Fehler beim Laden der Achievements",
           variant: "destructive",
         });
-        setError(error.message);
+        setError(achievementsError.message);
         return;
       }
 
-      setAchievements(data || []);
+      // If we have achievements with subject_ids, fetch the subject names
+      const achievementsWithSubjects = [...(achievementsData || [])];
+      
+      // Create a set of unique subject IDs that we need to fetch
+      const subjectIds = new Set<string>();
+      achievementsWithSubjects.forEach(achievement => {
+        if (achievement.subject_id) {
+          subjectIds.add(achievement.subject_id);
+        }
+      });
+      
+      // Only fetch subjects if we have any subject_ids
+      if (subjectIds.size > 0) {
+        const { data: subjectsData, error: subjectsError } = await supabase
+          .from('subjects')
+          .select('id, name')
+          .in('id', Array.from(subjectIds));
+          
+        if (subjectsError) {
+          console.error('Error fetching subjects:', subjectsError);
+        } else if (subjectsData) {
+          // Create a lookup map for subjects
+          const subjectMap = new Map<string, string>();
+          subjectsData.forEach(subject => {
+            subjectMap.set(subject.id, subject.name);
+          });
+          
+          // Add subject names to achievements
+          achievementsWithSubjects.forEach(achievement => {
+            if (achievement.subject_id && subjectMap.has(achievement.subject_id)) {
+              achievement.subject_name = subjectMap.get(achievement.subject_id);
+            }
+          });
+        }
+      }
+
+      setAchievements(achievementsWithSubjects);
     } catch (err) {
       console.error('Error fetching achievements:', err);
       setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');

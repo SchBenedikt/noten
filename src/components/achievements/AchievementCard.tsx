@@ -67,6 +67,11 @@ export const AchievementCard = ({ achievement }: AchievementCardProps) => {
       </CardHeader>
       <CardContent>
         <p className="text-sm text-gray-600">{info.description}</p>
+        {achievement.subject_name && (
+          <div className="mt-2 bg-gray-50 p-2 rounded-md text-sm">
+            <span className="font-medium">Fach:</span> {achievement.subject_name}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
