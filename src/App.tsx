@@ -12,6 +12,7 @@ import DatabaseSetup from "./pages/DatabaseSetup";
 import SelfHosting from "./pages/SelfHosting";
 import Admin from "./pages/Admin";
 import Achievements from "./pages/Achievements";
+import Friends from "./pages/Friends";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
@@ -108,6 +109,16 @@ const App = () => {
               element={
                 session ? (
                   <Achievements />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+            <Route
+              path="/friends"
+              element={
+                session ? (
+                  <Friends />
                 ) : (
                   <Navigate to="/login" replace />
                 )

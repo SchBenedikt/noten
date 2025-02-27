@@ -1,3 +1,4 @@
+
 import { SubjectForm } from '@/components/SubjectForm';
 import { SubjectList } from '@/components/SubjectList';
 import { DynamicGreeting } from '@/components/DynamicGreeting';
@@ -9,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
 import { Subject } from '@/types';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, MinusIcon, UserCircle, Menu, LogOut, Search, FileText, FileSpreadsheet, File as FilePdf, Settings, Trophy } from 'lucide-react';
+import { PlusIcon, MinusIcon, UserCircle, Menu, LogOut, Search, FileText, FileSpreadsheet, File as FilePdf, Settings, Trophy, Users } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
   DropdownMenu,
@@ -91,6 +92,10 @@ const Index = () => {
           <Trophy className="mr-2 h-4 w-4" />
           Achievements
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate('/friends')}>
+          <Users className="mr-2 h-4 w-4" />
+          Freunde
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/profile')}>
           <UserCircle className="mr-2 h-4 w-4" />
           Profil
@@ -116,6 +121,14 @@ const Index = () => {
         className="text-gray-700 hover:text-gray-900"
       >
         <Trophy className="h-5 w-5" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => navigate('/friends')}
+        className="text-gray-700 hover:text-gray-900"
+      >
+        <Users className="h-5 w-5" />
       </Button>
       <Button
         variant="ghost"
@@ -258,6 +271,10 @@ const Index = () => {
                     <CommandItem onSelect={() => navigate('/achievements')}>
                       <Trophy className="mr-2 h-4 w-4" />
                       Achievements anzeigen
+                    </CommandItem>
+                    <CommandItem onSelect={() => navigate('/friends')}>
+                      <Users className="mr-2 h-4 w-4" />
+                      Freunde & Follower
                     </CommandItem>
                   </CommandGroup>
                 </CommandList>
