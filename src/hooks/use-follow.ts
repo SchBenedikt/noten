@@ -90,19 +90,24 @@ export const useFollow = () => {
       }
       
       // Extrahiere die Profile-Daten und stelle sicher, dass sie dem User-Interface entsprechen
-      const followingUsers = data.map(item => {
-        // Prüfe, ob profiles existiert und ein gültiges Objekt ist
-        if (item.profiles && typeof item.profiles === 'object') {
-          return {
-            id: item.profiles.id,
-            first_name: item.profiles.first_name,
-            grade_level: item.profiles.grade_level,
-            following: true
+      const followingUsers: User[] = [];
+      
+      for (const item of data) {
+        if (item && item.profiles) {
+          const profile = item.profiles as {
+            id: string;
+            first_name: string | null;
+            grade_level: number;
           };
+          
+          followingUsers.push({
+            id: profile.id,
+            first_name: profile.first_name,
+            grade_level: profile.grade_level,
+            following: true
+          });
         }
-        // Fallback für ungültige Daten
-        return null;
-      }).filter(Boolean) as User[]; // Filter null-Werte und cast zum User-Typ
+      }
       
       setFollowings(followingUsers);
     } catch (err) {
@@ -139,18 +144,23 @@ export const useFollow = () => {
       }
       
       // Extrahiere die Profile-Daten und stelle sicher, dass sie gültig sind
-      const followerProfiles = data.map(item => {
-        // Prüfe, ob profiles existiert und ein gültiges Objekt ist
-        if (item.profiles && typeof item.profiles === 'object') {
-          return {
-            id: item.profiles.id,
-            first_name: item.profiles.first_name,
-            grade_level: item.profiles.grade_level
+      const followerProfiles: User[] = [];
+      
+      for (const item of data) {
+        if (item && item.profiles) {
+          const profile = item.profiles as {
+            id: string;
+            first_name: string | null;
+            grade_level: number;
           };
+          
+          followerProfiles.push({
+            id: profile.id,
+            first_name: profile.first_name,
+            grade_level: profile.grade_level
+          });
         }
-        // Fallback für ungültige Daten
-        return null;
-      }).filter(Boolean) as User[]; // Filter null-Werte und cast zum User-Typ
+      }
       
       // Prüfe, ob der aktuelle Benutzer diesen Followern auch folgt
       const { data: followData, error: followError } = await supabase
