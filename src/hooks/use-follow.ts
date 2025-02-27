@@ -89,11 +89,20 @@ export const useFollow = () => {
         return;
       }
       
-      // Extrahiere die Profile-Daten
-      const followingUsers = data.map(item => ({
-        ...item.profiles,
-        following: true
-      }));
+      // Extrahiere die Profile-Daten und stelle sicher, dass sie dem User-Interface entsprechen
+      const followingUsers = data.map(item => {
+        // Prüfe, ob profiles existiert und ein gültiges Objekt ist
+        if (item.profiles && typeof item.profiles === 'object') {
+          return {
+            id: item.profiles.id,
+            first_name: item.profiles.first_name,
+            grade_level: item.profiles.grade_level,
+            following: true
+          };
+        }
+        // Fallback für ungültige Daten
+        return null;
+      }).filter(Boolean) as User[]; // Filter null-Werte und cast zum User-Typ
       
       setFollowings(followingUsers);
     } catch (err) {
@@ -129,10 +138,19 @@ export const useFollow = () => {
         return;
       }
       
-      // Extrahiere die Profile-Daten
-      const followerUsers = data.map(item => ({
-        ...item.profiles
-      }));
+      // Extrahiere die Profile-Daten und stelle sicher, dass sie gültig sind
+      const followerProfiles = data.map(item => {
+        // Prüfe, ob profiles existiert und ein gültiges Objekt ist
+        if (item.profiles && typeof item.profiles === 'object') {
+          return {
+            id: item.profiles.id,
+            first_name: item.profiles.first_name,
+            grade_level: item.profiles.grade_level
+          };
+        }
+        // Fallback für ungültige Daten
+        return null;
+      }).filter(Boolean) as User[]; // Filter null-Werte und cast zum User-Typ
       
       // Prüfe, ob der aktuelle Benutzer diesen Followern auch folgt
       const { data: followData, error: followError } = await supabase
@@ -149,7 +167,7 @@ export const useFollow = () => {
       const followingIds = new Set(followData?.map(f => f.following_id) || []);
       
       // Markiere Profile, denen der Benutzer folgt
-      const followersWithStatus = followerUsers.map(profile => ({
+      const followersWithStatus = followerProfiles.map(profile => ({
         ...profile,
         following: followingIds.has(profile.id)
       }));
