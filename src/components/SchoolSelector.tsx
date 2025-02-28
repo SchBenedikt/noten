@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ export const SchoolSelector = ({
 }: SchoolSelectorProps) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newSchoolName, setNewSchoolName] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
 
   const { data: schools = [], refetch: refetchSchools } = useQuery({
@@ -54,54 +56,105 @@ export const SchoolSelector = ({
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    setIsUpdating(true);
 
-    const { error } = await supabase
-      .from("schools")
-      .insert({ name: newSchoolName.trim(), created_by: user.id });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Fehler",
+          description: "Benutzer nicht angemeldet",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    if (error) {
+      const { data, error } = await supabase
+        .from("schools")
+        .insert({ name: newSchoolName.trim(), created_by: user.id })
+        .select('*')
+        .single();
+
+      if (error) {
+        toast({
+          title: "Fehler",
+          description: "Fehler beim Erstellen der Schule",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Erfolg",
+        description: "Schule wurde erstellt",
+      });
+
+      setNewSchoolName("");
+      setIsCreating(false);
+      await refetchSchools();
+      
+      // Automatisch die neue Schule auswählen
+      if (data) {
+        await handleSelectSchool(data.id);
+      }
+    } catch (error) {
+      console.error("Fehler beim Erstellen der Schule:", error);
       toast({
         title: "Fehler",
-        description: "Fehler beim Erstellen der Schule",
+        description: "Unerwarteter Fehler beim Erstellen der Schule",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsUpdating(false);
     }
-
-    toast({
-      title: "Erfolg",
-      description: "Schule wurde erstellt",
-    });
-
-    setNewSchoolName("");
-    setIsCreating(false);
-    refetchSchools();
   };
 
   const handleSelectSchool = async (value: string) => {
     const schoolId = value === "none" ? null : value;
+    setIsUpdating(true);
     
-    const { error } = await supabase
-      .from("profiles")
-      .update({ school_id: schoolId })
-      .eq("id", (await supabase.auth.getUser()).data.user?.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Fehler",
+          description: "Benutzer nicht angemeldet",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const { error } = await supabase
+        .from("profiles")
+        .update({ school_id: schoolId })
+        .eq("id", user.id);
 
-    if (error) {
+      if (error) {
+        console.error("Fehler beim Ändern der Schule:", error);
+        toast({
+          title: "Fehler",
+          description: "Fehler beim Ändern der Schule",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Lokalen Zustand aktualisieren
+      onSchoolChange(schoolId);
+      toast({
+        title: "Erfolg",
+        description: schoolId ? "Schule wurde geändert" : "Schule wurde entfernt",
+      });
+    } catch (error) {
+      console.error("Fehler beim Ändern der Schule:", error);
       toast({
         title: "Fehler",
-        description: "Fehler beim Ändern der Schule",
+        description: "Unerwarteter Fehler beim Ändern der Schule",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsUpdating(false);
     }
-
-    onSchoolChange(schoolId);
-    toast({
-      title: "Erfolg",
-      description: schoolId ? "Schule wurde geändert" : "Schule wurde entfernt",
-    });
   };
 
   return (
@@ -111,6 +164,7 @@ export const SchoolSelector = ({
       <Select
         value={currentSchoolId || "none"}
         onValueChange={handleSelectSchool}
+        disabled={isUpdating}
       >
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Wähle eine Schule" />
@@ -131,15 +185,22 @@ export const SchoolSelector = ({
             placeholder="Name der Schule"
             value={newSchoolName}
             onChange={(e) => setNewSchoolName(e.target.value)}
+            disabled={isUpdating}
           />
           <div className="flex gap-2">
-            <Button onClick={handleCreateSchool}>Erstellen</Button>
+            <Button 
+              onClick={handleCreateSchool}
+              disabled={isUpdating}
+            >
+              {isUpdating ? "Wird erstellt..." : "Erstellen"}
+            </Button>
             <Button
               variant="outline"
               onClick={() => {
                 setIsCreating(false);
                 setNewSchoolName("");
               }}
+              disabled={isUpdating}
             >
               Abbrechen
             </Button>
@@ -150,6 +211,7 @@ export const SchoolSelector = ({
           variant="outline"
           className="w-full"
           onClick={() => setIsCreating(true)}
+          disabled={isUpdating}
         >
           <Plus className="h-4 w-4 mr-2" />
           Neue Schule erstellen

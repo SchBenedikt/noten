@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -8,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 interface GradeLevelSelectorProps {
   currentGradeLevel: number;
@@ -19,29 +21,55 @@ export const GradeLevelSelector = ({
   onGradeLevelChange,
 }: GradeLevelSelectorProps) => {
   const { toast } = useToast();
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const handleGradeLevelChange = async (value: string) => {
     const newGradeLevel = parseInt(value);
+    setIsUpdating(true);
     
-    const { error } = await supabase
-      .from('profiles')
-      .update({ grade_level: newGradeLevel })
-      .eq('id', (await supabase.auth.getUser()).data.user?.id);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Fehler",
+          description: "Benutzer nicht angemeldet",
+          variant: "destructive",
+        });
+        return;
+      }
 
-    if (error) {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ grade_level: newGradeLevel })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error("Fehler beim Aktualisieren der Klassenstufe:", error);
+        toast({
+          title: "Fehler",
+          description: "Fehler beim Ändern der Klassenstufe",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Erfolgreich gespeichert, aktualisiere den lokalen Zustand
+      onGradeLevelChange(newGradeLevel);
+      toast({
+        title: "Erfolg",
+        description: `Klassenstufe wurde auf ${newGradeLevel} geändert`,
+      });
+    } catch (error) {
+      console.error("Fehler beim Ändern der Klassenstufe:", error);
       toast({
         title: "Fehler",
-        description: "Fehler beim Ändern der Klassenstufe",
+        description: "Unerwarteter Fehler beim Ändern der Klassenstufe",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsUpdating(false);
     }
-
-    onGradeLevelChange(newGradeLevel);
-    toast({
-      title: "Erfolg",
-      description: `Klassenstufe wurde auf ${newGradeLevel} geändert`,
-    });
   };
 
   return (
@@ -50,6 +78,7 @@ export const GradeLevelSelector = ({
       <Select
         value={currentGradeLevel.toString()}
         onValueChange={handleGradeLevelChange}
+        disabled={isUpdating}
       >
         <SelectTrigger className="w-[100px]">
           <SelectValue placeholder="Wähle eine Klasse" />
@@ -62,6 +91,9 @@ export const GradeLevelSelector = ({
           ))}
         </SelectContent>
       </Select>
+      {isUpdating && (
+        <div className="ml-2 w-4 h-4 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
+      )}
     </div>
   );
 };
