@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Plus, Edit, Trash2, Search } from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash2, Search, Lock } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -60,6 +60,11 @@ const userFormSchema = z.object({
   school_id: z.string().optional(),
 });
 
+// Schema für Admin-Login
+const adminLoginSchema = z.object({
+  password: z.string().min(1, "Passwort wird benötigt"),
+});
+
 const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -70,6 +75,9 @@ const Admin = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(true);
+  const [adminPassword, setAdminPassword] = useState("");
+  const [adminLoginError, setAdminLoginError] = useState("");
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -86,16 +94,24 @@ const Admin = () => {
     },
   });
 
+  // Formular für Admin-Login
+  const adminLoginForm = useForm<z.infer<typeof adminLoginSchema>>({
+    resolver: zodResolver(adminLoginSchema),
+    defaultValues: {
+      password: "",
+    },
+  });
+
   useEffect(() => {
     checkAuthStatus();
     fetchSchools();
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && isAdmin) {
       fetchUsers();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isAdmin]);
 
   useEffect(() => {
     if (selectedUser && isEditing) {
@@ -113,9 +129,16 @@ const Admin = () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
       setIsAuthenticated(true);
-      // Prüfen Sie den Admin-Status über die RPC-Funktion
-      const { data: isAdminUser } = await supabase.rpc('is_admin');
-      setIsAdmin(!!isAdminUser);
+    }
+  };
+
+  const handleAdminLogin = (values: z.infer<typeof adminLoginSchema>) => {
+    setAdminLoginError("");
+    if (values.password === "admin123") {
+      setIsAdmin(true);
+      setShowAdminLogin(false);
+    } else {
+      setAdminLoginError("Falsches Passwort");
     }
   };
 
@@ -232,7 +255,7 @@ const Admin = () => {
     user.first_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!isAuthenticated || !isAdmin) {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
         <div className="container mx-auto px-4">
@@ -246,11 +269,67 @@ const Admin = () => {
             <CardHeader>
               <CardTitle>Zugriff verweigert</CardTitle>
               <CardDescription>
-                Sie haben keine Administratorrechte.
+                Sie müssen angemeldet sein, um auf den Admin-Bereich zuzugreifen.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p>Sie haben keinen Zugriff auf Administratorfunktionen.</p>
+              <p>Bitte melden Sie sich an, um fortzufahren.</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (showAdminLogin) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center gap-4 mb-6">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-3xl font-bold">Admin-Bereich</h1>
+          </div>
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Lock className="h-5 w-5 mr-2" />
+                Admin-Login
+              </CardTitle>
+              <CardDescription>
+                Bitte geben Sie das Admin-Passwort ein
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...adminLoginForm}>
+                <form onSubmit={adminLoginForm.handleSubmit(handleAdminLogin)} className="space-y-4">
+                  <FormField
+                    control={adminLoginForm.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Admin-Passwort</FormLabel>
+                        <FormControl>
+                          <Input 
+                            {...field} 
+                            type="password" 
+                            placeholder="Passwort eingeben" 
+                            className={adminLoginError ? "border-red-500" : ""}
+                          />
+                        </FormControl>
+                        {adminLoginError && (
+                          <p className="text-sm text-red-500 mt-1">{adminLoginError}</p>
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full">
+                    Anmelden
+                  </Button>
+                </form>
+              </Form>
             </CardContent>
           </Card>
         </div>
