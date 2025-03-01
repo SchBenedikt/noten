@@ -26,10 +26,11 @@ export const GradeLevelSelector = ({
 
   // Synchronize with parent component when currentGradeLevel changes
   useEffect(() => {
+    console.log("GradeLevelSelector received currentGradeLevel:", currentGradeLevel);
     if (currentGradeLevel !== selectedGradeLevel) {
       setSelectedGradeLevel(currentGradeLevel);
     }
-  }, [currentGradeLevel]);
+  }, [currentGradeLevel, selectedGradeLevel]);
 
   const handleGradeLevelChange = async (value: string) => {
     const newGradeLevel = parseInt(value);
@@ -67,6 +68,7 @@ export const GradeLevelSelector = ({
       // Aktualisiere lokale Zustände
       setSelectedGradeLevel(newGradeLevel);
       onGradeLevelChange(newGradeLevel);
+      console.log("GradeLevelSelector updated grade level to:", newGradeLevel);
       
       toast({
         title: "Erfolg",

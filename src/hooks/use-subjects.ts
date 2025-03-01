@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Subject, Grade, SubjectType, GradeType } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -88,8 +89,10 @@ export const useSubjects = () => {
         return;
       }
 
+      // Get the current grade level from the database
       const gradeLevel = await fetchUserGradeLevel();
       setCurrentGradeLevel(gradeLevel);
+      console.log("useSubjects.fetchSubjects updated currentGradeLevel to:", gradeLevel);
 
       const { data: subjectsData, error: subjectsError } = await supabase
         .from('subjects')
@@ -379,6 +382,7 @@ export const useSubjects = () => {
     fetchSubjects();
   }, []);
 
+  // Update the grade level in the database whenever it changes
   useEffect(() => {
     const updateGradeLevelInDb = async () => {
       const { data: session } = await supabase.auth.getSession();
@@ -399,8 +403,11 @@ export const useSubjects = () => {
       }
     };
 
-    updateGradeLevelInDb();
-  }, [currentGradeLevel]);
+    // Only update if we're not in the initial loading state
+    if (!isLoading) {
+      updateGradeLevelInDb();
+    }
+  }, [currentGradeLevel, isLoading]);
 
   return {
     subjects,

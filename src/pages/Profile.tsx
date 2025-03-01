@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -18,25 +19,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { currentGradeLevel, setCurrentGradeLevel, fetchSubjects } = useSubjects();
 
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data } = await supabase
-        .from("profiles")
-        .select("grade_level")
-        .eq("id", user.id)
-        .single();
-
-      if (data && data.grade_level) {
-        setCurrentGradeLevel(data.grade_level);
-      }
-    };
-
-    fetchProfileData();
-  }, [setCurrentGradeLevel]);
-
+  // Fetch the profile data directly from Supabase, not relying on useSubjects' state
   const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
@@ -51,6 +34,9 @@ const Profile = () => {
 
       if (error) throw error;
       
+      console.log("Profile page fetched grade_level:", data?.grade_level);
+      
+      // Update the currentGradeLevel in useSubjects hook
       if (data && data.grade_level) {
         setCurrentGradeLevel(data.grade_level);
       }
@@ -77,6 +63,7 @@ const Profile = () => {
   });
 
   const handleGradeLevelChange = (newGradeLevel: number) => {
+    console.log("Profile handling grade level change to:", newGradeLevel);
     setCurrentGradeLevel(newGradeLevel);
     fetchSubjects();
   };
@@ -158,7 +145,7 @@ const Profile = () => {
                   Klassenstufe
                 </h2>
                 <GradeLevelSelector
-                  currentGradeLevel={currentGradeLevel}
+                  currentGradeLevel={profile?.grade_level || currentGradeLevel}
                   onGradeLevelChange={handleGradeLevelChange}
                 />
               </div>
