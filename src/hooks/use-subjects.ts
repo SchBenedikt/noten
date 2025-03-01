@@ -48,6 +48,7 @@ const mapDatabaseGradeToGrade = (dbGrade: DatabaseGrade): Grade => ({
 export const useSubjects = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [currentGradeLevel, setCurrentGradeLevel] = useState<number>(5);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   const fetchUserGradeLevel = async () => {
@@ -69,6 +70,7 @@ export const useSubjects = () => {
         return 5;
       }
 
+      console.log("Fetched user grade level:", profileData?.grade_level);
       return profileData?.grade_level || 5;
     } catch (error) {
       console.error("Error in fetchUserGradeLevel:", error);
@@ -77,49 +79,61 @@ export const useSubjects = () => {
   };
 
   const fetchSubjects = async () => {
-    const { data: session } = await supabase.auth.getSession();
-    
-    if (!session?.session?.user) {
-      navigate('/login');
-      return;
-    }
+    setIsLoading(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session?.session?.user) {
+        navigate('/login');
+        return;
+      }
 
-    const gradeLevel = await fetchUserGradeLevel();
-    setCurrentGradeLevel(gradeLevel);
+      const gradeLevel = await fetchUserGradeLevel();
+      setCurrentGradeLevel(gradeLevel);
 
-    const { data: subjectsData, error: subjectsError } = await supabase
-      .from('subjects')
-      .select(`
-        id,
-        name,
-        type,
-        written_weight,
-        user_id,
-        created_at,
-        grade_level,
-        grades (
+      const { data: subjectsData, error: subjectsError } = await supabase
+        .from('subjects')
+        .select(`
           id,
-          subject_id,
-          value,
-          weight,
+          name,
           type,
-          date,
+          written_weight,
+          user_id,
           created_at,
-          notes
-        )
-      `)
-      .order('created_at', { ascending: true });
+          grade_level,
+          grades (
+            id,
+            subject_id,
+            value,
+            weight,
+            type,
+            date,
+            created_at,
+            notes
+          )
+        `)
+        .order('created_at', { ascending: true });
 
-    if (subjectsError) {
+      if (subjectsError) {
+        toast({
+          title: "Fehler",
+          description: "Fehler beim Laden der Fächer",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSubjects((subjectsData || []).map(mapDatabaseSubjectToSubject));
+    } catch (error) {
+      console.error("Error fetching subjects:", error);
       toast({
         title: "Fehler",
-        description: "Fehler beim Laden der Fächer",
+        description: "Fehler beim Laden der Daten",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsLoading(false);
     }
-
-    setSubjects((subjectsData || []).map(mapDatabaseSubjectToSubject));
   };
 
   const addSubject = async (newSubject: Omit<Subject, 'id' | 'grades'>): Promise<Subject> => {
@@ -373,17 +387,15 @@ export const useSubjects = () => {
         return;
       }
 
-      const { data: profileData } = await supabase
+      const { error } = await supabase
         .from('profiles')
-        .select('grade_level')
-        .eq('id', session.session.user.id)
-        .single();
+        .update({ grade_level: currentGradeLevel })
+        .eq('id', session.session.user.id);
 
-      if (profileData && profileData.grade_level !== currentGradeLevel) {
-        await supabase
-          .from('profiles')
-          .update({ grade_level: currentGradeLevel })
-          .eq('id', session.session.user.id);
+      if (error) {
+        console.error("Error updating grade level:", error);
+      } else {
+        console.log("Grade level updated in DB:", currentGradeLevel);
       }
     };
 
@@ -402,5 +414,6 @@ export const useSubjects = () => {
     currentGradeLevel,
     setCurrentGradeLevel,
     fetchSubjects,
+    isLoading,
   };
 };
