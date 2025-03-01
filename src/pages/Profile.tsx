@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,26 @@ const Profile = () => {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { currentGradeLevel, setCurrentGradeLevel } = useSubjects();
+  const { currentGradeLevel, setCurrentGradeLevel, fetchSubjects } = useSubjects();
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("grade_level")
+        .eq("id", user.id)
+        .single();
+
+      if (data && data.grade_level) {
+        setCurrentGradeLevel(data.grade_level);
+      }
+    };
+
+    fetchProfileData();
+  }, [setCurrentGradeLevel]);
 
   const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ["profile"],
@@ -26,11 +45,16 @@ const Profile = () => {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("school_id, first_name")
+        .select("school_id, first_name, grade_level")
         .eq("id", user.id)
         .single();
 
       if (error) throw error;
+      
+      if (data && data.grade_level) {
+        setCurrentGradeLevel(data.grade_level);
+      }
+      
       return data;
     },
   });
@@ -51,6 +75,11 @@ const Profile = () => {
       return data;
     },
   });
+
+  const handleGradeLevelChange = (newGradeLevel: number) => {
+    setCurrentGradeLevel(newGradeLevel);
+    fetchSubjects();
+  };
 
   const handleUpdateEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,7 +159,7 @@ const Profile = () => {
                 </h2>
                 <GradeLevelSelector
                   currentGradeLevel={currentGradeLevel}
-                  onGradeLevelChange={setCurrentGradeLevel}
+                  onGradeLevelChange={handleGradeLevelChange}
                 />
               </div>
 

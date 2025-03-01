@@ -50,6 +50,32 @@ export const useSubjects = () => {
   const [currentGradeLevel, setCurrentGradeLevel] = useState<number>(5);
   const navigate = useNavigate();
 
+  const fetchUserGradeLevel = async () => {
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session?.session?.user) {
+        return 5; // Default grade level if not logged in
+      }
+
+      const { data: profileData, error } = await supabase
+        .from('profiles')
+        .select('grade_level')
+        .eq('id', session.session.user.id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching grade level:", error);
+        return 5;
+      }
+
+      return profileData?.grade_level || 5;
+    } catch (error) {
+      console.error("Error in fetchUserGradeLevel:", error);
+      return 5;
+    }
+  };
+
   const fetchSubjects = async () => {
     const { data: session } = await supabase.auth.getSession();
     
@@ -58,15 +84,8 @@ export const useSubjects = () => {
       return;
     }
 
-    // First, get the user's current grade level
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('grade_level')
-      .single();
-
-    if (profileData) {
-      setCurrentGradeLevel(profileData.grade_level);
-    }
+    const gradeLevel = await fetchUserGradeLevel();
+    setCurrentGradeLevel(gradeLevel);
 
     const { data: subjectsData, error: subjectsError } = await supabase
       .from('subjects')
@@ -115,7 +134,7 @@ export const useSubjects = () => {
       .from('subjects')
       .insert({
         name: newSubject.name,
-        type: newSubject.type as SubjectType, // Explicitly cast the type
+        type: newSubject.type as SubjectType,
         written_weight: newSubject.writtenWeight,
         grade_level: newSubject.grade_level,
         user_id: session.session.user.id,
@@ -135,7 +154,7 @@ export const useSubjects = () => {
     const newSubjectWithGrades: Subject = {
       id: data.id,
       name: data.name,
-      type: data.type as SubjectType, // Explicitly cast the type
+      type: data.type as SubjectType,
       writtenWeight: data.written_weight,
       grade_level: data.grade_level,
       grades: []
@@ -314,9 +333,7 @@ export const useSubjects = () => {
     try {
       const { subjects: importedSubjects } = await parseExcelFile(file);
       
-      // Create subjects and add grades
       for (const [name, data] of importedSubjects.entries()) {
-        // First create the subject
         const subject: Omit<Subject, 'id' | 'grades'> = {
           name,
           type: data.type,
@@ -324,9 +341,7 @@ export const useSubjects = () => {
           writtenWeight: data.type === 'main' ? 2 : undefined
         };
         
-        // Add subject and get the ID
         await addSubject(subject).then(async (newSubject) => {
-          // Add all grades for this subject
           for (const grade of data.grades) {
             await addGrade(newSubject.id, grade);
           }
@@ -350,6 +365,31 @@ export const useSubjects = () => {
     fetchSubjects();
   }, []);
 
+  useEffect(() => {
+    const updateGradeLevelInDb = async () => {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session?.session?.user) {
+        return;
+      }
+
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('grade_level')
+        .eq('id', session.session.user.id)
+        .single();
+
+      if (profileData && profileData.grade_level !== currentGradeLevel) {
+        await supabase
+          .from('profiles')
+          .update({ grade_level: currentGradeLevel })
+          .eq('id', session.session.user.id);
+      }
+    };
+
+    updateGradeLevelInDb();
+  }, [currentGradeLevel]);
+
   return {
     subjects,
     addSubject,
@@ -361,5 +401,6 @@ export const useSubjects = () => {
     importGradesFromExcel,
     currentGradeLevel,
     setCurrentGradeLevel,
+    fetchSubjects,
   };
 };
