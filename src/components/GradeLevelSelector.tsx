@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface GradeLevelSelectorProps {
   currentGradeLevel: number;
@@ -22,6 +22,12 @@ export const GradeLevelSelector = ({
 }: GradeLevelSelectorProps) => {
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [selectedGradeLevel, setSelectedGradeLevel] = useState<number>(currentGradeLevel);
+
+  // Synchronize with parent component
+  useEffect(() => {
+    setSelectedGradeLevel(currentGradeLevel);
+  }, [currentGradeLevel]);
 
   const handleGradeLevelChange = async (value: string) => {
     const newGradeLevel = parseInt(value);
@@ -36,6 +42,7 @@ export const GradeLevelSelector = ({
           description: "Benutzer nicht angemeldet",
           variant: "destructive",
         });
+        setIsUpdating(false);
         return;
       }
 
@@ -51,11 +58,14 @@ export const GradeLevelSelector = ({
           description: "Fehler beim Ändern der Klassenstufe",
           variant: "destructive",
         });
+        setIsUpdating(false);
         return;
       }
 
-      // Erfolgreich gespeichert, aktualisiere den lokalen Zustand
+      // Aktualisiere lokale Zustände
+      setSelectedGradeLevel(newGradeLevel);
       onGradeLevelChange(newGradeLevel);
+      
       toast({
         title: "Erfolg",
         description: `Klassenstufe wurde auf ${newGradeLevel} geändert`,
@@ -76,7 +86,7 @@ export const GradeLevelSelector = ({
     <div className="flex items-center gap-2 bg-white p-4 rounded-lg shadow-sm">
       <span className="text-sm font-medium">Klassenstufe:</span>
       <Select
-        value={currentGradeLevel.toString()}
+        value={selectedGradeLevel.toString()}
         onValueChange={handleGradeLevelChange}
         disabled={isUpdating}
       >
