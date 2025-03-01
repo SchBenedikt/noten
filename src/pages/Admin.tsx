@@ -465,7 +465,7 @@ const Admin = () => {
                             <FormLabel>Schule</FormLabel>
                             <Select 
                               onValueChange={field.onChange}
-                              value={field.value}
+                              value={field.value || "none"}
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -473,7 +473,7 @@ const Admin = () => {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="">Keine Schule</SelectItem>
+                                <SelectItem value="none">Keine Schule</SelectItem>
                                 {schools.map((school) => (
                                   <SelectItem key={school.id} value={school.id}>
                                     {school.name}
