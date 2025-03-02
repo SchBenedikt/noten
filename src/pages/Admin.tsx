@@ -60,6 +60,13 @@ const userFormSchema = z.object({
   school_id: z.string().optional(),
 });
 
+// Schema für das Bearbeiten von Benutzern
+const userEditFormSchema = z.object({
+  first_name: z.string().min(1, "Vorname darf nicht leer sein"),
+  grade_level: z.coerce.number().min(1).max(13),
+  school_id: z.string().optional(),
+});
+
 // Schema für Admin-Login
 const adminLoginSchema = z.object({
   password: z.string().min(1, "Passwort wird benötigt"),
@@ -76,7 +83,6 @@ const Admin = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(true);
-  const [adminPassword, setAdminPassword] = useState("");
   const [adminLoginError, setAdminLoginError] = useState("");
   
   const navigate = useNavigate();
@@ -88,6 +94,16 @@ const Admin = () => {
     defaultValues: {
       email: "",
       password: "",
+      first_name: "",
+      grade_level: 5,
+      school_id: undefined,
+    },
+  });
+
+  // Formular zum Bearbeiten von Benutzern
+  const editForm = useForm<z.infer<typeof userEditFormSchema>>({
+    resolver: zodResolver(userEditFormSchema),
+    defaultValues: {
       first_name: "",
       grade_level: 5,
       school_id: undefined,
@@ -115,15 +131,13 @@ const Admin = () => {
 
   useEffect(() => {
     if (selectedUser && isEditing) {
-      form.reset({
-        email: selectedUser.email || "",
-        password: "",
+      editForm.reset({
         first_name: selectedUser.first_name || "",
         grade_level: selectedUser.grade_level,
         school_id: selectedUser.school_id || undefined,
       });
     }
-  }, [selectedUser, isEditing]);
+  }, [selectedUser, isEditing, editForm]);
 
   const checkAuthStatus = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -181,32 +195,15 @@ const Admin = () => {
     setIsLoading(true);
     
     try {
-      if (isEditing && selectedUser) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            first_name: values.first_name,
-            grade_level: values.grade_level,
-            school_id: values.school_id || null,
-          })
-          .eq('id', selectedUser.id);
-        
-        if (error) throw error;
-        
-        toast({
-          title: "Erfolg",
-          description: "Benutzer wurde aktualisiert.",
-        });
-      } else {
-        toast({
-          title: "Info",
-          description: "Das Erstellen neuer Benutzer wird in Kürze implementiert.",
-        });
-      }
+      // Diese Funktion ist für das Erstellen neuer Benutzer
+      // In Zukunft kann hier die Admin-User-Erstellung implementiert werden
+      toast({
+        title: "Info",
+        description: "Das Erstellen neuer Benutzer wird in Kürze implementiert.",
+      });
       
       setIsEditing(false);
       setSelectedUser(null);
-      fetchUsers();
     } catch (error: any) {
       console.error('Fehler:', error);
       toast({
@@ -219,11 +216,51 @@ const Admin = () => {
     }
   };
 
+  const handleEditUserSubmit = async (values: z.infer<typeof userEditFormSchema>) => {
+    if (!selectedUser) return;
+    
+    setIsLoading(true);
+    try {
+      console.log("Updating user with values:", values);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          first_name: values.first_name,
+          grade_level: values.grade_level,
+          school_id: values.school_id || null,
+        })
+        .eq('id', selectedUser.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Erfolg",
+        description: "Benutzer wurde aktualisiert.",
+      });
+      
+      setIsEditing(false);
+      setSelectedUser(null);
+      fetchUsers(); // Aktualisierte Benutzerliste laden
+    } catch (error: any) {
+      console.error('Fehler bei der Benutzeraktualisierung:', error);
+      toast({
+        title: "Fehler",
+        description: error.message || "Benutzer konnte nicht aktualisiert werden.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
     
     setIsLoading(true);
     try {
+      console.log("Deleting user with ID:", selectedUser.id);
+      
       const { error } = await supabase
         .from('profiles')
         .delete()
@@ -238,12 +275,12 @@ const Admin = () => {
       
       setIsDeleting(false);
       setSelectedUser(null);
-      fetchUsers();
+      fetchUsers(); // Aktualisierte Benutzerliste laden
     } catch (error: any) {
-      console.error('Fehler:', error);
+      console.error('Fehler beim Löschen des Benutzers:', error);
       toast({
         title: "Fehler",
-        description: error.message || "Ein Fehler ist aufgetreten.",
+        description: error.message || "Benutzer konnte nicht gelöscht werden.",
         variant: "destructive",
       });
     } finally {
@@ -356,8 +393,8 @@ const Admin = () => {
                   Benutzer verwalten und bearbeiten
                 </CardDescription>
               </div>
-              <Dialog open={isEditing} onOpenChange={(open) => {
-                setIsEditing(open);
+              <Dialog open={isEditing && !selectedUser} onOpenChange={(open) => {
+                setIsEditing(open && !selectedUser);
                 if (!open) setSelectedUser(null);
               }}>
                 <DialogTrigger asChild>
@@ -371,13 +408,9 @@ const Admin = () => {
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>
-                      {selectedUser ? "Benutzer bearbeiten" : "Neuen Benutzer erstellen"}
-                    </DialogTitle>
+                    <DialogTitle>Neuen Benutzer erstellen</DialogTitle>
                     <DialogDescription>
-                      {selectedUser 
-                        ? "Bearbeiten Sie die Informationen des Benutzers"
-                        : "Füllen Sie das Formular aus, um einen neuen Benutzer zu erstellen"}
+                      Füllen Sie das Formular aus, um einen neuen Benutzer zu erstellen
                     </DialogDescription>
                   </DialogHeader>
                   
@@ -425,37 +458,33 @@ const Admin = () => {
                         )}
                       />
                       
-                      {!selectedUser && (
-                        <>
-                          <FormField
-                            control={form.control}
-                            name="email"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>E-Mail</FormLabel>
-                                <FormControl>
-                                  <Input {...field} type="email" placeholder="email@beispiel.de" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="password"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Passwort</FormLabel>
-                                <FormControl>
-                                  <Input {...field} type="password" placeholder="Passwort" />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </>
-                      )}
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>E-Mail</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="email" placeholder="email@beispiel.de" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Passwort</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="password" placeholder="Passwort" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       
                       <FormField
                         control={form.control}
@@ -491,7 +520,7 @@ const Admin = () => {
                           <Button type="button" variant="outline">Abbrechen</Button>
                         </DialogClose>
                         <Button type="submit" disabled={isLoading}>
-                          {isLoading ? "Wird gespeichert..." : (selectedUser ? "Aktualisieren" : "Erstellen")}
+                          {isLoading ? "Wird gespeichert..." : "Erstellen"}
                         </Button>
                       </DialogFooter>
                     </form>
@@ -537,22 +566,130 @@ const Admin = () => {
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex justify-end gap-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => {
-                                setSelectedUser(user);
-                                setIsEditing(true);
+                            {/* Benutzer bearbeiten Dialog */}
+                            <Dialog 
+                              open={isEditing && selectedUser?.id === user.id} 
+                              onOpenChange={(open) => {
+                                if (!open) {
+                                  setIsEditing(false);
+                                  setSelectedUser(null);
+                                }
                               }}
                             >
-                              <Edit className="h-4 w-4" />
-                            </Button>
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => {
+                                    setSelectedUser(user);
+                                    setIsEditing(true);
+                                  }}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Benutzer bearbeiten</DialogTitle>
+                                  <DialogDescription>
+                                    Bearbeiten Sie die Informationen des Benutzers
+                                  </DialogDescription>
+                                </DialogHeader>
+                                
+                                <Form {...editForm}>
+                                  <form onSubmit={editForm.handleSubmit(handleEditUserSubmit)} className="space-y-4">
+                                    <FormField
+                                      control={editForm.control}
+                                      name="first_name"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Vorname</FormLabel>
+                                          <FormControl>
+                                            <Input {...field} placeholder="Vorname" />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                    
+                                    <FormField
+                                      control={editForm.control}
+                                      name="grade_level"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Klassenstufe</FormLabel>
+                                          <Select 
+                                            onValueChange={(value) => field.onChange(parseInt(value))}
+                                            value={field.value.toString()}
+                                          >
+                                            <FormControl>
+                                              <SelectTrigger>
+                                                <SelectValue placeholder="Klassenstufe wählen" />
+                                              </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                              {Array.from({ length: 13 }, (_, i) => i + 1).map((grade) => (
+                                                <SelectItem key={grade} value={grade.toString()}>
+                                                  {grade}. Klasse
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                    
+                                    <FormField
+                                      control={editForm.control}
+                                      name="school_id"
+                                      render={({ field }) => (
+                                        <FormItem>
+                                          <FormLabel>Schule</FormLabel>
+                                          <Select 
+                                            onValueChange={field.onChange}
+                                            value={field.value || "none"}
+                                          >
+                                            <FormControl>
+                                              <SelectTrigger>
+                                                <SelectValue placeholder="Schule wählen (optional)" />
+                                              </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                              <SelectItem value="none">Keine Schule</SelectItem>
+                                              {schools.map((school) => (
+                                                <SelectItem key={school.id} value={school.id}>
+                                                  {school.name}
+                                                </SelectItem>
+                                              ))}
+                                            </SelectContent>
+                                          </Select>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
+                                    />
+                                    
+                                    <DialogFooter>
+                                      <DialogClose asChild>
+                                        <Button type="button" variant="outline">Abbrechen</Button>
+                                      </DialogClose>
+                                      <Button type="submit" disabled={isLoading}>
+                                        {isLoading ? "Wird aktualisiert..." : "Speichern"}
+                                      </Button>
+                                    </DialogFooter>
+                                  </form>
+                                </Form>
+                              </DialogContent>
+                            </Dialog>
                             
+                            {/* Benutzer löschen Dialog */}
                             <Dialog 
                               open={isDeleting && selectedUser?.id === user.id} 
                               onOpenChange={(open) => {
-                                setIsDeleting(open);
-                                if (!open) setSelectedUser(null);
+                                if (!open) {
+                                  setIsDeleting(false);
+                                  setSelectedUser(null);
+                                }
                               }}
                             >
                               <DialogTrigger asChild>
