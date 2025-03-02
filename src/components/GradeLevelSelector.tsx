@@ -30,11 +30,12 @@ export const GradeLevelSelector = ({
     if (currentGradeLevel !== selectedGradeLevel) {
       setSelectedGradeLevel(currentGradeLevel);
     }
-  }, [currentGradeLevel, selectedGradeLevel]);
+  }, [currentGradeLevel]);
 
   const handleGradeLevelChange = async (value: string) => {
     const newGradeLevel = parseInt(value);
     setIsUpdating(true);
+    setSelectedGradeLevel(newGradeLevel); // Update local state immediately
     
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -65,8 +66,7 @@ export const GradeLevelSelector = ({
         return;
       }
 
-      // Aktualisiere lokale Zustände
-      setSelectedGradeLevel(newGradeLevel);
+      // Call the callback to notify parent components
       onGradeLevelChange(newGradeLevel);
       console.log("GradeLevelSelector updated grade level to:", newGradeLevel);
       
