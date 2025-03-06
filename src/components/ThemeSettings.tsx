@@ -2,34 +2,34 @@
 import React from "react";
 import { useTheme } from "@/providers/ThemeProvider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Palette, Check } from "lucide-react";
 
+// Material Design Farben
 const themes = [
   {
     id: "default",
-    name: "Standard",
-    colors: ["#0f172a", "#f8fafc", "#3b82f6"]
+    name: "Indigo",
+    colors: ["#F5F7FF", "#3F51B5", "#303F9F"]
   },
   {
     id: "purple",
-    name: "Lila",
-    colors: ["#4c1d95", "#f5f3ff", "#8b5cf6"]
+    name: "Purple",
+    colors: ["#F3E5F5", "#9C27B0", "#7B1FA2"]
   },
   {
     id: "teal",
-    name: "Türkis",
-    colors: ["#134e4a", "#f0fdfa", "#14b8a6"]
+    name: "Teal",
+    colors: ["#E0F2F1", "#009688", "#00796B"]
   },
   {
     id: "orange",
-    name: "Orange",
-    colors: ["#7c2d12", "#fff7ed", "#f97316"]
+    name: "Deep Orange",
+    colors: ["#FBE9E7", "#FF5722", "#E64A19"]
   },
   {
     id: "pink",
-    name: "Rosa",
-    colors: ["#831843", "#fdf2f8", "#ec4899"]
+    name: "Pink",
+    colors: ["#FCE4EC", "#E91E63", "#C2185B"]
   }
 ];
 
@@ -49,7 +49,7 @@ const ThemeSettings = ({ onClose }: ThemeSettingsProps) => {
 
       <div className="space-y-4">
         <div>
-          <h3 className="text-md font-medium mb-3">Farbschema</h3>
+          <h3 className="text-md font-medium mb-3">Material Design Farbschema</h3>
           <RadioGroup
             value={theme}
             onValueChange={(value) => setTheme(value as any)}
