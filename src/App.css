@@ -14,7 +14,7 @@
 }
 
 .logo:hover {
-  filter: drop-shadow(0 0 2em rgba(100, 108, 255, 0.67));
+  filter: drop-shadow(0 0 2em hsl(var(--primary) / 0.67));
 }
 
 .logo.react:hover {
@@ -41,5 +41,13 @@
 }
 
 .read-the-docs {
-  color: #888;
+  color: hsl(var(--muted-foreground));
 }
+
+/* Add smooth transition for theme changes */
+:root, html, body, * {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 0.3s;
+  transition-timing-function: ease-in-out;
+}
+

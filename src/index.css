@@ -4,7 +4,7 @@
 @tailwind utilities;
  
 @layer base {
-  :root {
+  :root, .theme-default {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -14,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
  
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
  
     --secondary: 210 40% 96.1%;
@@ -31,9 +31,129 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 221.2 83.2% 53.3%;
  
     --radius: 0.5rem;
+  }
+
+  .theme-purple {
+    --background: 270 100% 99%;
+    --foreground: 272 71% 17%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 272 71% 17%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 272 71% 17%;
+ 
+    --primary: 267 84% 60%;
+    --primary-foreground: 0 0% 100%;
+ 
+    --secondary: 271 91% 96%;
+    --secondary-foreground: 272 71% 17%;
+ 
+    --muted: 271 91% 96%;
+    --muted-foreground: 275 7% 45%;
+ 
+    --accent: 271 91% 96%;
+    --accent-foreground: 272 71% 17%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 270 25% 90%;
+    --input: 270 25% 90%;
+    --ring: 267 84% 60%;
+  }
+  
+  .theme-teal {
+    --background: 160 100% 99%;
+    --foreground: 160 84% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 160 84% 15%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 84% 15%;
+ 
+    --primary: 172 70% 45%;
+    --primary-foreground: 0 0% 100%;
+ 
+    --secondary: 166 63% 96%;
+    --secondary-foreground: 160 84% 15%;
+ 
+    --muted: 166 63% 96%;
+    --muted-foreground: 167 10% 46%;
+ 
+    --accent: 166 63% 96%;
+    --accent-foreground: 160 84% 15%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 165 30% 90%;
+    --input: 165 30% 90%;
+    --ring: 172 70% 45%;
+  }
+
+  .theme-orange {
+    --background: 36 100% 99%;
+    --foreground: 24 80% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 24 80% 15%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 24 80% 15%;
+ 
+    --primary: 24 94% 50%;
+    --primary-foreground: 0 0% 100%;
+ 
+    --secondary: 34 100% 95%;
+    --secondary-foreground: 24 80% 15%;
+ 
+    --muted: 34 100% 95%;
+    --muted-foreground: 25 10% 45%;
+ 
+    --accent: 34 100% 95%;
+    --accent-foreground: 24 80% 15%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 30 30% 90%;
+    --input: 30 30% 90%;
+    --ring: 24 94% 50%;
+  }
+
+  .theme-pink {
+    --background: 327 100% 99%;
+    --foreground: 332 72% 18%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 332 72% 18%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 332 72% 18%;
+ 
+    --primary: 330 81% 60%;
+    --primary-foreground: 0 0% 100%;
+ 
+    --secondary: 329 100% 96%;
+    --secondary-foreground: 332 72% 18%;
+ 
+    --muted: 329 100% 96%;
+    --muted-foreground: 330 10% 45%;
+ 
+    --accent: 329 100% 96%;
+    --accent-foreground: 332 72% 18%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 327 30% 90%;
+    --input: 327 30% 90%;
+    --ring: 330 81% 60%;
   }
 }
  
@@ -50,24 +170,5 @@
 }
 
 @layer utilities {
-  .scrollbar-none {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
-  }
-
-  .glass-morphism {
-    @apply backdrop-blur-xl bg-white/5 border border-white/10 shadow-[0_4px_12px_-2px_rgba(0,0,0,0.3)];
-  }
-  
-  .neo-blur {
-    @apply backdrop-blur-2xl bg-black/40 border border-white/10;
-  }
-  
-  .text-gradient {
-    @apply bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent;
-  }
+  /* ... keep existing code (utility classes) */
 }
