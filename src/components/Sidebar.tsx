@@ -1,6 +1,6 @@
 
 import { Home, BookOpen, LogOut, User, GraduationCap, PenTool, Users } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 
 export const Sidebar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);

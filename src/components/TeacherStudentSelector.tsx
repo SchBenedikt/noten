@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, UserPlus, Search, RefreshCw } from "lucide-react";
+import { Users, Search, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -79,7 +79,7 @@ export const TeacherStudentSelector = ({
                   >
                     <div className="flex items-center justify-between w-full">
                       <div className="font-medium truncate">
-                        {student.first_name || "Unbekannt"}
+                        {student.first_name || "Unbekannter Schüler"}
                       </div>
                       <Badge variant="outline" className="ml-2">
                         {student.grade_level}. Klasse
