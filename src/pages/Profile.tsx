@@ -1,21 +1,24 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowLeft, Mail, KeyRound, GraduationCap } from "lucide-react";
+import { ArrowLeft, Mail, KeyRound, GraduationCap, UserCog } from "lucide-react";
 import { GradeLevelSelector } from "@/components/GradeLevelSelector";
 import { SchoolSelector } from "@/components/SchoolSelector";
 import { FirstNameInput } from "@/components/FirstNameInput";
 import { useSubjects } from "@/hooks/use-subjects";
 import { useQuery } from "@tanstack/react-query";
+import { RoleSelector } from "@/components/RoleSelector";
 
 const Profile = () => {
   const navigate = useNavigate();
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isUpdatingRole, setIsUpdatingRole] = useState(false);
   const { setCurrentGradeLevel, fetchSubjects } = useSubjects();
 
   // Fetch the profile data directly from Supabase
@@ -27,7 +30,7 @@ const Profile = () => {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("school_id, first_name, grade_level")
+        .select("school_id, first_name, grade_level, role")
         .eq("id", user.id)
         .single();
 
@@ -59,6 +62,39 @@ const Profile = () => {
     console.log("Profile handling grade level change to:", newGradeLevel);
     setCurrentGradeLevel(newGradeLevel);
     fetchSubjects();
+  };
+
+  const handleRoleChange = async (newRole: 'student' | 'teacher') => {
+    if (newRole === profile?.role) return;
+    
+    setIsUpdatingRole(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("Benutzer nicht angemeldet");
+        return;
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error("Fehler beim Aktualisieren der Rolle:", error);
+        toast.error("Fehler beim Ändern der Rolle");
+        return;
+      }
+      
+      await refetchProfile();
+      toast.success(`Rolle wurde auf ${newRole === 'teacher' ? 'Lehrer/in' : 'Schüler/in'} geändert`);
+    } catch (error) {
+      console.error("Fehler beim Ändern der Rolle:", error);
+      toast.error("Unerwarteter Fehler beim Ändern der Rolle");
+    } finally {
+      setIsUpdatingRole(false);
+    }
   };
 
   const handleUpdateEmail = async (e: React.FormEvent) => {
@@ -130,6 +166,32 @@ const Profile = () => {
                   currentFirstName={profile?.first_name || null}
                   onFirstNameChange={() => refetchProfile()}
                 />
+              </div>
+
+              <div className="bg-gray-50 p-6 rounded-lg">
+                <h2 className="text-lg font-semibold mb-4 flex items-center">
+                  <UserCog className="mr-2 h-5 w-5" />
+                  Rolle
+                </h2>
+                {profile?.role && (
+                  <div className="space-y-4">
+                    <RoleSelector 
+                      value={profile.role as 'student' | 'teacher'} 
+                      onChange={handleRoleChange}
+                      disabled={isUpdatingRole}
+                    />
+                    {isUpdatingRole && (
+                      <div className="flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
+                        <span className="ml-2 text-sm text-gray-500">Aktualisiere...</span>
+                      </div>
+                    )}
+                    <p className="text-sm text-muted-foreground">
+                      Als Lehrer/in kannst du die Noten deiner Schüler/innen verwalten.
+                      Als Schüler/in kannst du deine eigenen Noten verwalten.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="bg-gray-50 p-6 rounded-lg">
