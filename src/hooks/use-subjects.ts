@@ -28,6 +28,19 @@ interface DatabaseGrade {
   notes?: string;
 }
 
+interface TeacherClass {
+  id: string;
+  school_id: string;
+  grade_level: number;
+}
+
+interface StudentProfile {
+  id: string;
+  first_name: string | null;
+  grade_level: number;
+  school_id: string | null;
+}
+
 const mapDatabaseSubjectToSubject = (dbSubject: DatabaseSubject): Subject => ({
   id: dbSubject.id,
   name: dbSubject.name,
@@ -50,6 +63,10 @@ export const useSubjects = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [currentGradeLevel, setCurrentGradeLevel] = useState<number>(5);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTeacher, setIsTeacher] = useState(false);
+  const [teacherClasses, setTeacherClasses] = useState<TeacherClass[]>([]);
+  const [students, setStudents] = useState<StudentProfile[]>([]);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const fetchUserGradeLevel = async () => {
@@ -62,7 +79,7 @@ export const useSubjects = () => {
 
       const { data: profileData, error } = await supabase
         .from('profiles')
-        .select('grade_level')
+        .select('grade_level, role')
         .eq('id', session.session.user.id)
         .single();
 
@@ -71,11 +88,68 @@ export const useSubjects = () => {
         return 5;
       }
 
+      // Check if user is a teacher
+      if (profileData?.role === 'teacher') {
+        setIsTeacher(true);
+        await fetchTeacherClasses();
+      }
+
       console.log("Fetched user grade level:", profileData?.grade_level);
       return profileData?.grade_level || 5;
     } catch (error) {
       console.error("Error in fetchUserGradeLevel:", error);
       return 5;
+    }
+  };
+
+  const fetchTeacherClasses = async () => {
+    try {
+      const { data: teacherClassesData, error } = await supabase
+        .from('teacher_classes')
+        .select('id, school_id, grade_level');
+
+      if (error) {
+        console.error("Error fetching teacher classes:", error);
+        return;
+      }
+
+      setTeacherClasses(teacherClassesData || []);
+      
+      // After fetching classes, get all students in these classes
+      await fetchStudentsInTeacherClasses(teacherClassesData || []);
+    } catch (error) {
+      console.error("Error in fetchTeacherClasses:", error);
+    }
+  };
+
+  const fetchStudentsInTeacherClasses = async (classes: TeacherClass[]) => {
+    if (classes.length === 0) return;
+
+    try {
+      // Create filter conditions for each class (school + grade level)
+      const filters = classes.map(tc => 
+        `(school_id.eq.${tc.school_id},grade_level.eq.${tc.grade_level})`
+      ).join(',');
+
+      const { data: studentsData, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, grade_level, school_id, role')
+        .or(filters)
+        .eq('role', 'student');
+
+      if (error) {
+        console.error("Error fetching students:", error);
+        return;
+      }
+
+      setStudents(studentsData || []);
+      
+      // If no student is selected yet and we have students, select the first one
+      if ((!selectedStudentId || !studentsData?.find(s => s.id === selectedStudentId)) && studentsData?.length > 0) {
+        setSelectedStudentId(studentsData[0].id);
+      }
+    } catch (error) {
+      console.error("Error in fetchStudentsInTeacherClasses:", error);
     }
   };
 
@@ -94,6 +168,59 @@ export const useSubjects = () => {
       setCurrentGradeLevel(gradeLevel);
       console.log("useSubjects.fetchSubjects updated currentGradeLevel to:", gradeLevel);
 
+      if (isTeacher && selectedStudentId) {
+        await fetchStudentSubjects(selectedStudentId);
+      } else {
+        // Fetch own subjects for students and teachers viewing their own data
+        const { data: subjectsData, error: subjectsError } = await supabase
+          .from('subjects')
+          .select(`
+            id,
+            name,
+            type,
+            written_weight,
+            user_id,
+            created_at,
+            grade_level,
+            grades (
+              id,
+              subject_id,
+              value,
+              weight,
+              type,
+              date,
+              created_at,
+              notes
+            )
+          `)
+          .eq('user_id', session.session.user.id)
+          .order('created_at', { ascending: true });
+
+        if (subjectsError) {
+          toast({
+            title: "Fehler",
+            description: "Fehler beim Laden der Fächer",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setSubjects((subjectsData || []).map(mapDatabaseSubjectToSubject));
+      }
+    } catch (error) {
+      console.error("Error fetching subjects:", error);
+      toast({
+        title: "Fehler",
+        description: "Fehler beim Laden der Daten",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchStudentSubjects = async (studentId: string) => {
+    try {
       const { data: subjectsData, error: subjectsError } = await supabase
         .from('subjects')
         .select(`
@@ -115,12 +242,13 @@ export const useSubjects = () => {
             notes
           )
         `)
+        .eq('user_id', studentId)
         .order('created_at', { ascending: true });
 
       if (subjectsError) {
         toast({
           title: "Fehler",
-          description: "Fehler beim Laden der Fächer",
+          description: "Fehler beim Laden der Schülerfächer",
           variant: "destructive",
         });
         return;
@@ -128,15 +256,18 @@ export const useSubjects = () => {
 
       setSubjects((subjectsData || []).map(mapDatabaseSubjectToSubject));
     } catch (error) {
-      console.error("Error fetching subjects:", error);
+      console.error("Error fetching student subjects:", error);
       toast({
         title: "Fehler",
-        description: "Fehler beim Laden der Daten",
+        description: "Fehler beim Laden der Schülerdaten",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
+  };
+
+  const selectStudent = async (studentId: string) => {
+    setSelectedStudentId(studentId);
+    await fetchStudentSubjects(studentId);
   };
 
   const addSubject = async (newSubject: Omit<Subject, 'id' | 'grades'>): Promise<Subject> => {
@@ -147,6 +278,8 @@ export const useSubjects = () => {
       throw new Error('Not authenticated');
     }
 
+    const targetUserId = isTeacher && selectedStudentId ? selectedStudentId : session.session.user.id;
+
     const { data, error } = await supabase
       .from('subjects')
       .insert({
@@ -154,7 +287,7 @@ export const useSubjects = () => {
         type: newSubject.type as SubjectType,
         written_weight: newSubject.writtenWeight,
         grade_level: newSubject.grade_level,
-        user_id: session.session.user.id,
+        user_id: targetUserId,
       })
       .select()
       .single();
@@ -382,6 +515,13 @@ export const useSubjects = () => {
     fetchSubjects();
   }, []);
 
+  // Update subjects when selected student changes
+  useEffect(() => {
+    if (isTeacher && selectedStudentId) {
+      fetchStudentSubjects(selectedStudentId);
+    }
+  }, [isTeacher, selectedStudentId]);
+
   // Update the grade level in the database whenever it changes
   useEffect(() => {
     const updateGradeLevelInDb = async () => {
@@ -422,5 +562,9 @@ export const useSubjects = () => {
     setCurrentGradeLevel,
     fetchSubjects,
     isLoading,
+    isTeacher,
+    students,
+    selectedStudentId,
+    selectStudent,
   };
 };

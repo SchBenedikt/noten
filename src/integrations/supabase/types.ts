@@ -204,6 +204,7 @@ export type Database = {
           first_name: string | null
           grade_level: number
           id: string
+          role: string
           school_id: string | null
           verification_token: string | null
         }
@@ -212,6 +213,7 @@ export type Database = {
           first_name?: string | null
           grade_level?: number
           id: string
+          role?: string
           school_id?: string | null
           verification_token?: string | null
         }
@@ -220,6 +222,7 @@ export type Database = {
           first_name?: string | null
           grade_level?: number
           id?: string
+          role?: string
           school_id?: string | null
           verification_token?: string | null
         }
@@ -286,6 +289,38 @@ export type Database = {
           written_weight?: number | null
         }
         Relationships: []
+      }
+      teacher_classes: {
+        Row: {
+          created_at: string
+          grade_level: number
+          id: string
+          school_id: string
+          teacher_id: string
+        }
+        Insert: {
+          created_at?: string
+          grade_level: number
+          id?: string
+          school_id: string
+          teacher_id: string
+        }
+        Update: {
+          created_at?: string
+          grade_level?: number
+          id?: string
+          school_id?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_classes_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_follows: {
         Row: {
