@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useSubjects } from "@/hooks/use-subjects";
 import { SubjectList } from "@/components/SubjectList";
@@ -12,11 +11,14 @@ import { PlusIcon, UploadIcon } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { TeacherStudentSelector } from "@/components/TeacherStudentSelector";
+import { GradeForm } from "@/components/GradeForm"; // Import GradeForm
 
 const Index = () => {
   const { toast } = useToast();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isUploadSheetOpen, setIsUploadSheetOpen] = useState(false);
+  const [isAddGradeSheetOpen, setIsAddGradeSheetOpen] = useState(false); // State for Add Grade Sheet
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null); // State for selected subject
   const {
     subjects,
     addSubject,
@@ -51,6 +53,18 @@ const Index = () => {
           variant: "destructive",
         });
       });
+  };
+
+  const handleAddGrade = (subjectId: string) => {
+    setSelectedSubjectId(subjectId);
+    setIsAddGradeSheetOpen(true);
+  };
+
+  const handleGradeSubmit = (grade: Omit<Grade, 'id'>) => {
+    if (selectedSubjectId) {
+      addGrade(selectedSubjectId, grade);
+      setIsAddGradeSheetOpen(false);
+    }
   };
 
   return (
@@ -166,11 +180,26 @@ const Index = () => {
               onDeleteGrade={deleteGrade}
               onDeleteSubject={deleteSubject}
               onUpdateSubject={updateSubject}
+              onAddGradeClick={handleAddGrade} // Pass handleAddGrade to SubjectList
             />
           </div>
         </main>
       </div>
       <Toaster />
+
+      <Sheet open={isAddGradeSheetOpen} onOpenChange={setIsAddGradeSheetOpen}>
+        <SheetContent side="right">
+          <SheetHeader>
+            <SheetTitle>Note hinzufügen</SheetTitle>
+          </SheetHeader>
+          <div className="mt-8">
+            <GradeForm 
+              onSubmit={handleGradeSubmit} 
+              onCancel={() => setIsAddGradeSheetOpen(false)}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };

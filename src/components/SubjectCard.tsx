@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet';
 
 interface SubjectCardProps {
   subject: Subject;
@@ -55,6 +56,7 @@ export const SubjectCard = ({
   const [isEditingWeight, setIsEditingWeight] = useState(false);
   const [isOpen, setIsOpen] = useState(isInitiallyOpen);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [isAddGradeSheetOpen, setIsAddGradeSheetOpen] = useState(false);
 
   const filteredGrades = subject.grades.filter(grade => {
     if (!searchQuery) return true;
@@ -123,6 +125,11 @@ export const SubjectCard = ({
     return <div>Mündlich: ∅ {averages.oral}</div>;
   };
 
+  const handleGradeSubmit = (grade: Omit<Grade, 'id'>) => {
+    onAddGrade(subject.id, grade);
+    setIsAddGradeSheetOpen(false);
+  };
+
   return (
     <Card className="w-full bg-white shadow-sm">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -157,6 +164,24 @@ export const SubjectCard = ({
               >
                 <Trash2Icon className="h-4 w-4 text-red-500" />
               </Button>
+              <Sheet open={isAddGradeSheetOpen} onOpenChange={setIsAddGradeSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <PlusIcon className="h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right">
+                  <SheetHeader>
+                    <SheetTitle>Note hinzufügen</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-8">
+                    <GradeForm 
+                      onSubmit={handleGradeSubmit} 
+                      onCancel={() => setIsAddGradeSheetOpen(false)}
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </CardHeader>
