@@ -3,6 +3,7 @@ import React from "react";
 import { useTheme } from "@/providers/ThemeProvider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Palette, Check, Sparkles, PaintBucket } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Material Design colors with expanded color palette for better visualization
 const themes = [
@@ -51,71 +52,73 @@ const ThemeSettings = ({ onClose }: ThemeSettingsProps) => {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="py-6">
+    <div className="h-full">
       <div className="flex items-center gap-2 mb-6">
         <Palette className="h-5 w-5 text-primary" />
         <h2 className="text-xl font-semibold">Design-Einstellungen</h2>
       </div>
 
-      <div className="space-y-6">
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <PaintBucket className="h-4 w-4 text-primary" />
-            <h3 className="text-md font-medium">Material Design Farbschema</h3>
-          </div>
-          
-          <RadioGroup
-            value={theme}
-            onValueChange={(value) => setTheme(value as any)}
-            className="grid grid-cols-1 gap-4"
-          >
-            {themes.map((themeOption) => (
-              <label
-                key={themeOption.id}
-                className={`flex flex-col p-4 rounded-lg border transition-all hover:bg-accent cursor-pointer ${
-                  theme === themeOption.id ? "border-primary shadow-md" : "border-border"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">{themeOption.emoji}</span>
-                    <div className="font-medium">{themeOption.name}</div>
+      <ScrollArea className="h-[calc(100vh-150px)] pr-4">
+        <div className="space-y-6">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <PaintBucket className="h-4 w-4 text-primary" />
+              <h3 className="text-md font-medium">Material Design Farbschema</h3>
+            </div>
+            
+            <RadioGroup
+              value={theme}
+              onValueChange={(value) => setTheme(value as any)}
+              className="grid grid-cols-1 gap-4"
+            >
+              {themes.map((themeOption) => (
+                <label
+                  key={themeOption.id}
+                  className={`flex flex-col p-4 rounded-lg border transition-all hover:bg-accent cursor-pointer ${
+                    theme === themeOption.id ? "border-primary shadow-md" : "border-border"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{themeOption.emoji}</span>
+                      <div className="font-medium">{themeOption.name}</div>
+                    </div>
+                    <RadioGroupItem value={themeOption.id} id={themeOption.id} className="sr-only" />
+                    {theme === themeOption.id && (
+                      <Check className="h-4 w-4 text-primary" />
+                    )}
                   </div>
-                  <RadioGroupItem value={themeOption.id} id={themeOption.id} className="sr-only" />
-                  {theme === themeOption.id && (
-                    <Check className="h-4 w-4 text-primary" />
-                  )}
-                </div>
-                
-                <div className="text-sm text-muted-foreground mb-3">{themeOption.description}</div>
-                
-                {/* Color palette display - as a gradient first */}
-                <div 
-                  className="h-4 w-full rounded mb-2"
-                  style={{ 
-                    background: `linear-gradient(to right, ${themeOption.colors.join(', ')})` 
-                  }}
-                />
-                
-                {/* Color swatches display */}
-                <div className="flex flex-wrap gap-1">
-                  {themeOption.colors.map((color, index) => (
-                    <div
-                      key={index}
-                      className="w-6 h-6 rounded transition-transform hover:scale-110"
-                      style={{ 
-                        backgroundColor: color,
-                        boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)"
-                      }}
-                      title={`Shade ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              </label>
-            ))}
-          </RadioGroup>
+                  
+                  <div className="text-sm text-muted-foreground mb-3">{themeOption.description}</div>
+                  
+                  {/* Color palette display - as a gradient first */}
+                  <div 
+                    className="h-4 w-full rounded mb-2"
+                    style={{ 
+                      background: `linear-gradient(to right, ${themeOption.colors.join(', ')})` 
+                    }}
+                  />
+                  
+                  {/* Color swatches display */}
+                  <div className="flex flex-wrap gap-1">
+                    {themeOption.colors.map((color, index) => (
+                      <div
+                        key={index}
+                        className="w-6 h-6 rounded transition-transform hover:scale-110"
+                        style={{ 
+                          backgroundColor: color,
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)"
+                        }}
+                        title={`Shade ${index + 1}`}
+                      />
+                    ))}
+                  </div>
+                </label>
+              ))}
+            </RadioGroup>
+          </div>
         </div>
-      </div>
+      </ScrollArea>
       
       <div className="mt-8 pt-6 border-t border-border flex items-center justify-center text-muted-foreground">
         <Sparkles className="h-4 w-4 mr-2" />

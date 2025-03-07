@@ -65,7 +65,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
             <Settings className="h-5 w-5" />
           </Button>
         </SheetTrigger>
-        <SheetContent>
+        <SheetContent className="p-0 pt-6">
           <ThemeSettings onClose={() => setIsSettingsOpen(false)} />
         </SheetContent>
       </Sheet>
