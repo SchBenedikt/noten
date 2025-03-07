@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useSubjects } from "@/hooks/use-subjects";
 import { SubjectList } from "@/components/SubjectList";
@@ -6,7 +5,7 @@ import { SubjectForm } from "@/components/SubjectForm";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { GradeLevelSelector } from "@/components/GradeLevelSelector";
-import { Header } from "@/components/Header";
+import Header from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
 import { PlusIcon, UploadIcon } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
@@ -55,7 +54,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+      <Header title="Dashboard" showBackButton={false} />
       <div className="flex flex-1">
         <Sidebar />
         <main className="flex-1 p-4 pt-6 lg:p-8 overflow-auto">
@@ -143,8 +142,8 @@ const Index = () => {
                 }
               </div>
               <GradeLevelSelector 
-                currentLevel={currentGradeLevel} 
-                onChange={setCurrentGradeLevel}
+                currentGradeLevel={currentGradeLevel} 
+                onGradeLevelChange={setCurrentGradeLevel}
                 disabled={isTeacher && !!selectedStudentId}
               />
             </div>

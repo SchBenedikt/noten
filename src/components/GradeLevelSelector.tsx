@@ -14,11 +14,13 @@ import { useState, useEffect } from "react";
 interface GradeLevelSelectorProps {
   currentGradeLevel: number;
   onGradeLevelChange: (gradeLevel: number) => void;
+  disabled?: boolean;
 }
 
 export const GradeLevelSelector = ({
   currentGradeLevel,
   onGradeLevelChange,
+  disabled = false,
 }: GradeLevelSelectorProps) => {
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -92,7 +94,7 @@ export const GradeLevelSelector = ({
       <Select
         value={selectedGradeLevel.toString()}
         onValueChange={handleGradeLevelChange}
-        disabled={isUpdating}
+        disabled={isUpdating || disabled}
       >
         <SelectTrigger className="w-[100px]">
           <SelectValue placeholder="Wähle eine Klasse" />
