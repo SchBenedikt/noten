@@ -52,14 +52,14 @@ const ThemeSettings = ({ onClose }: ThemeSettingsProps) => {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="h-full">
-      <div className="flex items-center gap-2 mb-6">
+    <div className="h-full flex flex-col">
+      <div className="flex items-center gap-2 px-6 py-4 border-b">
         <Palette className="h-5 w-5 text-primary" />
         <h2 className="text-xl font-semibold">Design-Einstellungen</h2>
       </div>
 
-      <ScrollArea className="h-[calc(100vh-150px)] pr-4">
-        <div className="space-y-6">
+      <ScrollArea className="flex-1 px-6">
+        <div className="py-6 space-y-6">
           <div>
             <div className="flex items-center gap-2 mb-3">
               <PaintBucket className="h-4 w-4 text-primary" />
@@ -74,8 +74,8 @@ const ThemeSettings = ({ onClose }: ThemeSettingsProps) => {
               {themes.map((themeOption) => (
                 <label
                   key={themeOption.id}
-                  className={`flex flex-col p-4 rounded-lg border transition-all hover:bg-accent cursor-pointer ${
-                    theme === themeOption.id ? "border-primary shadow-md" : "border-border"
+                  className={`flex flex-col p-4 rounded-lg border transition-all hover:bg-accent/50 cursor-pointer ${
+                    theme === themeOption.id ? "border-primary bg-accent/30 shadow-md" : "border-border"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-3">
@@ -120,7 +120,7 @@ const ThemeSettings = ({ onClose }: ThemeSettingsProps) => {
         </div>
       </ScrollArea>
       
-      <div className="mt-8 pt-6 border-t border-border flex items-center justify-center text-muted-foreground">
+      <div className="mt-auto px-6 py-4 border-t border-border flex items-center justify-center text-muted-foreground">
         <Sparkles className="h-4 w-4 mr-2" />
         <span className="text-sm">Material Design Theme Engine</span>
       </div>
