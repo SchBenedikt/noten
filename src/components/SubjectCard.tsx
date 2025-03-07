@@ -1,11 +1,11 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Subject, Grade } from '@/types';
-import { calculateMainSubjectAverages, calculateSecondarySubjectAverages } from '@/lib/calculations';
-import { GradeList } from './GradeList';
-import { GradeForm } from './GradeForm';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { PlusIcon, MinusIcon, Trash2Icon, Edit2Icon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Subject, Grade } from "@/types";
+import { calculateMainSubjectAverages, calculateSecondarySubjectAverages } from "@/lib/calculations";
+import { GradeList } from "./GradeList";
+import { GradeForm } from "./GradeForm";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { PlusIcon, MinusIcon, Trash2Icon, Edit2Icon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,54 +24,57 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 interface SubjectCardProps {
   subject: Subject;
-  onAddGrade: (subjectId: string, grade: Omit<Grade, 'id'>) => void;
-  onUpdateGrade: (subjectId: string, gradeId: string, grade: Omit<Grade, 'id'>) => void;
+  onAddGrade: (subjectId: string, grade: Omit<Grade, "id">) => void;
+  onUpdateGrade: (subjectId: string, gradeId: string, grade: Omit<Grade, "id">) => void;
   onDeleteGrade: (subjectId: string, gradeId: string) => void;
   onDeleteSubject: (subjectId: string) => void;
   onUpdateSubject?: (subjectId: string, updates: Partial<Subject>) => void;
   isDemo?: boolean;
   isInitiallyOpen?: boolean;
   searchQuery?: string;
-  searchType?: 'subject' | 'grade' | 'note';
+  searchType?: "subject" | "grade" | "note";
 }
 
-export const SubjectCard = ({ 
-  subject, 
-  onAddGrade, 
+export const SubjectCard = ({
+  subject,
+  onAddGrade,
   onUpdateGrade,
   onDeleteGrade,
   onDeleteSubject,
   onUpdateSubject,
   isDemo = false,
   isInitiallyOpen = false,
-  searchQuery = '',
-  searchType = 'subject'
+  searchQuery = "",
+  searchType = "subject",
 }: SubjectCardProps) => {
   const [isAddingGrade, setIsAddingGrade] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isEditingWeight, setIsEditingWeight] = useState(false);
   const [isOpen, setIsOpen] = useState(isInitiallyOpen);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [isAddGradeSheetOpen, setIsAddGradeSheetOpen] = useState(false);
 
-  const filteredGrades = subject.grades.filter(grade => {
+  const filteredGrades = subject.grades.filter((grade) => {
     if (!searchQuery) return true;
-    
+
     switch (searchType) {
-      case 'grade':
+      case "grade":
         return grade.value.toString().includes(searchQuery);
-      case 'note':
+      case "note":
         return grade.notes?.toLowerCase().includes(searchQuery.toLowerCase());
       default:
         return true;
     }
   });
 
-  const averages = subject.type === 'main' 
-    ? calculateMainSubjectAverages(filteredGrades, subject.writtenWeight || 2)
-    : calculateSecondarySubjectAverages(filteredGrades);
+  const averages =
+    subject.type === "main"
+      ? calculateMainSubjectAverages(filteredGrades, subject.writtenWeight || 2)
+      : calculateSecondarySubjectAverages(filteredGrades);
 
   const handleWeightChange = (value: string) => {
     if (onUpdateSubject) {
@@ -81,7 +84,7 @@ export const SubjectCard = ({
   };
 
   const renderAverages = () => {
-    if (subject.type === 'main') {
+    if (subject.type === "main") {
       const mainAverages = averages as ReturnType<typeof calculateMainSubjectAverages>;
       return (
         <>
@@ -89,10 +92,7 @@ export const SubjectCard = ({
             <span>Schulaufgaben: ∅ {mainAverages.written}</span>
             <div className="flex items-center gap-1">
               {isEditingWeight ? (
-                <Select
-                  defaultValue={subject.writtenWeight?.toString() || "2"}
-                  onValueChange={handleWeightChange}
-                >
+                <Select defaultValue={subject.writtenWeight?.toString() || "2"} onValueChange={handleWeightChange}>
                   <SelectTrigger className="w-20">
                     <SelectValue placeholder="×2" />
                   </SelectTrigger>
@@ -104,12 +104,7 @@ export const SubjectCard = ({
               ) : (
                 <>
                   <span>(×{subject.writtenWeight || 2})</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsEditingWeight(true)}
-                    className="h-6 w-6"
-                  >
+                  <Button variant="ghost" size="icon" onClick={() => setIsEditingWeight(true)} className="h-6 w-6">
                     <Edit2Icon className="h-3 w-3" />
                   </Button>
                 </>
@@ -121,6 +116,11 @@ export const SubjectCard = ({
       );
     }
     return <div>Mündlich: ∅ {averages.oral}</div>;
+  };
+
+  const handleGradeSubmit = (grade: Omit<Grade, "id">) => {
+    onAddGrade(subject.id, grade);
+    setIsAddGradeSheetOpen(false);
   };
 
   return (
@@ -157,12 +157,27 @@ export const SubjectCard = ({
               >
                 <Trash2Icon className="h-4 w-4 text-red-500" />
               </Button>
+              <Sheet open={isAddGradeSheetOpen} onOpenChange={setIsAddGradeSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <PlusIcon className="h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right">
+                  <SheetHeader>
+                    <SheetTitle>Note hinzufügen</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-8">
+                    <GradeForm onSubmit={handleGradeSubmit} onCancel={() => setIsAddGradeSheetOpen(false)} />
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </CardHeader>
         <CollapsibleContent className="overflow-hidden">
           <CardContent className="space-y-4 p-4 sm:p-6">
-            <GradeList 
+            <GradeList
               grades={filteredGrades}
               onUpdateGrade={(gradeId, grade) => onUpdateGrade(subject.id, gradeId, grade)}
               onDeleteGrade={(gradeId) => onDeleteGrade(subject.id, gradeId)}
@@ -177,16 +192,14 @@ export const SubjectCard = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Registrierung erforderlich</AlertDialogTitle>
             <AlertDialogDescription>
-              Um Noten zu bearbeiten und zu speichern, erstellen Sie bitte ein kostenloses Konto. 
-              So können Sie Ihre Noten dauerhaft speichern und von überall darauf zugreifen.
+              Um Noten zu bearbeiten und zu speichern, erstellen Sie bitte ein kostenloses Konto. So können Sie Ihre
+              Noten dauerhaft speichern und von überall darauf zugreifen.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Abbrechen</AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Button onClick={() => window.location.href = '/login'}>
-                Jetzt registrieren
-              </Button>
+              <Button onClick={() => (window.location.href = "/login")}>Jetzt registrieren</Button>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -197,16 +210,12 @@ export const SubjectCard = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Fach löschen</AlertDialogTitle>
             <AlertDialogDescription>
-              Möchten Sie das Fach "{subject.name}" wirklich löschen? 
-              Diese Aktion kann nicht rückgängig gemacht werden.
+              Möchten Sie das Fach "{subject.name}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => onDeleteSubject(subject.id)}
-              className="bg-red-500 hover:bg-red-600"
-            >
+            <AlertDialogAction onClick={() => onDeleteSubject(subject.id)} className="bg-red-500 hover:bg-red-600">
               Löschen
             </AlertDialogAction>
           </AlertDialogFooter>

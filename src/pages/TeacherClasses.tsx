@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -134,11 +133,15 @@ const TeacherClasses = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      const { data: session } = await supabase.auth.getSession();
+      const teacher_id = session?.session?.user?.id;
+
       const { data, error } = await supabase
         .from('teacher_classes')
         .insert({
           school_id: values.school_id,
           grade_level: values.grade_level,
+          teacher_id: teacher_id,
         })
         .select();
 

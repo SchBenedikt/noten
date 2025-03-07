@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Subject, Grade, SubjectType, GradeType } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
