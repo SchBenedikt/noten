@@ -42,6 +42,12 @@ const Index = () => {
     selectStudent,
   } = useSubjects();
 
+  const handleGradeLevelChange = (newGradeLevel: number) => {
+    console.log("Index page handling grade level change to:", newGradeLevel);
+    setCurrentGradeLevel(newGradeLevel);
+    fetchSubjects();
+  };
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const studentId = params.get('student');
@@ -176,7 +182,7 @@ const Index = () => {
               </div>
               <GradeLevelSelector 
                 currentGradeLevel={currentGradeLevel} 
-                onGradeLevelChange={setCurrentGradeLevel}
+                onGradeLevelChange={handleGradeLevelChange}
                 disabled={isTeacher && !!selectedStudentId}
               />
             </div>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Subject, Grade, SubjectType, GradeType } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -137,6 +136,7 @@ export const useSubjects = () => {
         await fetchStudentSubjects(selectedStudentId);
       } else {
         // Fetch own subjects for students and teachers viewing their own data
+        console.log("Fetching subjects for grade level:", gradeLevel);
         const { data: subjectsData, error: subjectsError } = await supabase
           .from('subjects')
           .select(`
@@ -171,6 +171,7 @@ export const useSubjects = () => {
           return;
         }
 
+        console.log("Fetched subjects:", subjectsData?.length || 0, "for grade level:", gradeLevel);
         setSubjects((subjectsData || []).map(mapDatabaseSubjectToSubject));
       }
     } catch (error) {
@@ -206,6 +207,7 @@ export const useSubjects = () => {
       
       // Update the current grade level to match the student's
       setCurrentGradeLevel(studentData.grade_level);
+      console.log("Updated current grade level to student's grade level:", studentData.grade_level);
       
       // Now fetch subjects filtered by student ID and their grade level
       const { data: subjectsData, error: subjectsError } = await supabase
@@ -242,6 +244,7 @@ export const useSubjects = () => {
         return;
       }
 
+      console.log("Fetched student subjects:", subjectsData?.length || 0, "for grade level:", studentData.grade_level);
       setSubjects((subjectsData || []).map(mapDatabaseSubjectToSubject));
     } catch (error) {
       console.error("Error fetching student subjects:", error);
@@ -273,6 +276,10 @@ export const useSubjects = () => {
     }
 
     const targetUserId = isTeacher && selectedStudentId ? selectedStudentId : session.session.user.id;
+    
+    // Make sure we're using the current grade level
+    const targetGradeLevel = newSubject.grade_level || currentGradeLevel;
+    console.log("Adding subject with grade level:", targetGradeLevel);
 
     const { data, error } = await supabase
       .from('subjects')
@@ -280,7 +287,7 @@ export const useSubjects = () => {
         name: newSubject.name,
         type: newSubject.type as SubjectType,
         written_weight: newSubject.writtenWeight,
-        grade_level: newSubject.grade_level,
+        grade_level: targetGradeLevel,
         user_id: targetUserId,
       })
       .select()
@@ -304,7 +311,11 @@ export const useSubjects = () => {
       grades: []
     };
 
-    setSubjects([...subjects, newSubjectWithGrades]);
+    // Only add to the subjects state if it matches the current grade level
+    if (data.grade_level === currentGradeLevel) {
+      setSubjects([...subjects, newSubjectWithGrades]);
+    }
+    
     toast({
       title: "Erfolg",
       description: "Fach wurde erfolgreich erstellt",
@@ -574,16 +585,14 @@ export const useSubjects = () => {
 
   useEffect(() => {
     fetchSubjects();
-  }, []);
+  }, [currentGradeLevel]);
 
-  // Update subjects when selected student changes
   useEffect(() => {
     if (isTeacher && selectedStudentId) {
       fetchStudentSubjects(selectedStudentId);
     }
   }, [isTeacher, selectedStudentId]);
 
-  // Update the grade level in the database whenever it changes
   useEffect(() => {
     const updateGradeLevelInDb = async () => {
       const { data: session } = await supabase.auth.getSession();
