@@ -1,4 +1,3 @@
-
 import { Home, BookOpen, LogOut, User, GraduationCap, PenTool, Users } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -93,7 +92,7 @@ export const Sidebar = () => {
   }
 
   return (
-    <aside className="bg-background border-r border-border h-screen w-[240px] hidden md:block overflow-y-auto">
+    <aside className="bg-background border-r border-border h-screen w-[240px] hidden md:block overflow-y-auto fixed left-0 top-0 height-100vh">
       <div className="flex flex-col h-full py-4">
         <div className="px-4 py-2">
           <h2 className="text-lg font-semibold">Notenverwaltung</h2>
