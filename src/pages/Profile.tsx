@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import { FirstNameInput } from "@/components/FirstNameInput";
 import { useSubjects } from "@/hooks/use-subjects";
 import { useQuery } from "@tanstack/react-query";
 import { RoleSelector } from "@/components/RoleSelector";
+import { Sidebar } from "@/components/Sidebar"; // P635e
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -145,128 +145,133 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
-        <Button
-          variant="ghost"
-          className="mb-6"
-          onClick={() => navigate("/dashboard")}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Zurück
-        </Button>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="flex flex-1">
+        <Sidebar /> {/* P8d71 */}
+        <main className="flex-1 p-4 pt-6 lg:p-8 overflow-auto"> {/* P1854 */}
+          <div className="container mx-auto px-4 max-w-2xl">
+            <Button
+              variant="ghost"
+              className="mb-6"
+              onClick={() => navigate("/dashboard")}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Zurück
+            </Button>
 
-        <div className="bg-white rounded-lg shadow-sm p-6 space-y-8">
-          <div>
-            <h1 className="text-2xl font-bold mb-6">Profil Einstellungen</h1>
-            
-            <div className="space-y-6">
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <FirstNameInput
-                  currentFirstName={profile?.first_name || null}
-                  onFirstNameChange={() => refetchProfile()}
-                />
-              </div>
-
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h2 className="text-lg font-semibold mb-4 flex items-center">
-                  <UserCog className="mr-2 h-5 w-5" />
-                  Rolle
-                </h2>
-                {profile?.role && (
-                  <div className="space-y-4">
-                    <RoleSelector 
-                      value={profile.role as 'student' | 'teacher'} 
-                      onChange={handleRoleChange}
-                      disabled={isUpdatingRole}
+            <div className="bg-white rounded-lg shadow-sm p-6 space-y-8">
+              <div>
+                <h1 className="text-2xl font-bold mb-6">Profil Einstellungen</h1>
+                
+                <div className="space-y-6">
+                  <div className="bg-gray-50 p-6 rounded-lg">
+                    <FirstNameInput
+                      currentFirstName={profile?.first_name || null}
+                      onFirstNameChange={() => refetchProfile()}
                     />
-                    {isUpdatingRole && (
-                      <div className="flex items-center justify-center">
-                        <div className="w-5 h-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
-                        <span className="ml-2 text-sm text-gray-500">Aktualisiere...</span>
+                  </div>
+
+                  <div className="bg-gray-50 p-6 rounded-lg">
+                    <h2 className="text-lg font-semibold mb-4 flex items-center">
+                      <UserCog className="mr-2 h-5 w-5" />
+                      Rolle
+                    </h2>
+                    {profile?.role && (
+                      <div className="space-y-4">
+                        <RoleSelector 
+                          value={profile.role as 'student' | 'teacher'} 
+                          onChange={handleRoleChange}
+                          disabled={isUpdatingRole}
+                        />
+                        {isUpdatingRole && (
+                          <div className="flex items-center justify-center">
+                            <div className="w-5 h-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
+                            <span className="ml-2 text-sm text-gray-500">Aktualisiere...</span>
+                          </div>
+                        )}
+                        <p className="text-sm text-muted-foreground">
+                          Als Lehrer/in kannst du die Noten deiner Schüler/innen verwalten.
+                          Als Schüler/in kannst du deine eigenen Noten verwalten.
+                        </p>
                       </div>
                     )}
-                    <p className="text-sm text-muted-foreground">
-                      Als Lehrer/in kannst du die Noten deiner Schüler/innen verwalten.
-                      Als Schüler/in kannst du deine eigenen Noten verwalten.
-                    </p>
                   </div>
-                )}
-              </div>
 
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h2 className="text-lg font-semibold mb-4 flex items-center">
-                  <GraduationCap className="mr-2 h-5 w-5" />
-                  Klassenstufe
-                </h2>
-                {profile?.grade_level && (
-                  <GradeLevelSelector
-                    currentGradeLevel={profile.grade_level}
-                    onGradeLevelChange={handleGradeLevelChange}
-                  />
-                )}
-              </div>
+                  <div className="bg-gray-50 p-6 rounded-lg">
+                    <h2 className="text-lg font-semibold mb-4 flex items-center">
+                      <GraduationCap className="mr-2 h-5 w-5" />
+                      Klassenstufe
+                    </h2>
+                    {profile?.grade_level && (
+                      <GradeLevelSelector
+                        currentGradeLevel={profile.grade_level}
+                        onGradeLevelChange={handleGradeLevelChange}
+                      />
+                    )}
+                  </div>
 
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <SchoolSelector
-                  currentSchoolId={currentSchool?.id ?? null}
-                  onSchoolChange={() => refetchProfile()}
-                />
-              </div>
-
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h2 className="text-lg font-semibold mb-4 flex items-center">
-                  <Mail className="mr-2 h-5 w-5" />
-                  E-Mail-Adresse ändern
-                </h2>
-                <form onSubmit={handleUpdateEmail} className="space-y-4">
-                  <div>
-                    <label htmlFor="newEmail" className="block text-sm font-medium text-gray-700 mb-1">
-                      Neue E-Mail-Adresse
-                    </label>
-                    <Input
-                      id="newEmail"
-                      type="email"
-                      value={newEmail}
-                      onChange={(e) => setNewEmail(e.target.value)}
-                      required
-                      placeholder="neue@email.de"
+                  <div className="bg-gray-50 p-6 rounded-lg">
+                    <SchoolSelector
+                      currentSchoolId={currentSchool?.id ?? null}
+                      onSchoolChange={() => refetchProfile()}
                     />
                   </div>
-                  <Button type="submit" disabled={isLoading}>
-                    E-Mail-Adresse aktualisieren
-                  </Button>
-                </form>
-              </div>
 
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h2 className="text-lg font-semibold mb-4 flex items-center">
-                  <KeyRound className="mr-2 h-5 w-5" />
-                  Passwort ändern
-                </h2>
-                <form onSubmit={handleUpdatePassword} className="space-y-4">
-                  <div>
-                    <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
-                      Neues Passwort
-                    </label>
-                    <Input
-                      id="newPassword"
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                      placeholder="Neues Passwort"
-                      minLength={6}
-                    />
+                  <div className="bg-gray-50 p-6 rounded-lg">
+                    <h2 className="text-lg font-semibold mb-4 flex items-center">
+                      <Mail className="mr-2 h-5 w-5" />
+                      E-Mail-Adresse ändern
+                    </h2>
+                    <form onSubmit={handleUpdateEmail} className="space-y-4">
+                      <div>
+                        <label htmlFor="newEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                          Neue E-Mail-Adresse
+                        </label>
+                        <Input
+                          id="newEmail"
+                          type="email"
+                          value={newEmail}
+                          onChange={(e) => setNewEmail(e.target.value)}
+                          required
+                          placeholder="neue@email.de"
+                        />
+                      </div>
+                      <Button type="submit" disabled={isLoading}>
+                        E-Mail-Adresse aktualisieren
+                      </Button>
+                    </form>
                   </div>
-                  <Button type="submit" disabled={isLoading}>
-                    Passwort aktualisieren
-                  </Button>
-                </form>
+
+                  <div className="bg-gray-50 p-6 rounded-lg">
+                    <h2 className="text-lg font-semibold mb-4 flex items-center">
+                      <KeyRound className="mr-2 h-5 w-5" />
+                      Passwort ändern
+                    </h2>
+                    <form onSubmit={handleUpdatePassword} className="space-y-4">
+                      <div>
+                        <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                          Neues Passwort
+                        </label>
+                        <Input
+                          id="newPassword"
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          required
+                          placeholder="Neues Passwort"
+                          minLength={6}
+                        />
+                      </div>
+                      <Button type="submit" disabled={isLoading}>
+                        Passwort aktualisieren
+                      </Button>
+                    </form>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );
