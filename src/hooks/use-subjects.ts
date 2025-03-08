@@ -27,12 +27,6 @@ interface DatabaseGrade {
   notes?: string;
 }
 
-interface TeacherClass {
-  id: string;
-  school_id: string;
-  grade_level: number;
-}
-
 interface StudentProfile {
   id: string;
   first_name: string | null;
@@ -63,7 +57,6 @@ export const useSubjects = () => {
   const [currentGradeLevel, setCurrentGradeLevel] = useState<number>(5);
   const [isLoading, setIsLoading] = useState(true);
   const [isTeacher, setIsTeacher] = useState(false);
-  const [teacherClasses, setTeacherClasses] = useState<TeacherClass[]>([]);
   const [students, setStudents] = useState<StudentProfile[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -90,7 +83,7 @@ export const useSubjects = () => {
       // Check if user is a teacher
       if (profileData?.role === 'teacher') {
         setIsTeacher(true);
-        await fetchTeacherClasses();
+        await fetchAllStudents();
       }
 
       console.log("Fetched user grade level:", profileData?.grade_level);
@@ -101,39 +94,11 @@ export const useSubjects = () => {
     }
   };
 
-  const fetchTeacherClasses = async () => {
+  const fetchAllStudents = async () => {
     try {
-      const { data: teacherClassesData, error } = await supabase
-        .from('teacher_classes')
-        .select('id, school_id, grade_level');
-
-      if (error) {
-        console.error("Error fetching teacher classes:", error);
-        return;
-      }
-
-      setTeacherClasses(teacherClassesData || []);
-      
-      // After fetching classes, get all students in these classes
-      await fetchStudentsInTeacherClasses(teacherClassesData || []);
-    } catch (error) {
-      console.error("Error in fetchTeacherClasses:", error);
-    }
-  };
-
-  const fetchStudentsInTeacherClasses = async (classes: TeacherClass[]) => {
-    if (classes.length === 0) return;
-
-    try {
-      // Create filter conditions for each class (school + grade level)
-      const filters = classes.map(tc => 
-        `(school_id.eq.${tc.school_id},grade_level.eq.${tc.grade_level})`
-      ).join(',');
-
       const { data: studentsData, error } = await supabase
         .from('profiles')
         .select('id, first_name, grade_level, school_id, role')
-        .or(filters)
         .eq('role', 'student');
 
       if (error) {
@@ -148,7 +113,7 @@ export const useSubjects = () => {
         setSelectedStudentId(studentsData[0].id);
       }
     } catch (error) {
-      console.error("Error in fetchStudentsInTeacherClasses:", error);
+      console.error("Error in fetchAllStudents:", error);
     }
   };
 
@@ -267,6 +232,12 @@ export const useSubjects = () => {
   const selectStudent = async (studentId: string) => {
     setSelectedStudentId(studentId);
     await fetchStudentSubjects(studentId);
+    
+    // Update selected student's grade level for the context
+    const studentProfile = students.find(s => s.id === studentId);
+    if (studentProfile) {
+      setCurrentGradeLevel(studentProfile.grade_level);
+    }
   };
 
   const addSubject = async (newSubject: Omit<Subject, 'id' | 'grades'>): Promise<Subject> => {
@@ -530,15 +501,18 @@ export const useSubjects = () => {
         return;
       }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({ grade_level: currentGradeLevel })
-        .eq('id', session.session.user.id);
+      // Only update the grade level if we're not in teacher mode or if no student is selected
+      if (!isTeacher || !selectedStudentId) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ grade_level: currentGradeLevel })
+          .eq('id', session.session.user.id);
 
-      if (error) {
-        console.error("Error updating grade level:", error);
-      } else {
-        console.log("Grade level updated in DB:", currentGradeLevel);
+        if (error) {
+          console.error("Error updating grade level:", error);
+        } else {
+          console.log("Grade level updated in DB:", currentGradeLevel);
+        }
       }
     };
 
@@ -546,7 +520,7 @@ export const useSubjects = () => {
     if (!isLoading) {
       updateGradeLevelInDb();
     }
-  }, [currentGradeLevel, isLoading]);
+  }, [currentGradeLevel, isLoading, isTeacher, selectedStudentId]);
 
   return {
     subjects,

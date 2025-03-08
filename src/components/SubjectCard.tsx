@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Subject, Grade } from "@/types";
 import { calculateMainSubjectAverages, calculateSecondarySubjectAverages } from "@/lib/calculations";
@@ -5,7 +6,7 @@ import { GradeList } from "./GradeList";
 import { GradeForm } from "./GradeForm";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, MinusIcon, Trash2Icon, Edit2Icon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import { PlusIcon, Trash2Icon, Edit2Icon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +38,7 @@ interface SubjectCardProps {
   isInitiallyOpen?: boolean;
   searchQuery?: string;
   searchType?: "subject" | "grade" | "note";
+  studentName?: string;
 }
 
 export const SubjectCard = ({
@@ -50,6 +52,7 @@ export const SubjectCard = ({
   isInitiallyOpen = false,
   searchQuery = "",
   searchType = "subject",
+  studentName,
 }: SubjectCardProps) => {
   const [isAddingGrade, setIsAddingGrade] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -123,6 +126,16 @@ export const SubjectCard = ({
     setIsAddGradeSheetOpen(false);
   };
 
+  const renderStudentInfo = () => {
+    if (!studentName) return null;
+    
+    return (
+      <div className="text-sm text-gray-500 mt-1">
+        Schüler: {studentName}
+      </div>
+    );
+  };
+
   return (
     <Card className="w-full bg-white shadow-sm">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -133,9 +146,12 @@ export const SubjectCard = ({
                 {isOpen ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
               </Button>
             </CollapsibleTrigger>
-            <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 text-xl sm:text-2xl">
-              {subject.name}
-            </CardTitle>
+            <div>
+              <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 text-xl sm:text-2xl">
+                {subject.name}
+              </CardTitle>
+              {renderStudentInfo()}
+            </div>
           </div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="text-sm space-y-1 sm:space-y-0 sm:text-right bg-gray-50 p-2 rounded-md w-full sm:w-auto">
@@ -168,7 +184,11 @@ export const SubjectCard = ({
                     <SheetTitle>Note hinzufügen</SheetTitle>
                   </SheetHeader>
                   <div className="mt-8">
-                    <GradeForm onSubmit={handleGradeSubmit} onCancel={() => setIsAddGradeSheetOpen(false)} />
+                    <GradeForm 
+                      onSubmit={handleGradeSubmit} 
+                      onCancel={() => setIsAddGradeSheetOpen(false)}
+                      subjectType={subject.type}
+                    />
                   </div>
                 </SheetContent>
               </Sheet>

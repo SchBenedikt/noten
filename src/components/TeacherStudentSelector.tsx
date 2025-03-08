@@ -42,7 +42,7 @@ export const TeacherStudentSelector = ({
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl flex items-center">
             <Users className="mr-2 h-5 w-5" />
-            Schüler/innen
+            Alle Schüler/innen
           </CardTitle>
           <Button 
             size="sm" 
@@ -93,12 +93,12 @@ export const TeacherStudentSelector = ({
             <div className="text-center py-8 text-muted-foreground">
               {searchQuery 
                 ? "Keine Schüler mit diesem Namen gefunden" 
-                : "Keine Schüler in deinen Klassen gefunden"}
+                : "Keine Schüler gefunden"}
             </div>
           )}
 
           <div className="text-sm text-muted-foreground">
-            {students.length} Schüler/innen in deinen Klassen
+            {students.length} Schüler/innen insgesamt
           </div>
         </div>
       </CardContent>

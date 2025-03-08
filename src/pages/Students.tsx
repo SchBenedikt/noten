@@ -1,222 +1,200 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Header from "@/components/Header";
-import { Sidebar } from "@/components/Sidebar";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search, PencilIcon } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Toaster } from "@/components/ui/toaster";
+import Header from "@/components/Header";
+import { Sidebar } from "@/components/Sidebar";
 import { useToast } from "@/components/ui/use-toast";
-import { GraduationCap, Search, School, Star } from "lucide-react";
+import { Toaster } from "@/components/ui/toaster";
 
 interface StudentProfile {
   id: string;
   first_name: string | null;
   grade_level: number;
   school_id: string | null;
-  school_name?: string;
+  school?: {
+    name: string;
+  };
 }
 
 const Students = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
   const [students, setStudents] = useState<StudentProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
-  
+
   useEffect(() => {
-    const checkRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/login');
-        return;
-      }
+    const fetchStudents = async () => {
+      setIsLoading(true);
+      try {
+        // First check if the current user is a teacher
+        const { data: session } = await supabase.auth.getSession();
+        if (!session?.session?.user) {
+          navigate('/login');
+          return;
+        }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+        const { data: userProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.session.user.id)
+          .single();
 
-      if (profile?.role !== 'teacher') {
-        navigate('/dashboard');
-        toast({
-          title: "Zugriff verweigert",
-          description: "Diese Seite ist nur für Lehrer zugänglich",
-          variant: "destructive",
-        });
-      } else {
-        fetchStudents();
+        if (profileError || userProfile?.role !== 'teacher') {
+          navigate('/');
+          return;
+        }
+
+        // Fetch all students with their school information
+        const { data, error } = await supabase
+          .from('profiles')
+          .select(`
+            id,
+            first_name,
+            grade_level,
+            school_id,
+            schools:school_id (name)
+          `)
+          .eq('role', 'student')
+          .order('grade_level', { ascending: true });
+
+        if (error) {
+          console.error("Error fetching students:", error);
+          toast({
+            title: "Fehler",
+            description: "Fehler beim Laden der Schüler",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Transform the data to match our interface
+        const studentsWithSchools = data.map((student) => ({
+          ...student,
+          school: student.schools,
+        }));
+
+        setStudents(studentsWithSchools);
+      } catch (err) {
+        console.error("Error in fetchStudents:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    checkRole();
-  }, []);
+    fetchStudents();
+  }, [navigate, toast]);
 
-  const fetchStudents = async () => {
-    setIsLoading(true);
-    try {
-      // Get current teacher's classes
-      const { data: teacherClassesData, error: classesError } = await supabase
-        .from('teacher_classes')
-        .select('*');
-
-      if (classesError) throw classesError;
-      
-      if (!teacherClassesData || teacherClassesData.length === 0) {
-        setStudents([]);
-        setIsLoading(false);
-        return;
-      }
-
-      // Create filter conditions for each class (school + grade level)
-      const filters = teacherClassesData.map(tc => 
-        `(school_id.eq.${tc.school_id},grade_level.eq.${tc.grade_level})`
-      ).join(',');
-
-      // Get students who match the teacher's classes
-      const { data: studentsData, error: studentsError } = await supabase
-        .from('profiles')
-        .select('id, first_name, grade_level, school_id, role')
-        .or(filters)
-        .eq('role', 'student');
-
-      if (studentsError) throw studentsError;
-
-      // Enrich student data with school names
-      const schoolIds = [...new Set(studentsData?.map(s => s.school_id).filter(id => id) as string[])];
-      
-      const { data: schoolsData } = await supabase
-        .from('schools')
-        .select('id, name')
-        .in('id', schoolIds.length > 0 ? schoolIds : ['00000000-0000-0000-0000-000000000000']);
-      
-      const schoolMap = new Map(schoolsData?.map(s => [s.id, s.name]) || []);
-
-      const enrichedStudents = (studentsData || []).map(student => ({
-        ...student,
-        school_name: student.school_id ? schoolMap.get(student.school_id) : undefined
-      }));
-
-      setStudents(enrichedStudents);
-    } catch (error) {
-      console.error("Error fetching students:", error);
-      toast({
-        title: "Fehler",
-        description: "Schüler konnten nicht geladen werden",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const handleEditStudent = (studentId: string) => {
+    // Navigate to the dashboard with this student selected
+    navigate(`/?student=${studentId}`);
   };
 
-  const handleViewStudentGrades = (studentId: string) => {
-    navigate('/dashboard', { state: { selectedStudentId: studentId } });
-  };
-
-  // Filter students based on search and active tab
-  const filteredStudents = students.filter(student => {
-    const matchesSearch = student.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
-    if (activeTab === "all") return matchesSearch;
-    return matchesSearch && student.grade_level.toString() === activeTab;
-  });
-
-  // Get unique grade levels for tabs
-  const gradeLevels = [...new Set(students.map(s => s.grade_level))].sort((a, b) => a - b);
+  const filteredStudents = students.filter(
+    (student) =>
+      !searchQuery ||
+      (student.first_name?.toLowerCase() || "").includes(
+        searchQuery.toLowerCase()
+      )
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header title="Schüler" />
+      <Header title="Schüler" showBackButton={true} />
       <div className="flex flex-1">
         <Sidebar />
-        <main className="flex-1 p-4 lg:p-8 overflow-auto">
+        <main className="flex-1 p-4 pt-6 lg:p-8 overflow-auto">
           <div className="max-w-6xl mx-auto space-y-8">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Schüler</h1>
+              <h1 className="text-3xl font-bold mb-2">Alle Schüler</h1>
               <p className="text-gray-500">
-                Alle Schüler in deinen Klassen
+                Hier kannst du alle Schüler sehen und ihre Noten verwalten.
               </p>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="relative mb-6">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Nach Namen suchen..."
-                  className="pl-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-
-              <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="mb-4">
-                  <TabsTrigger value="all">Alle</TabsTrigger>
-                  {gradeLevels.map((level) => (
-                    <TabsTrigger key={level} value={level.toString()}>
-                      {level}. Klasse
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-
-                <TabsContent value={activeTab}>
-                  {isLoading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <Card key={i} className="animate-pulse">
-                          <CardHeader className="h-16" />
-                          <CardContent className="h-24" />
-                        </Card>
-                      ))}
-                    </div>
-                  ) : filteredStudents.length > 0 ? (
-                    <ScrollArea className="h-[500px]">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <CardTitle>Schüler</CardTitle>
+                  <div className="relative w-full sm:w-64">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Nach Namen suchen..."
+                      className="pl-8"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="text-center py-8 text-gray-500">
+                    Schüler werden geladen...
+                  </div>
+                ) : filteredStudents.length > 0 ? (
+                  <ScrollArea className="h-[500px]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Klassenstufe</TableHead>
+                          <TableHead>Schule</TableHead>
+                          <TableHead className="text-right">Aktionen</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
                         {filteredStudents.map((student) => (
-                          <Card key={student.id} className="overflow-hidden">
-                            <CardHeader className="pb-2">
-                              <CardTitle>{student.first_name || "Unbekannter Schüler"}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="pb-4">
-                              <div className="space-y-2">
-                                <div className="flex items-center text-sm text-gray-500">
-                                  <GraduationCap className="mr-2 h-4 w-4" />
-                                  {student.grade_level}. Klasse
-                                </div>
-                                <div className="flex items-center text-sm text-gray-500">
-                                  <School className="mr-2 h-4 w-4" />
-                                  {student.school_name || "Keine Schule"}
-                                </div>
-                                <Button 
-                                  variant="outline" 
-                                  className="w-full mt-2"
-                                  onClick={() => handleViewStudentGrades(student.id)}
-                                >
-                                  <Star className="mr-2 h-4 w-4" />
-                                  Noten ansehen
-                                </Button>
-                              </div>
-                            </CardContent>
-                          </Card>
+                          <TableRow key={student.id}>
+                            <TableCell className="font-medium">
+                              {student.first_name || "Unbekannter Schüler"}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {student.grade_level}. Klasse
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {student.school?.name || "Keine Schule"}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEditStudent(student.id)}
+                              >
+                                <PencilIcon className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
                         ))}
-                      </div>
-                    </ScrollArea>
-                  ) : (
-                    <div className="text-center py-12 text-gray-500">
-                      {students.length === 0 ? 
-                        "Du hast noch keine Klassen oder keine Schüler in deinen Klassen." : 
-                        "Keine Schüler gefunden, die deiner Suche entsprechen."}
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </div>
+                      </TableBody>
+                    </Table>
+                  </ScrollArea>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    {searchQuery
+                      ? "Keine Schüler mit diesem Namen gefunden"
+                      : "Keine Schüler gefunden"}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </main>
       </div>

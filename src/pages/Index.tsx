@@ -1,4 +1,6 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { useSubjects } from "@/hooks/use-subjects";
 import { SubjectList } from "@/components/SubjectList";
 import { SubjectForm } from "@/components/SubjectForm";
@@ -11,14 +13,16 @@ import { PlusIcon, UploadIcon } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { TeacherStudentSelector } from "@/components/TeacherStudentSelector";
-import { GradeForm } from "@/components/GradeForm"; // Import GradeForm
+import { Grade } from "@/types";
 
 const Index = () => {
+  const location = useLocation();
   const { toast } = useToast();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isUploadSheetOpen, setIsUploadSheetOpen] = useState(false);
-  const [isAddGradeSheetOpen, setIsAddGradeSheetOpen] = useState(false); // State for Add Grade Sheet
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null); // State for selected subject
+  const [isAddGradeSheetOpen, setIsAddGradeSheetOpen] = useState(false);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
+  
   const {
     subjects,
     addSubject,
@@ -37,6 +41,16 @@ const Index = () => {
     selectedStudentId,
     selectStudent,
   } = useSubjects();
+
+  // Check URL for student parameter
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const studentId = params.get('student');
+    
+    if (studentId && isTeacher && students.find(s => s.id === studentId)) {
+      selectStudent(studentId);
+    }
+  }, [location.search, isTeacher, students, selectStudent]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,6 +81,10 @@ const Index = () => {
     }
   };
 
+  // Get selected student name 
+  const selectedStudent = students.find(s => s.id === selectedStudentId);
+  const selectedStudentName = selectedStudent?.first_name || undefined;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header title="Dashboard" showBackButton={false} />
@@ -84,7 +102,9 @@ const Index = () => {
                 </h1>
                 <p className="text-gray-500">
                   {isTeacher
-                    ? "Verwalte Noten deiner Schüler"
+                    ? selectedStudentId 
+                      ? `Verwalte Noten von ${selectedStudentName || 'Schüler'}`
+                      : "Wähle einen Schüler, um dessen Noten zu verwalten"
                     : "Hier kannst du alle deine Noten einsehen und verwalten."
                   }
                 </p>
@@ -180,7 +200,8 @@ const Index = () => {
               onDeleteGrade={deleteGrade}
               onDeleteSubject={deleteSubject}
               onUpdateSubject={updateSubject}
-              onAddGradeClick={handleAddGrade} // Pass handleAddGrade to SubjectList
+              onAddGradeClick={handleAddGrade}
+              studentName={isTeacher ? selectedStudentName : undefined}
             />
           </div>
         </main>

@@ -1,3 +1,4 @@
+
 import { Subject, Grade } from '@/types';
 import { SubjectCard } from './SubjectCard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -15,6 +16,8 @@ interface SubjectListProps {
   onDeleteSubject: (subjectId: string) => Promise<void>;
   onUpdateSubject?: (subjectId: string, updates: Partial<Subject>) => Promise<void>;
   isDemo?: boolean;
+  onAddGradeClick?: (subjectId: string) => void;
+  studentName?: string;
 }
 
 export const SubjectList = ({
@@ -24,7 +27,9 @@ export const SubjectList = ({
   onDeleteGrade,
   onDeleteSubject,
   onUpdateSubject,
-  isDemo = false
+  isDemo = false,
+  onAddGradeClick,
+  studentName
 }: SubjectListProps) => {
   const [mainSubjectsOpen, setMainSubjectsOpen] = useState(false);
   const [secondarySubjectsOpen, setSecondarySubjectsOpen] = useState(false);
@@ -172,6 +177,7 @@ export const SubjectList = ({
                     isInitiallyOpen={subject.id === lastActiveSubjectId}
                     searchQuery={searchQuery}
                     searchType={searchType}
+                    studentName={studentName}
                   />
                 </motion.div>
               ))}
