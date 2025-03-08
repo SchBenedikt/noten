@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Subject, Grade, SubjectType, GradeType } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -158,6 +159,7 @@ export const useSubjects = () => {
             )
           `)
           .eq('user_id', session.session.user.id)
+          .eq('grade_level', gradeLevel) // Filter subjects by the current grade level
           .order('created_at', { ascending: true });
 
         if (subjectsError) {
@@ -185,6 +187,27 @@ export const useSubjects = () => {
 
   const fetchStudentSubjects = async (studentId: string) => {
     try {
+      // First get the student's grade level
+      const { data: studentData, error: studentError } = await supabase
+        .from('profiles')
+        .select('grade_level')
+        .eq('id', studentId)
+        .single();
+      
+      if (studentError) {
+        console.error("Error fetching student grade level:", studentError);
+        toast({
+          title: "Fehler",
+          description: "Fehler beim Laden der Schülerdaten",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Update the current grade level to match the student's
+      setCurrentGradeLevel(studentData.grade_level);
+      
+      // Now fetch subjects filtered by student ID and their grade level
       const { data: subjectsData, error: subjectsError } = await supabase
         .from('subjects')
         .select(`
@@ -207,6 +230,7 @@ export const useSubjects = () => {
           )
         `)
         .eq('user_id', studentId)
+        .eq('grade_level', studentData.grade_level) // Filter by the student's current grade level
         .order('created_at', { ascending: true });
 
       if (subjectsError) {
