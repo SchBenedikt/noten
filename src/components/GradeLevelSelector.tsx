@@ -36,39 +36,15 @@ export const GradeLevelSelector = ({
 
   const handleGradeLevelChange = async (value: string) => {
     const newGradeLevel = parseInt(value);
+    if (newGradeLevel === selectedGradeLevel) {
+      return; // Don't update if the value hasn't changed
+    }
+    
     setIsUpdating(true);
     setSelectedGradeLevel(newGradeLevel); // Update local state immediately
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Fehler",
-          description: "Benutzer nicht angemeldet",
-          variant: "destructive",
-        });
-        setIsUpdating(false);
-        return;
-      }
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({ grade_level: newGradeLevel })
-        .eq('id', user.id);
-
-      if (error) {
-        console.error("Fehler beim Aktualisieren der Klassenstufe:", error);
-        toast({
-          title: "Fehler",
-          description: "Fehler beim Ändern der Klassenstufe",
-          variant: "destructive",
-        });
-        setIsUpdating(false);
-        return;
-      }
-
-      // Call the callback to notify parent components
+      // Call the callback to notify parent components first
       onGradeLevelChange(newGradeLevel);
       console.log("GradeLevelSelector updated grade level to:", newGradeLevel);
       

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Subject, Grade, SubjectType, GradeType } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
@@ -60,6 +60,8 @@ export const useSubjects = () => {
   const [students, setStudents] = useState<StudentProfile[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const isFetchingRef = useRef(false);
+  const lastFetchParamsRef = useRef({ isTeacher: false, studentId: null, gradeLevel: 5 });
 
   const fetchUserGradeLevel = async () => {
     try {
@@ -108,8 +110,8 @@ export const useSubjects = () => {
 
       setStudents(studentsData || []);
       
-      // If no student is selected yet and we have students, select the first one
-      if ((!selectedStudentId || !studentsData?.find(s => s.id === selectedStudentId)) && studentsData?.length > 0) {
+      // Only auto-select the first student if no student is selected yet
+      if (!selectedStudentId && studentsData?.length > 0) {
         setSelectedStudentId(studentsData[0].id);
       }
     } catch (error) {
@@ -118,7 +120,26 @@ export const useSubjects = () => {
   };
 
   const fetchSubjects = async () => {
+    // Skip if already fetching to prevent race conditions
+    if (isFetchingRef.current) {
+      return;
+    }
+    
+    // Skip if parameters haven't changed
+    const currentParams = { 
+      isTeacher, 
+      studentId: selectedStudentId, 
+      gradeLevel: currentGradeLevel 
+    };
+    
+    if (JSON.stringify(currentParams) === JSON.stringify(lastFetchParamsRef.current) && !isLoading) {
+      return;
+    }
+    
+    lastFetchParamsRef.current = currentParams;
+    isFetchingRef.current = true;
     setIsLoading(true);
+    
     try {
       const { data: session } = await supabase.auth.getSession();
       
@@ -127,16 +148,21 @@ export const useSubjects = () => {
         return;
       }
 
-      // Get the current grade level from the database
-      const gradeLevel = await fetchUserGradeLevel();
-      setCurrentGradeLevel(gradeLevel);
-      console.log("useSubjects.fetchSubjects updated currentGradeLevel to:", gradeLevel);
-
+      // When a teacher has selected a student, use the student's data
       if (isTeacher && selectedStudentId) {
         await fetchStudentSubjects(selectedStudentId);
       } else {
+        // Get the current grade level from the database only if we're not a teacher viewing a student
+        if (!isTeacher) {
+          const gradeLevel = await fetchUserGradeLevel();
+          if (gradeLevel !== currentGradeLevel) {
+            setCurrentGradeLevel(gradeLevel);
+          }
+          console.log("useSubjects.fetchSubjects updated currentGradeLevel to:", gradeLevel);
+        }
+
         // Fetch own subjects for students and teachers viewing their own data
-        console.log("Fetching subjects for grade level:", gradeLevel);
+        console.log("Fetching subjects for grade level:", currentGradeLevel);
         const { data: subjectsData, error: subjectsError } = await supabase
           .from('subjects')
           .select(`
@@ -159,7 +185,7 @@ export const useSubjects = () => {
             )
           `)
           .eq('user_id', session.session.user.id)
-          .eq('grade_level', gradeLevel) // Filter subjects by the current grade level
+          .eq('grade_level', currentGradeLevel) // Filter subjects by the current grade level
           .order('created_at', { ascending: true });
 
         if (subjectsError) {
@@ -171,7 +197,7 @@ export const useSubjects = () => {
           return;
         }
 
-        console.log("Fetched subjects:", subjectsData?.length || 0, "for grade level:", gradeLevel);
+        console.log("Fetched subjects:", subjectsData?.length || 0, "for grade level:", currentGradeLevel);
         setSubjects((subjectsData || []).map(mapDatabaseSubjectToSubject));
       }
     } catch (error) {
@@ -183,6 +209,7 @@ export const useSubjects = () => {
       });
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
   };
 
@@ -206,7 +233,9 @@ export const useSubjects = () => {
       }
       
       // Update the current grade level to match the student's
-      setCurrentGradeLevel(studentData.grade_level);
+      if (studentData.grade_level !== currentGradeLevel) {
+        setCurrentGradeLevel(studentData.grade_level);
+      }
       console.log("Updated current grade level to student's grade level:", studentData.grade_level);
       
       // Now fetch subjects filtered by student ID and their grade level
@@ -257,14 +286,12 @@ export const useSubjects = () => {
   };
 
   const selectStudent = async (studentId: string) => {
+    if (studentId === selectedStudentId) {
+      return; // Skip if already selected
+    }
+    
     setSelectedStudentId(studentId);
     await fetchStudentSubjects(studentId);
-    
-    // Update selected student's grade level for the context
-    const studentProfile = students.find(s => s.id === studentId);
-    if (studentProfile) {
-      setCurrentGradeLevel(studentProfile.grade_level);
-    }
   };
 
   const addSubject = async (newSubject: Omit<Subject, 'id' | 'grades'>): Promise<Subject> => {
@@ -584,17 +611,29 @@ export const useSubjects = () => {
   };
 
   useEffect(() => {
-    fetchSubjects();
-  }, [currentGradeLevel]);
+    const initialFetch = async () => {
+      // Use the grade level stored in the profile on initial load
+      const initialGradeLevel = await fetchUserGradeLevel();
+      if (initialGradeLevel !== currentGradeLevel) {
+        setCurrentGradeLevel(initialGradeLevel);
+      }
+      await fetchSubjects();
+    };
+    
+    initialFetch();
+  }, []);
 
   useEffect(() => {
-    if (isTeacher && selectedStudentId) {
-      fetchStudentSubjects(selectedStudentId);
+    if (!isLoading) {
+      fetchSubjects();
     }
-  }, [isTeacher, selectedStudentId]);
+  }, [currentGradeLevel, selectedStudentId]);
 
   useEffect(() => {
     const updateGradeLevelInDb = async () => {
+      // Don't update during initial loading
+      if (isLoading) return;
+      
       const { data: session } = await supabase.auth.getSession();
       
       if (!session?.session?.user) {
@@ -616,10 +655,7 @@ export const useSubjects = () => {
       }
     };
 
-    // Only update if we're not in the initial loading state
-    if (!isLoading) {
-      updateGradeLevelInDb();
-    }
+    updateGradeLevelInDb();
   }, [currentGradeLevel, isLoading, isTeacher, selectedStudentId]);
 
   return {
