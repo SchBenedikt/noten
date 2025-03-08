@@ -1,4 +1,3 @@
-
 import { User } from '@/hooks/use-follow';
 import { Button } from '@/components/ui/button';
 import { UserCircle, UserPlus, UserMinus, School } from 'lucide-react';

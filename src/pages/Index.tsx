@@ -45,7 +45,6 @@ const Index = () => {
   const handleGradeLevelChange = (newGradeLevel: number) => {
     console.log("Index page handling grade level change to:", newGradeLevel);
     setCurrentGradeLevel(newGradeLevel);
-    fetchSubjects();
   };
 
   useEffect(() => {

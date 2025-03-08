@@ -48,7 +48,10 @@ export const GradeListItem = ({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <MessageSquare className="h-4 w-4 text-gray-400" />
+                  <div className="flex items-center gap-1 text-gray-500">
+                    <MessageSquare className="h-4 w-4" />
+                    <span className="text-sm truncate max-w-[200px]">{grade.notes}</span>
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>{grade.notes}</p>
