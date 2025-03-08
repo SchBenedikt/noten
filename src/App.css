@@ -1,4 +1,3 @@
-
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -97,4 +96,16 @@
   transform: scale(0, 0);
   opacity: 0.3;
   transition: 0s;
+}
+
+/* Styles for the sidebar container to fix it on the left side while scrolling */
+.sidebar-container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 240px;
+  background-color: var(--background);
+  box-shadow: var(--elevation-2);
+  z-index: 1000;
 }
