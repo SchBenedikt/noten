@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useSubjects } from "@/hooks/use-subjects";
@@ -14,6 +13,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { TeacherStudentSelector } from "@/components/TeacherStudentSelector";
 import { Grade } from "@/types";
+import { GradeForm } from "@/components/GradeForm";
 
 const Index = () => {
   const location = useLocation();
@@ -42,7 +42,6 @@ const Index = () => {
     selectStudent,
   } = useSubjects();
 
-  // Check URL for student parameter
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const studentId = params.get('student');
@@ -81,7 +80,6 @@ const Index = () => {
     }
   };
 
-  // Get selected student name 
   const selectedStudent = students.find(s => s.id === selectedStudentId);
   const selectedStudentName = selectedStudent?.first_name || undefined;
 
