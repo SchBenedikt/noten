@@ -624,16 +624,11 @@ export const useSubjects = () => {
   }, []);
 
   useEffect(() => {
-    if (!isLoading) {
-      fetchSubjects();
-    }
+    fetchSubjects();
   }, [currentGradeLevel, selectedStudentId]);
 
   useEffect(() => {
     const updateGradeLevelInDb = async () => {
-      // Don't update during initial loading
-      if (isLoading) return;
-      
       const { data: session } = await supabase.auth.getSession();
       
       if (!session?.session?.user) {
@@ -656,7 +651,7 @@ export const useSubjects = () => {
     };
 
     updateGradeLevelInDb();
-  }, [currentGradeLevel, isLoading, isTeacher, selectedStudentId]);
+  }, [currentGradeLevel, isTeacher, selectedStudentId]);
 
   return {
     subjects,
