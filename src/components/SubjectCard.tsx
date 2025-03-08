@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Subject, Grade } from "@/types";
 import { calculateMainSubjectAverages, calculateSecondarySubjectAverages } from "@/lib/calculations";
