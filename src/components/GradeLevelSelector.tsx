@@ -36,8 +36,8 @@ export const GradeLevelSelector = ({
 
   const handleGradeLevelChange = async (value: string) => {
     const newGradeLevel = parseInt(value);
-    if (newGradeLevel === selectedGradeLevel) {
-      return; // Don't update if the value hasn't changed
+    if (newGradeLevel === selectedGradeLevel || disabled) {
+      return; // Don't update if the value hasn't changed or component is disabled
     }
     
     setIsUpdating(true);
@@ -45,8 +45,8 @@ export const GradeLevelSelector = ({
     
     try {
       // Call the callback to notify parent components first
+      console.log("GradeLevelSelector changing grade level from:", selectedGradeLevel, "to:", newGradeLevel);
       onGradeLevelChange(newGradeLevel);
-      console.log("GradeLevelSelector updated grade level to:", newGradeLevel);
       
       toast({
         title: "Erfolg",

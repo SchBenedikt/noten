@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useSubjects } from "@/hooks/use-subjects";
@@ -22,6 +23,7 @@ const Index = () => {
   const [isUploadSheetOpen, setIsUploadSheetOpen] = useState(false);
   const [isAddGradeSheetOpen, setIsAddGradeSheetOpen] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
+  const [gradeLevelChangeInProgress, setGradeLevelChangeInProgress] = useState(false);
   
   const {
     subjects,
@@ -43,9 +45,21 @@ const Index = () => {
   } = useSubjects();
 
   const handleGradeLevelChange = (newGradeLevel: number) => {
+    if (gradeLevelChangeInProgress || newGradeLevel === currentGradeLevel) {
+      return; // Prevent multiple consecutive grade level changes
+    }
+    
     console.log("Index page handling grade level change to:", newGradeLevel);
+    setGradeLevelChangeInProgress(true);
+    
+    // Update grade level in the subjects hook
     setCurrentGradeLevel(newGradeLevel);
-    fetchSubjects();
+    
+    // Fetch subjects for the new grade level
+    setTimeout(() => {
+      fetchSubjects(true);
+      setGradeLevelChangeInProgress(false);
+    }, 100);
   };
 
   useEffect(() => {
@@ -183,7 +197,7 @@ const Index = () => {
               <GradeLevelSelector 
                 currentGradeLevel={currentGradeLevel} 
                 onGradeLevelChange={handleGradeLevelChange}
-                disabled={isTeacher && !!selectedStudentId}
+                disabled={isTeacher && !!selectedStudentId || gradeLevelChangeInProgress || isLoading}
               />
             </div>
 
@@ -193,20 +207,27 @@ const Index = () => {
                 selectedStudentId={selectedStudentId}
                 onSelectStudent={selectStudent}
                 onRefresh={fetchSubjects}
-                isLoading={isLoading}
+                isLoading={isLoading || gradeLevelChangeInProgress}
               />
             )}
 
-            <SubjectList
-              subjects={subjects}
-              onAddGrade={addGrade}
-              onUpdateGrade={updateGrade}
-              onDeleteGrade={deleteGrade}
-              onDeleteSubject={deleteSubject}
-              onUpdateSubject={updateSubject}
-              onAddGradeClick={handleAddGrade}
-              studentName={isTeacher ? selectedStudentName : undefined}
-            />
+            {isLoading || gradeLevelChangeInProgress ? (
+              <div className="flex justify-center py-16">
+                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <span className="ml-3 text-gray-600">Lade Fächer...</span>
+              </div>
+            ) : (
+              <SubjectList
+                subjects={subjects}
+                onAddGrade={addGrade}
+                onUpdateGrade={updateGrade}
+                onDeleteGrade={deleteGrade}
+                onDeleteSubject={deleteSubject}
+                onUpdateSubject={updateSubject}
+                onAddGradeClick={handleAddGrade}
+                studentName={isTeacher ? selectedStudentName : undefined}
+              />
+            )}
           </div>
         </main>
       </div>
