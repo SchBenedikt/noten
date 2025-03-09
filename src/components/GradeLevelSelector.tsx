@@ -8,8 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface GradeLevelSelectorProps {
   currentGradeLevel: number;
@@ -25,27 +24,34 @@ export const GradeLevelSelector = ({
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
   const [selectedGradeLevel, setSelectedGradeLevel] = useState<number>(currentGradeLevel);
+  const prevGradeLevelRef = useRef<number>(currentGradeLevel);
 
   // Synchronize with parent component when currentGradeLevel changes
   useEffect(() => {
     console.log("GradeLevelSelector received currentGradeLevel:", currentGradeLevel);
-    if (currentGradeLevel !== selectedGradeLevel) {
+    // Only update internal state if the current grade level has actually changed
+    if (currentGradeLevel !== selectedGradeLevel && 
+        currentGradeLevel !== prevGradeLevelRef.current) {
       setSelectedGradeLevel(currentGradeLevel);
+      prevGradeLevelRef.current = currentGradeLevel;
     }
   }, [currentGradeLevel]);
 
   const handleGradeLevelChange = async (value: string) => {
     const newGradeLevel = parseInt(value);
-    if (newGradeLevel === selectedGradeLevel || disabled) {
-      return; // Don't update if the value hasn't changed or component is disabled
+    
+    // Don't update if the value hasn't changed, component is disabled, or an update is in progress
+    if (newGradeLevel === selectedGradeLevel || disabled || isUpdating) {
+      return;
     }
     
     setIsUpdating(true);
-    setSelectedGradeLevel(newGradeLevel); // Update local state immediately
+    setSelectedGradeLevel(newGradeLevel);
+    prevGradeLevelRef.current = newGradeLevel;
     
     try {
-      // Call the callback to notify parent components first
       console.log("GradeLevelSelector changing grade level from:", selectedGradeLevel, "to:", newGradeLevel);
+      // Call the callback to notify parent components
       onGradeLevelChange(newGradeLevel);
       
       toast({
@@ -59,8 +65,14 @@ export const GradeLevelSelector = ({
         description: "Unerwarteter Fehler beim Ändern der Klassenstufe",
         variant: "destructive",
       });
+      
+      // Revert to previous value on error
+      setSelectedGradeLevel(prevGradeLevelRef.current);
     } finally {
-      setIsUpdating(false);
+      // Add a small delay to prevent rapid changes
+      setTimeout(() => {
+        setIsUpdating(false);
+      }, 500);
     }
   };
 

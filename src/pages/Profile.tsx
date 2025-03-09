@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { FirstNameInput } from "@/components/FirstNameInput";
 import { useSubjects } from "@/hooks/use-subjects";
 import { useQuery } from "@tanstack/react-query";
 import { RoleSelector } from "@/components/RoleSelector";
-import { Sidebar } from "@/components/Sidebar"; // P635e
+import { Sidebar } from "@/components/Sidebar";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -19,7 +19,9 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
+  const [isChangingGradeLevel, setIsChangingGradeLevel] = useState(false);
   const { setCurrentGradeLevel, fetchSubjects } = useSubjects();
+  const gradeLevelChangeTimeoutRef = useRef<number | null>(null);
 
   // Fetch the profile data directly from Supabase
   const { data: profile, refetch: refetchProfile } = useQuery({
@@ -59,9 +61,67 @@ const Profile = () => {
   });
 
   const handleGradeLevelChange = (newGradeLevel: number) => {
+    // Prevent multiple consecutive grade level changes
+    if (gradeLevelChangeTimeoutRef.current) {
+      window.clearTimeout(gradeLevelChangeTimeoutRef.current);
+      gradeLevelChangeTimeoutRef.current = null;
+    }
+    
+    if (isChangingGradeLevel) {
+      return;
+    }
+    
     console.log("Profile handling grade level change to:", newGradeLevel);
-    setCurrentGradeLevel(newGradeLevel);
-    fetchSubjects();
+    setIsChangingGradeLevel(true);
+    
+    // Update DB first
+    updateGradeLevelInDatabase(newGradeLevel)
+      .then(() => {
+        // Then update the state and fetch subjects
+        setCurrentGradeLevel(newGradeLevel);
+        
+        // Add a delay before fetching subjects to avoid race conditions
+        gradeLevelChangeTimeoutRef.current = window.setTimeout(() => {
+          fetchSubjects(true);
+          refetchProfile();
+          
+          // Set a timeout to allow the UI to stabilize
+          setTimeout(() => {
+            setIsChangingGradeLevel(false);
+            gradeLevelChangeTimeoutRef.current = null;
+          }, 500);
+        }, 100);
+      })
+      .catch(() => {
+        setIsChangingGradeLevel(false);
+      });
+  };
+
+  const updateGradeLevelInDatabase = async (newGradeLevel: number) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("Benutzer nicht angemeldet");
+        throw new Error("User not authenticated");
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ grade_level: newGradeLevel })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error("Fehler beim Aktualisieren der Klassenstufe:", error);
+        toast.error("Fehler beim Ändern der Klassenstufe");
+        throw error;
+      }
+      
+      toast.success(`Klassenstufe wurde auf ${newGradeLevel} geändert`);
+    } catch (error) {
+      console.error("Error updating grade level:", error);
+      throw error;
+    }
   };
 
   const handleRoleChange = async (newRole: 'student' | 'teacher') => {
@@ -147,8 +207,8 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="flex flex-1">
-        <Sidebar /> {/* P8d71 */}
-        <main className="flex-1 p-4 pt-6 lg:p-8 overflow-auto"> {/* P1854 */}
+        <Sidebar />
+        <main className="flex-1 p-4 pt-6 lg:p-8 overflow-auto">
           <div className="container mx-auto px-4 max-w-2xl">
             <Button
               variant="ghost"
@@ -206,7 +266,14 @@ const Profile = () => {
                       <GradeLevelSelector
                         currentGradeLevel={profile.grade_level}
                         onGradeLevelChange={handleGradeLevelChange}
+                        disabled={isChangingGradeLevel}
                       />
+                    )}
+                    {isChangingGradeLevel && (
+                      <div className="flex items-center justify-center mt-4">
+                        <div className="w-5 h-5 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"></div>
+                        <span className="ml-2 text-sm text-gray-500">Klassenstufe wird aktualisiert...</span>
+                      </div>
                     )}
                   </div>
 

@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useSubjects } from "@/hooks/use-subjects";
 import { SubjectList } from "@/components/SubjectList";
@@ -24,6 +23,7 @@ const Index = () => {
   const [isAddGradeSheetOpen, setIsAddGradeSheetOpen] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [gradeLevelChangeInProgress, setGradeLevelChangeInProgress] = useState(false);
+  const gradeLevelChangeTimeoutRef = useRef<number | null>(null);
   
   const {
     subjects,
@@ -45,6 +45,11 @@ const Index = () => {
   } = useSubjects();
 
   const handleGradeLevelChange = (newGradeLevel: number) => {
+    if (gradeLevelChangeTimeoutRef.current) {
+      window.clearTimeout(gradeLevelChangeTimeoutRef.current);
+      gradeLevelChangeTimeoutRef.current = null;
+    }
+    
     if (gradeLevelChangeInProgress || newGradeLevel === currentGradeLevel) {
       return; // Prevent multiple consecutive grade level changes
     }
@@ -52,13 +57,14 @@ const Index = () => {
     console.log("Index page handling grade level change to:", newGradeLevel);
     setGradeLevelChangeInProgress(true);
     
-    // Update grade level in the subjects hook
     setCurrentGradeLevel(newGradeLevel);
     
-    // Fetch subjects for the new grade level
-    setTimeout(() => {
+    gradeLevelChangeTimeoutRef.current = window.setTimeout(() => {
       fetchSubjects(true);
-      setGradeLevelChangeInProgress(false);
+      setTimeout(() => {
+        setGradeLevelChangeInProgress(false);
+        gradeLevelChangeTimeoutRef.current = null;
+      }, 500);
     }, 100);
   };
 
@@ -70,6 +76,14 @@ const Index = () => {
       selectStudent(studentId);
     }
   }, [location.search, isTeacher, students, selectStudent]);
+
+  useEffect(() => {
+    return () => {
+      if (gradeLevelChangeTimeoutRef.current) {
+        window.clearTimeout(gradeLevelChangeTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -215,6 +229,14 @@ const Index = () => {
               <div className="flex justify-center py-16">
                 <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                 <span className="ml-3 text-gray-600">Lade Fächer...</span>
+              </div>
+            ) : subjects.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                <p className="text-gray-500 mb-2">Keine Fächer für Klassenstufe {currentGradeLevel} gefunden</p>
+                <Button onClick={() => setIsSheetOpen(true)} className="mt-4">
+                  <PlusIcon size={16} className="mr-2" />
+                  Fach hinzufügen
+                </Button>
               </div>
             ) : (
               <SubjectList
