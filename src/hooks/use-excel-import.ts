@@ -1,12 +1,12 @@
 
 import { toast } from '@/components/ui/use-toast';
 import { parseExcelFile } from '@/utils/import';
-import { SubjectType } from '@/types';
+import { SubjectType, Grade, GradeType } from '@/types';
 
 interface UseExcelImportProps {
   currentGradeLevel: number;
   addSubject: (subject: any) => Promise<any>;
-  addGrade: (subjectId: string, grade: any) => Promise<void>;
+  addGrade: (subjectId: string, grade: Omit<Grade, 'id'>) => Promise<void>;
 }
 
 export const useExcelImport = ({
@@ -22,14 +22,19 @@ export const useExcelImport = ({
       for (const [name, data] of importedSubjects.entries()) {
         const subject = {
           name,
-          type: data.type,
+          type: data.type as SubjectType,
           grade_level: currentGradeLevel,
           writtenWeight: data.type === 'main' ? 2 : undefined
         };
         
         await addSubject(subject).then(async (newSubject) => {
           for (const grade of data.grades) {
-            await addGrade(newSubject.id, grade);
+            // Ensure grade type is properly cast to GradeType
+            const typedGrade = {
+              ...grade,
+              type: grade.type as GradeType
+            };
+            await addGrade(newSubject.id, typedGrade);
           }
         });
       }
@@ -39,7 +44,7 @@ export const useExcelImport = ({
         description: "Alle Noten wurden erfolgreich importiert",
       });
       return true;
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Fehler beim Import",
         description: error.message,

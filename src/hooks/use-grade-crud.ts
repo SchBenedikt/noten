@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Subject, Grade } from '@/types';
+import { Subject, Grade, GradeType } from '@/types';
 import { toast } from '@/components/ui/use-toast';
 
 interface UseGradeCrudProps {
@@ -99,6 +99,7 @@ export const useGradeCrud = ({
         }
       }
 
+      // Update the subjects state with the new grade
       setSubjects(subjects.map(subject => {
         if (subject.id === subjectId) {
           return {
@@ -107,7 +108,7 @@ export const useGradeCrud = ({
               id: data.id,
               value: data.value,
               weight: data.weight,
-              type: data.type,
+              type: data.type as GradeType, // Explicitly cast to GradeType
               date: data.date,
               notes: data.notes,
             }],

@@ -23,6 +23,9 @@ export const useSubjects = () => {
   // Extract auth status logic into its own hook
   const { isTeacher, fetchUserGradeLevel } = useAuthStatus();
   
+  // Create state for selected student ID
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  
   // Extract grade level management
   const { 
     currentGradeLevel, 
@@ -30,16 +33,23 @@ export const useSubjects = () => {
     markGradeLevelSuccess,
     completeInitialLoad,
     isInitialLoadComplete
-  } = useGradeLevel({ initialGradeLevel: 5, isTeacher, selectedStudentId });
+  } = useGradeLevel({ 
+    initialGradeLevel: 5, 
+    isTeacher, 
+    selectedStudentId 
+  });
   
   // Extract student management into its own hook
   const { 
     students, 
-    selectedStudentId, 
-    selectStudent, 
     fetchAllStudents,
     fetchStudentSubjects 
   } = useStudents(currentGradeLevel, setCurrentGradeLevel);
+  
+  // Function to select a student
+  const selectStudent = (studentId: string | null) => {
+    setSelectedStudentId(studentId);
+  };
   
   // Extract subject CRUD operations
   const { addSubject, updateSubject, deleteSubject } = useSubjectCrud({
