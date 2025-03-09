@@ -77,7 +77,7 @@ export const GradeLevelSelector = ({
   };
 
   return (
-    <div className="flex items-center gap-2 bg-white p-4 rounded-lg shadow-sm">
+    <div className="flex items-center gap-2">
       <span className="text-sm font-medium">Klassenstufe:</span>
       <Select
         value={selectedGradeLevel.toString()}
