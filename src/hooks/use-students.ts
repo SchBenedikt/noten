@@ -10,20 +10,11 @@ interface StudentProfile {
   school_id: string | null;
 }
 
-interface UseStudentsResult {
-  students: StudentProfile[];
-  selectedStudentId: string | null;
-  selectStudent: (studentId: string) => void;
-  fetchAllStudents: () => Promise<void>;
-  fetchStudentSubjects: (studentId: string) => Promise<{ subjects: any[], gradeLevel: number }>;
-}
-
 export const useStudents = (
   currentGradeLevel: number,
   setCurrentGradeLevel: (level: number) => void
-): UseStudentsResult => {
+) => {
   const [students, setStudents] = useState<StudentProfile[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
   const fetchAllStudents = async () => {
     try {
@@ -38,11 +29,6 @@ export const useStudents = (
       }
 
       setStudents(studentsData || []);
-      
-      // Only auto-select the first student if no student is selected yet
-      if (!selectedStudentId && studentsData?.length > 0) {
-        setSelectedStudentId(studentsData[0].id);
-      }
     } catch (error) {
       console.error("Error in fetchAllStudents:", error);
     }
@@ -124,18 +110,8 @@ export const useStudents = (
     }
   };
 
-  const selectStudent = (studentId: string) => {
-    if (studentId === selectedStudentId) {
-      return; // Skip if already selected
-    }
-    
-    setSelectedStudentId(studentId);
-  };
-
   return {
     students,
-    selectedStudentId,
-    selectStudent,
     fetchAllStudents,
     fetchStudentSubjects,
   };
