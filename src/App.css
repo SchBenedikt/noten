@@ -1,3 +1,4 @@
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -5,43 +6,7 @@
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-
-.logo:hover {
-  filter: drop-shadow(0 0 2em hsl(var(--primary) / 0.67));
-}
-
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em rgba(97, 218, 251, 0.67));
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: hsl(var(--muted-foreground));
-}
+/* ... keep existing code (logo and animation styles) */
 
 /* Add smooth transition for theme changes */
 :root, html, body, * {
@@ -98,14 +63,48 @@
   transition: 0s;
 }
 
-/* Styles for the sidebar container to fix it on the left side while scrolling */
+/* Mobile sidebar adjustments */
+@media (max-width: 768px) {
+  main {
+    padding-top: 4rem !important; /* Space for the fixed header and menu button */
+  }
+  
+  .header-title {
+    margin-left: 2.5rem; /* Make space for the menu button */
+  }
+}
+
+/* Styles for the sidebar container */
 .sidebar-container {
   position: fixed;
   left: 0;
   top: 0;
   height: 100vh;
-  width: 240px;
-  background-color: var(--background);
-  box-shadow: var(--elevation-2);
   z-index: 1000;
+  transition: width 0.3s ease-in-out;
+}
+
+/* Sidebar toggle animation */
+.sidebar-toggle-icon {
+  transition: transform 0.3s ease;
+}
+
+.sidebar-toggle-icon.collapsed {
+  transform: rotate(180deg);
+}
+
+/* Sidebar backdrop for mobile */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
 }

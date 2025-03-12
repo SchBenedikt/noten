@@ -123,7 +123,7 @@ const Index = () => {
       <Header title="Dashboard" showBackButton={false} />
       <div className="flex flex-1">
         <Sidebar />
-        <main className="flex-1 p-4 pt-6 lg:p-8 overflow-auto">
+        <main className="flex-1 p-4 pt-6 lg:p-8 overflow-auto w-full">
           <div className="max-w-6xl mx-auto space-y-8">
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>

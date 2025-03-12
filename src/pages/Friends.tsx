@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useFollow } from '@/hooks/use-follow';
 import { UserCard } from '@/components/UserCard';
@@ -64,7 +65,7 @@ const Friends = () => {
       <Header title="Freunde & Follower" />
       <div className="flex flex-1">
         <Sidebar />
-        <main className="flex-1 p-4 pt-6 lg:p-8 overflow-auto">
+        <main className="flex-1 p-4 pt-6 lg:p-8 overflow-auto w-full">
           <div className="container mx-auto py-6 px-4">
             <div className="mb-6">
               <div className="relative mb-4">
