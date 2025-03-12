@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -63,13 +64,21 @@ export const GradeForm = ({
   }, [subjectType, type]);
 
   const handleSubmit = (data: z.infer<typeof FormSchema>) => {
+    const numericValue = Number(value);
+    const numericWeight = Number(weight);
+    
+    if (isNaN(numericValue) || isNaN(numericWeight)) {
+      return;
+    }
+    
     onSubmit({
-      value: Number(value),
-      weight: Number(weight),
+      value: numericValue,
+      weight: numericWeight,
       type,
       date: data.dob.toISOString(),
       notes,
     });
+    
     if (!initialGrade) {
       setValue('');
       setWeight('1');
@@ -95,11 +104,11 @@ export const GradeForm = ({
         <div className="flex justify-end gap-2">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel}>
-              Abbrechen
+              Cancel
             </Button>
           )}
           <Button type="submit">
-            {initialGrade ? 'Speichern' : 'Hinzufügen'}
+            {initialGrade ? 'Save' : 'Add'}
           </Button>
         </div>
       </form>
