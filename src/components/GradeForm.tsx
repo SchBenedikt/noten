@@ -39,8 +39,6 @@ export const GradeForm = ({
     initialGrade?.type || (subjectType === 'secondary' ? 'oral' : 'oral')
   );
   const [notes, setNotes] = useState(initialGrade?.notes || '');
-  const [valueError, setValueError] = useState(false);
-  const [weightError, setWeightError] = useState(false);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -65,34 +63,13 @@ export const GradeForm = ({
     }
   }, [subjectType, type]);
 
-  const validateNumericInput = (input: string): boolean => {
-    // Allow empty string for new entries that haven't been filled yet
-    if (!input) return false;
-    
-    // Check if the input is a valid number
-    const numValue = Number(input);
-    return !isNaN(numValue) && isFinite(numValue) && numValue > 0;
-  };
-
   const handleSubmit = (data: z.infer<typeof FormSchema>) => {
-    // Reset error states
-    setValueError(false);
-    setWeightError(false);
-    
-    // Validate value
-    if (!validateNumericInput(value)) {
-      setValueError(true);
-      return;
-    }
-    
-    // Validate weight
-    if (!validateNumericInput(weight)) {
-      setWeightError(true);
-      return;
-    }
-    
     const numericValue = Number(value);
     const numericWeight = Number(weight);
+    
+    if (isNaN(numericValue) || isNaN(numericWeight)) {
+      return;
+    }
     
     onSubmit({
       value: numericValue,
@@ -102,13 +79,11 @@ export const GradeForm = ({
       notes,
     });
     
-    // Only reset the form if we're not editing an existing grade
     if (!initialGrade) {
       setValue('');
       setWeight('1');
       setType('oral');
       setNotes('');
-      form.reset({ dob: new Date() });
     }
   };
 
@@ -116,16 +91,8 @@ export const GradeForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="grid gap-4">
-          <GradeValueInput 
-            value={value} 
-            onChange={setValue} 
-            hasError={valueError} 
-          />
-          <GradeWeightInput 
-            weight={weight} 
-            onChange={setWeight} 
-            hasError={weightError} 
-          />
+          <GradeValueInput value={value} onChange={setValue} />
+          <GradeWeightInput weight={weight} onChange={setWeight} />
           <GradeTypeSelector 
             type={type} 
             onChange={setType} 

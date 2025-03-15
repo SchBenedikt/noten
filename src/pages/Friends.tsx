@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useFollow } from '@/hooks/use-follow';
 import { UserCard } from '@/components/UserCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,17 +23,12 @@ const Friends = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('discover');
   
-  // Memoize fetch functions to prevent unnecessary re-renders
-  const fetchUserData = useCallback(() => {
+  // Load all data when component first mounts
+  useEffect(() => {
     fetchUsers();
     fetchFollowings();
     fetchFollowers();
   }, [fetchUsers, fetchFollowings, fetchFollowers]);
-  
-  // Load all data when component first mounts
-  useEffect(() => {
-    fetchUserData();
-  }, [fetchUserData]);
   
   // Load data when active tab changes
   useEffect(() => {
@@ -70,7 +65,7 @@ const Friends = () => {
               <div className="relative mb-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <Input
-                  type="search"
+                  type="email"
                   placeholder="Search users..."
                   className="pl-10"
                   value={searchTerm}
@@ -120,7 +115,7 @@ const Friends = () => {
                     ))
                   ) : (
                     <div className="text-center py-8 text-gray-500">
-                      {searchTerm ? 'No users found matching your search.' : 'No other users available.'}
+                      {searchTerm ? 'No users found.' : 'No other users available.'}
                     </div>
                   )}
                 </TabsContent>
@@ -141,7 +136,7 @@ const Friends = () => {
                   ) : (
                     <div className="text-center py-8 text-gray-500">
                       {searchTerm 
-                        ? 'No followed users found matching your search.' 
+                        ? 'No followed users found.' 
                         : 'You are not following anyone yet. Discover users in the "Discover" tab.'}
                     </div>
                   )}
@@ -163,7 +158,7 @@ const Friends = () => {
                   ) : (
                     <div className="text-center py-8 text-gray-500">
                       {searchTerm 
-                        ? 'No followers found matching your search.' 
+                        ? 'No followers found.' 
                         : 'You have no followers yet.'}
                     </div>
                   )}
