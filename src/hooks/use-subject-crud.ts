@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Subject, Grade, SubjectType, GradeType } from '@/types';
@@ -71,7 +72,7 @@ export const useSubjectCrud = ({
 
     const targetUserId = isTeacher && selectedStudentId ? selectedStudentId : session.session.user.id;
     
-    // Use the grade level from newSubject or the current grade level if not specified
+    // Always use the current grade level if not otherwise specified
     const targetGradeLevel = newSubject.grade_level !== undefined ? 
       newSubject.grade_level : currentGradeLevel;
     
@@ -81,7 +82,7 @@ export const useSubjectCrud = ({
       .from('subjects')
       .insert({
         name: newSubject.name,
-        type: newSubject.type as SubjectType,
+        type: newSubject.type,
         written_weight: newSubject.writtenWeight,
         grade_level: targetGradeLevel,
         user_id: targetUserId,

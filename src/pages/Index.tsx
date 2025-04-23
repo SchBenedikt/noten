@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useSubjects } from "@/hooks/use-subjects";
 import { SubjectList } from "@/components/SubjectList";
@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { GradeLevelSelector } from "@/components/GradeLevelSelector";
 import Header from "@/components/Header";
 import { Sidebar } from "@/components/Sidebar";
-import { PlusIcon, UploadIcon } from "lucide-react";
+import { PlusIcon, UploadIcon, RefreshCw } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { TeacherStudentSelector } from "@/components/TeacherStudentSelector";
@@ -35,47 +35,24 @@ const Index = () => {
     updateSubject,
     importGradesFromExcel,
     currentGradeLevel,
-    setCurrentGradeLevel,
     fetchSubjects,
     isLoading,
     isTeacher,
     students,
     selectedStudentId,
     selectStudent,
+    updateGradeLevel,
+    isGradeLevelUpdating
   } = useSubjects();
 
-  // Prevent multiple grade level changes in quick succession
-  const gradeChangeTimeoutRef = useRef<number | null>(null);
-  const [gradeChangePending, setGradeChangePending] = useState(false);
-
-  // Handle grade level change with debounce
+  // Handle grade level change
   const handleGradeLevelChange = (newGradeLevel: number) => {
-    // Clear any pending timeout
-    if (gradeChangeTimeoutRef.current) {
-      window.clearTimeout(gradeChangeTimeoutRef.current);
-    }
-    
-    // Don't allow multiple changes at once
-    if (gradeChangePending || newGradeLevel === currentGradeLevel) {
+    if (newGradeLevel === currentGradeLevel) {
       return;
     }
     
-    setGradeChangePending(true);
     console.log("Index page handling grade level change to:", newGradeLevel);
-    
-    // Update the grade level
-    setCurrentGradeLevel(newGradeLevel);
-    
-    // Set a timeout to fetch subjects after the grade level is updated
-    gradeChangeTimeoutRef.current = window.setTimeout(() => {
-      fetchSubjects(true); // Force fetch subjects
-      
-      // Release the lock after a small delay
-      setTimeout(() => {
-        setGradeChangePending(false);
-        gradeChangeTimeoutRef.current = null;
-      }, 300);
-    }, 100);
+    updateGradeLevel(newGradeLevel);
   };
 
   // Handle student selection from URL query parameter
@@ -86,16 +63,7 @@ const Index = () => {
     if (studentId && isTeacher && students.find(s => s.id === studentId)) {
       selectStudent(studentId);
     }
-  }, [location.search, isTeacher, students]);
-
-  // Clean up timeouts on unmount
-  useEffect(() => {
-    return () => {
-      if (gradeChangeTimeoutRef.current) {
-        window.clearTimeout(gradeChangeTimeoutRef.current);
-      }
-    };
-  }, []);
+  }, [location.search, isTeacher, students, selectStudent]);
 
   // Handle Excel file upload for grade import
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,6 +101,8 @@ const Index = () => {
   const selectedStudent = students.find(s => s.id === selectedStudentId);
   const selectedStudentName = selectedStudent?.first_name || undefined;
 
+  const isLoadingData = isLoading || isGradeLevelUpdating;
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header title="Dashboard" showBackButton={false} />
@@ -159,6 +129,16 @@ const Index = () => {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
+                <Button 
+                  variant="outline" 
+                  className="gap-2"
+                  onClick={() => fetchSubjects(true)}
+                  disabled={isLoadingData}
+                >
+                  <RefreshCw size={16} className={isLoadingData ? "animate-spin" : ""} />
+                  <span className="hidden sm:inline">Aktualisieren</span>
+                </Button>
+                
                 <Sheet open={isUploadSheetOpen} onOpenChange={setIsUploadSheetOpen}>
                   <SheetTrigger asChild>
                     <Button variant="outline" className="gap-2">
@@ -216,7 +196,7 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Grade level selector */}
+            {/* Grade level selector and information */}
             <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
               <div className="text-sm text-gray-500">
                 {isTeacher 
@@ -229,7 +209,7 @@ const Index = () => {
               <GradeLevelSelector 
                 currentGradeLevel={currentGradeLevel} 
                 onGradeLevelChange={handleGradeLevelChange}
-                disabled={(isTeacher && !!selectedStudentId) || gradeChangePending || isLoading}
+                disabled={(isTeacher && !!selectedStudentId) || isLoadingData}
               />
             </div>
 
@@ -240,12 +220,12 @@ const Index = () => {
                 selectedStudentId={selectedStudentId}
                 onSelectStudent={selectStudent}
                 onRefresh={fetchSubjects}
-                isLoading={isLoading || gradeChangePending}
+                isLoading={isLoadingData}
               />
             )}
 
             {/* Subject list or loading/empty states */}
-            {isLoading || gradeChangePending ? (
+            {isLoadingData ? (
               <div className="flex justify-center py-16">
                 <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                 <span className="ml-3 text-gray-600">Lade Fächer...</span>
