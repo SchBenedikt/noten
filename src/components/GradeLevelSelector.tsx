@@ -30,8 +30,7 @@ export const GradeLevelSelector = ({
   useEffect(() => {
     console.log("GradeLevelSelector received currentGradeLevel:", currentGradeLevel);
     // Only update internal state if the current grade level has actually changed
-    if (currentGradeLevel !== selectedGradeLevel && 
-        currentGradeLevel !== prevGradeLevelRef.current) {
+    if (currentGradeLevel !== selectedGradeLevel) {
       setSelectedGradeLevel(currentGradeLevel);
       prevGradeLevelRef.current = currentGradeLevel;
     }
@@ -53,11 +52,6 @@ export const GradeLevelSelector = ({
       console.log("GradeLevelSelector changing grade level from:", selectedGradeLevel, "to:", newGradeLevel);
       // Call the callback to notify parent components
       onGradeLevelChange(newGradeLevel);
-      
-      toast({
-        title: "Erfolg",
-        description: `Klassenstufe wurde auf ${newGradeLevel} geändert`,
-      });
     } catch (error) {
       console.error("Fehler beim Ändern der Klassenstufe:", error);
       toast({

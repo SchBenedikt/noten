@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 
 interface UseGradeLevelProps {
   initialGradeLevel?: number;
@@ -32,6 +33,8 @@ export const useGradeLevel = ({
 
     // Only update the grade level if we're not in teacher mode or if no student is selected
     if (!isTeacher || !selectedStudentId) {
+      console.log("Updating grade level in DB to:", currentGradeLevel);
+      
       const { error } = await supabase
         .from('profiles')
         .update({ grade_level: currentGradeLevel })
@@ -39,8 +42,17 @@ export const useGradeLevel = ({
 
       if (error) {
         console.error("Error updating grade level:", error);
+        toast({
+          title: "Fehler",
+          description: "Fehler beim Aktualisieren der Jahrgangsstufe",
+          variant: "destructive",
+        });
       } else {
-        console.log("Grade level updated in DB:", currentGradeLevel);
+        console.log("Grade level updated in DB successfully:", currentGradeLevel);
+        toast({
+          title: "Erfolg",
+          description: `Jahrgangsstufe auf ${currentGradeLevel} geändert`,
+        });
       }
     }
   };

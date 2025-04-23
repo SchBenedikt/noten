@@ -72,9 +72,12 @@ export const useSubjectCrud = ({
 
     const targetUserId = isTeacher && selectedStudentId ? selectedStudentId : session.session.user.id;
     
-    // Make sure we're using the current grade level
-    const targetGradeLevel = newSubject.grade_level || currentGradeLevel;
-    console.log("Adding subject with grade level:", targetGradeLevel);
+    // Stelle sicher, dass wir die aktuelle Jahrgangsstufe verwenden
+    // Wenn nicht in newSubject definiert, nutze die aktuelle
+    const targetGradeLevel = newSubject.grade_level !== undefined ? 
+      newSubject.grade_level : currentGradeLevel;
+    
+    console.log(`Adding subject "${newSubject.name}" with grade level:`, targetGradeLevel);
 
     const { data, error } = await supabase
       .from('subjects')
@@ -106,25 +109,37 @@ export const useSubjectCrud = ({
       grades: []
     };
 
-    // Only add to the subjects state if it matches the current grade level
+    // Füge das Fach nur hinzu, wenn es zur aktuellen Jahrgangsstufe passt
     if (data.grade_level === currentGradeLevel) {
-      setSubjects([...subjects, newSubjectWithGrades]);
+      setSubjects(prevSubjects => [...prevSubjects, newSubjectWithGrades]);
     }
     
     toast({
       title: "Erfolg",
-      description: "Fach wurde erfolgreich erstellt",
+      description: `Fach "${data.name}" wurde erfolgreich für Jahrgang ${data.grade_level} erstellt`,
     });
 
     return newSubjectWithGrades;
   };
 
   const updateSubject = async (subjectId: string, updates: Partial<Subject>) => {
+    const updateData: any = {};
+    
+    if (updates.writtenWeight !== undefined) {
+      updateData.written_weight = updates.writtenWeight;
+    }
+    
+    if (updates.grade_level !== undefined) {
+      updateData.grade_level = updates.grade_level;
+    }
+    
+    if (Object.keys(updateData).length === 0) {
+      return; // Nichts zu aktualisieren
+    }
+
     const { error } = await supabase
       .from('subjects')
-      .update({
-        written_weight: updates.writtenWeight,
-      })
+      .update(updateData)
       .eq('id', subjectId);
 
     if (error) {
