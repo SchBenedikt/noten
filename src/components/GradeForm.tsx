@@ -13,6 +13,7 @@ import { GradeWeightInput } from './grade/GradeWeightInput';
 import { GradeTypeSelector } from './grade/GradeTypeSelector';
 import { GradeDatePicker } from './grade/GradeDatePicker';
 import { GradeNotesInput } from './grade/GradeNotesInput';
+import { toast } from '@/components/ui/use-toast';
 
 interface GradeFormProps {
   onSubmit: (grade: Omit<Grade, 'id'>) => void;
@@ -39,6 +40,9 @@ export const GradeForm = ({
     initialGrade?.type || (subjectType === 'secondary' ? 'oral' : 'oral')
   );
   const [notes, setNotes] = useState(initialGrade?.notes || '');
+  const [valueError, setValueError] = useState(false);
+  const [weightError, setWeightError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -63,27 +67,78 @@ export const GradeForm = ({
     }
   }, [subjectType, type]);
 
-  const handleSubmit = (data: z.infer<typeof FormSchema>) => {
-    const numericValue = Number(value);
-    const numericWeight = Number(weight);
+  const validateInputs = () => {
+    let isValid = true;
     
-    if (isNaN(numericValue) || isNaN(numericWeight)) {
+    // Validate value
+    const numericValue = Number(value);
+    if (isNaN(numericValue) || numericValue < 1 || numericValue > 6) {
+      setValueError(true);
+      isValid = false;
+    } else {
+      setValueError(false);
+    }
+    
+    // Validate weight
+    const numericWeight = Number(weight);
+    if (isNaN(numericWeight) || numericWeight < 0.5 || numericWeight > 3) {
+      setWeightError(true);
+      isValid = false;
+    } else {
+      setWeightError(false);
+    }
+    
+    return isValid;
+  };
+
+  const handleSubmit = async (data: z.infer<typeof FormSchema>) => {
+    if (!validateInputs()) {
+      toast({
+        title: "Eingabefehler",
+        description: "Bitte überprüfe deine Eingaben",
+        variant: "destructive",
+      });
       return;
     }
     
-    onSubmit({
-      value: numericValue,
-      weight: numericWeight,
-      type,
-      date: data.dob.toISOString(),
-      notes,
-    });
+    setIsSubmitting(true);
     
-    if (!initialGrade) {
-      setValue('');
-      setWeight('1');
-      setType('oral');
-      setNotes('');
+    try {
+      const numericValue = Number(value);
+      const numericWeight = Number(weight);
+      
+      await onSubmit({
+        value: numericValue,
+        weight: numericWeight,
+        type,
+        date: data.dob.toISOString(),
+        notes,
+      });
+      
+      // Reset form only if not editing an existing grade
+      if (!initialGrade) {
+        setValue('');
+        setWeight('1');
+        setType('oral');
+        setNotes('');
+        form.reset({
+          dob: new Date(),
+        });
+      }
+      
+      toast({
+        title: initialGrade ? "Note aktualisiert" : "Note hinzugefügt",
+        description: initialGrade ? "Die Note wurde erfolgreich aktualisiert" : "Die Note wurde erfolgreich hinzugefügt",
+      });
+    } catch (error) {
+      console.error("Error submitting grade:", error);
+      toast({
+        title: "Fehler",
+        description: "Beim Speichern der Note ist ein Fehler aufgetreten",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -91,8 +146,8 @@ export const GradeForm = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="grid gap-4">
-          <GradeValueInput value={value} onChange={setValue} />
-          <GradeWeightInput weight={weight} onChange={setWeight} />
+          <GradeValueInput value={value} onChange={setValue} hasError={valueError} />
+          <GradeWeightInput weight={weight} onChange={setWeight} hasError={weightError} />
           <GradeTypeSelector 
             type={type} 
             onChange={setType} 
@@ -103,12 +158,12 @@ export const GradeForm = ({
         </div>
         <div className="flex justify-end gap-2">
           {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+              Abbrechen
             </Button>
           )}
-          <Button type="submit">
-            {initialGrade ? 'Save' : 'Add'}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Wird gespeichert..." : (initialGrade ? "Speichern" : "Hinzufügen")}
           </Button>
         </div>
       </form>
