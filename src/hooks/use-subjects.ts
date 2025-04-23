@@ -30,9 +30,9 @@ export const useSubjects = () => {
   const { 
     currentGradeLevel, 
     setCurrentGradeLevel, 
-    markGradeLevelSuccess,
     completeInitialLoad,
-    isInitialLoadComplete
+    isInitialLoadComplete,
+    isUpdatePending
   } = useGradeLevel({ 
     initialGradeLevel: 5, 
     isTeacher, 
@@ -90,7 +90,9 @@ export const useSubjects = () => {
     
     if (!forceFetch && 
         JSON.stringify(currentParams) === JSON.stringify(lastFetchParamsRef.current) && 
-        !isLoading) {
+        !isLoading && 
+        !isUpdatePending) {
+      console.log("Skipping fetchSubjects - parameters unchanged:", JSON.stringify(currentParams));
       return;
     }
     
@@ -111,7 +113,6 @@ export const useSubjects = () => {
       if (isTeacher && selectedStudentId) {
         const { subjects: studentSubjects, gradeLevel } = await fetchStudentSubjects(selectedStudentId);
         setSubjects(studentSubjects.map(mapDatabaseSubjectToSubject));
-        markGradeLevelSuccess();
       } else {
         // Get the current grade level from the database only if we're not a teacher viewing a student
         if (!isTeacher && !isInitialLoadComplete) {
@@ -162,7 +163,6 @@ export const useSubjects = () => {
 
         console.log("Fetched subjects:", subjectsData?.length || 0, "for grade level:", currentGradeLevel);
         setSubjects((subjectsData || []).map(mapDatabaseSubjectToSubject));
-        markGradeLevelSuccess();
       }
     } catch (error) {
       console.error("Error fetching subjects:", error);
@@ -186,6 +186,7 @@ export const useSubjects = () => {
         setCurrentGradeLevel(initialGradeLevel);
       }
       completeInitialLoad();
+      
       await fetchSubjects(true); // Force fetch on initial load
       
       // If user is a teacher, fetch all students
@@ -217,8 +218,10 @@ export const useSubjects = () => {
       console.log("Selected student changed to:", selectedStudentId, "- fetching subjects");
       fetchStudentSubjects(selectedStudentId).then(({ subjects: studentSubjects }) => {
         setSubjects(studentSubjects.map(mapDatabaseSubjectToSubject));
-        markGradeLevelSuccess();
       });
+    } else {
+      // If no student is selected anymore, fetch the user's own subjects
+      fetchSubjects(true);
     }
   }, [selectedStudentId]);
 

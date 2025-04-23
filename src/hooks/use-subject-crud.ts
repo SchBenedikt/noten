@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Subject, Grade, SubjectType, GradeType } from '@/types';
@@ -41,7 +40,7 @@ export const mapDatabaseSubjectToSubject = (dbSubject: DatabaseSubject): Subject
   type: dbSubject.type as SubjectType,
   writtenWeight: dbSubject.written_weight || undefined,
   grade_level: dbSubject.grade_level,
-  grades: dbSubject.grades.map(mapDatabaseGradeToGrade),
+  grades: dbSubject.grades ? dbSubject.grades.map(mapDatabaseGradeToGrade) : [],
 });
 
 export const mapDatabaseGradeToGrade = (dbGrade: DatabaseGrade): Grade => ({
@@ -72,8 +71,7 @@ export const useSubjectCrud = ({
 
     const targetUserId = isTeacher && selectedStudentId ? selectedStudentId : session.session.user.id;
     
-    // Stelle sicher, dass wir die aktuelle Jahrgangsstufe verwenden
-    // Wenn nicht in newSubject definiert, nutze die aktuelle
+    // Use the grade level from newSubject or the current grade level if not specified
     const targetGradeLevel = newSubject.grade_level !== undefined ? 
       newSubject.grade_level : currentGradeLevel;
     
@@ -109,7 +107,7 @@ export const useSubjectCrud = ({
       grades: []
     };
 
-    // Füge das Fach nur hinzu, wenn es zur aktuellen Jahrgangsstufe passt
+    // Add the new subject to the state ONLY if it matches the current grade level
     if (data.grade_level === currentGradeLevel) {
       setSubjects(prevSubjects => [...prevSubjects, newSubjectWithGrades]);
     }
@@ -134,7 +132,7 @@ export const useSubjectCrud = ({
     }
     
     if (Object.keys(updateData).length === 0) {
-      return; // Nichts zu aktualisieren
+      return; // Nothing to update
     }
 
     const { error } = await supabase
@@ -151,6 +149,19 @@ export const useSubjectCrud = ({
       return;
     }
 
+    // If the grade level is being updated to something different than the current one,
+    // we need to remove it from the local state to maintain consistency
+    if (updates.grade_level !== undefined && updates.grade_level !== currentGradeLevel) {
+      setSubjects(subjects.filter(subject => subject.id !== subjectId));
+      
+      toast({
+        title: "Erfolg",
+        description: `Fach wurde auf Jahrgangsstufe ${updates.grade_level} verschoben`,
+      });
+      return;
+    }
+
+    // Otherwise, update the local state
     setSubjects(subjects.map(subject => 
       subject.id === subjectId 
         ? { ...subject, ...updates }
