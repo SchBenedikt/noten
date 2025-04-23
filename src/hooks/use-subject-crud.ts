@@ -152,7 +152,7 @@ export const useSubjectCrud = ({
     // If the grade level is being updated to something different than the current one,
     // we need to remove it from the local state to maintain consistency
     if (updates.grade_level !== undefined && updates.grade_level !== currentGradeLevel) {
-      setSubjects(subjects.filter(subject => subject.id !== subjectId));
+      setSubjects(prevSubjects => prevSubjects.filter(subject => subject.id !== subjectId));
       
       toast({
         title: "Erfolg",
@@ -162,7 +162,7 @@ export const useSubjectCrud = ({
     }
 
     // Otherwise, update the local state
-    setSubjects(subjects.map(subject => 
+    setSubjects(prevSubjects => prevSubjects.map(subject => 
       subject.id === subjectId 
         ? { ...subject, ...updates }
         : subject
@@ -189,7 +189,7 @@ export const useSubjectCrud = ({
       return;
     }
 
-    setSubjects(subjects.filter(subject => subject.id !== subjectId));
+    setSubjects(prevSubjects => prevSubjects.filter(subject => subject.id !== subjectId));
     toast({
       title: "Erfolg",
       description: "Fach wurde erfolgreich gelöscht",

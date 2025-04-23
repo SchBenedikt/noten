@@ -17,8 +17,12 @@ export const useSubjects = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  
+  // Track fetch state to prevent race conditions
   const isFetchingRef = useRef(false);
-  const lastFetchParamsRef = useRef({ isTeacher: false, studentId: null, gradeLevel: 5 });
+  
+  // Remember the last parameters used for fetching to avoid redundant fetches
+  const lastFetchParamsRef = useRef({ gradeLevel: 5, isTeacher: false, studentId: null });
 
   // Extract auth status logic into its own hook
   const { isTeacher, fetchUserGradeLevel } = useAuthStatus();
@@ -81,23 +85,27 @@ export const useSubjects = () => {
       return;
     }
     
-    // Skip if parameters haven't changed and not forcing fetch
+    // Build the current fetch parameters
     const currentParams = { 
+      gradeLevel: currentGradeLevel, 
       isTeacher, 
-      studentId: selectedStudentId, 
-      gradeLevel: currentGradeLevel 
+      studentId: selectedStudentId 
     };
     
-    if (!forceFetch && 
-        JSON.stringify(currentParams) === JSON.stringify(lastFetchParamsRef.current) && 
-        !isLoading && 
-        !isUpdatePending) {
+    // Skip if parameters haven't changed and not forcing fetch
+    const shouldSkipFetch = 
+      !forceFetch && 
+      JSON.stringify(currentParams) === JSON.stringify(lastFetchParamsRef.current) && 
+      !isLoading && 
+      !isUpdatePending;
+      
+    if (shouldSkipFetch) {
       console.log("Skipping fetchSubjects - parameters unchanged:", JSON.stringify(currentParams));
       return;
     }
     
     console.log("Fetching subjects with params:", JSON.stringify(currentParams));
-    lastFetchParamsRef.current = currentParams;
+    lastFetchParamsRef.current = { ...currentParams };
     isFetchingRef.current = true;
     setIsLoading(true);
     
@@ -109,12 +117,18 @@ export const useSubjects = () => {
         return;
       }
 
-      // When a teacher has selected a student, use the student's data
+      // When a teacher has selected a student, fetch the student's subjects
       if (isTeacher && selectedStudentId) {
         const { subjects: studentSubjects, gradeLevel } = await fetchStudentSubjects(selectedStudentId);
+        
+        if (gradeLevel !== currentGradeLevel) {
+          setCurrentGradeLevel(gradeLevel);
+        }
+        
         setSubjects(studentSubjects.map(mapDatabaseSubjectToSubject));
       } else {
-        // Get the current grade level from the database only if we're not a teacher viewing a student
+        // For regular users (students) or teachers viewing their own data,
+        // get the user's grade level and fetch subjects for that grade level
         if (!isTeacher && !isInitialLoadComplete) {
           const gradeLevel = await fetchUserGradeLevel();
           if (gradeLevel !== currentGradeLevel) {
@@ -124,7 +138,6 @@ export const useSubjects = () => {
           completeInitialLoad();
         }
 
-        // Fetch own subjects for students and teachers viewing their own data
         console.log("Fetching subjects for grade level:", currentGradeLevel);
         const { data: subjectsData, error: subjectsError } = await supabase
           .from('subjects')
@@ -148,7 +161,7 @@ export const useSubjects = () => {
             )
           `)
           .eq('user_id', session.session.user.id)
-          .eq('grade_level', currentGradeLevel) // Filter subjects by the current grade level
+          .eq('grade_level', currentGradeLevel) // Critical: Filter subjects by the current grade level
           .order('created_at', { ascending: true });
 
         if (subjectsError) {
@@ -177,16 +190,18 @@ export const useSubjects = () => {
     }
   };
 
+  // Initial setup: fetch user grade level and subjects
   useEffect(() => {
     const initialFetch = async () => {
-      // Use the grade level stored in the profile on initial load
+      // Get the user's grade level from profile
       const initialGradeLevel = await fetchUserGradeLevel();
       console.log("Initial grade level fetch:", initialGradeLevel);
+      
       if (initialGradeLevel !== currentGradeLevel) {
         setCurrentGradeLevel(initialGradeLevel);
       }
-      completeInitialLoad();
       
+      completeInitialLoad();
       await fetchSubjects(true); // Force fetch on initial load
       
       // If user is a teacher, fetch all students
@@ -198,8 +213,8 @@ export const useSubjects = () => {
     initialFetch();
   }, []);
 
+  // Fetch subjects when the grade level changes
   useEffect(() => {
-    // Skip the first render
     if (!isInitialLoadComplete) {
       return;
     }
@@ -208,8 +223,8 @@ export const useSubjects = () => {
     fetchSubjects(true); // Force fetch when grade level changes
   }, [currentGradeLevel]);
 
+  // Fetch subjects when the selected student changes
   useEffect(() => {
-    // Skip the first render
     if (!isInitialLoadComplete) {
       return;
     }

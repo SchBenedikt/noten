@@ -20,8 +20,8 @@ export const useGradeLevel = ({
   const updatePendingRef = useRef(false);
 
   const updateGradeLevelInDb = async () => {
-    // Don't update during initial loading
-    if (!initialLoadCompleteRef.current) {
+    // Don't update during initial loading or if we're in teacher mode with a selected student
+    if (!initialLoadCompleteRef.current || (isTeacher && selectedStudentId)) {
       return;
     }
     
@@ -36,33 +36,27 @@ export const useGradeLevel = ({
         return;
       }
 
-      // Only update the grade level if we're not in teacher mode or if no student is selected
-      if (!isTeacher || !selectedStudentId) {
-        console.log("Updating grade level in DB to:", currentGradeLevel);
-        
-        const { error } = await supabase
-          .from('profiles')
-          .update({ grade_level: currentGradeLevel })
-          .eq('id', session.session.user.id);
+      console.log("Updating grade level in DB to:", currentGradeLevel);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ grade_level: currentGradeLevel })
+        .eq('id', session.session.user.id);
 
-        if (error) {
-          console.error("Error updating grade level:", error);
-          toast({
-            title: "Fehler",
-            description: "Fehler beim Aktualisieren der Jahrgangsstufe",
-            variant: "destructive",
-          });
-        } else {
-          console.log("Grade level updated in DB successfully:", currentGradeLevel);
-          lastSuccessfulGradeLevelRef.current = currentGradeLevel;
-          toast({
-            title: "Erfolg",
-            description: `Jahrgangsstufe auf ${currentGradeLevel} geändert`,
-          });
-        }
+      if (error) {
+        console.error("Error updating grade level:", error);
+        toast({
+          title: "Fehler",
+          description: "Fehler beim Aktualisieren der Jahrgangsstufe",
+          variant: "destructive",
+        });
       } else {
-        // For teacher mode with selected student, still track the grade level
+        console.log("Grade level updated in DB successfully:", currentGradeLevel);
         lastSuccessfulGradeLevelRef.current = currentGradeLevel;
+        toast({
+          title: "Erfolg",
+          description: `Jahrgangsstufe auf ${currentGradeLevel} geändert`,
+        });
       }
     } catch (error) {
       console.error("Unexpected error updating grade level:", error);
@@ -73,7 +67,10 @@ export const useGradeLevel = ({
 
   // Mark initial load as complete
   const completeInitialLoad = () => {
-    initialLoadCompleteRef.current = true;
+    if (!initialLoadCompleteRef.current) {
+      initialLoadCompleteRef.current = true;
+      lastSuccessfulGradeLevelRef.current = currentGradeLevel;
+    }
   };
 
   useEffect(() => {
@@ -83,7 +80,7 @@ export const useGradeLevel = ({
     }
     
     updateGradeLevelInDb();
-  }, [currentGradeLevel, isTeacher, selectedStudentId]);
+  }, [currentGradeLevel]);
 
   return {
     currentGradeLevel,

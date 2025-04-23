@@ -23,9 +23,8 @@ const Index = () => {
   const [isUploadSheetOpen, setIsUploadSheetOpen] = useState(false);
   const [isAddGradeSheetOpen, setIsAddGradeSheetOpen] = useState(false);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
-  const [gradeLevelChangeInProgress, setGradeLevelChangeInProgress] = useState(false);
-  const gradeLevelChangeTimeoutRef = useRef<number | null>(null);
   
+  // Fetch subjects and related functionality
   const {
     subjects,
     addSubject,
@@ -45,30 +44,41 @@ const Index = () => {
     selectStudent,
   } = useSubjects();
 
+  // Prevent multiple grade level changes in quick succession
+  const gradeChangeTimeoutRef = useRef<number | null>(null);
+  const [gradeChangePending, setGradeChangePending] = useState(false);
+
+  // Handle grade level change with debounce
   const handleGradeLevelChange = (newGradeLevel: number) => {
-    if (gradeLevelChangeTimeoutRef.current) {
-      window.clearTimeout(gradeLevelChangeTimeoutRef.current);
-      gradeLevelChangeTimeoutRef.current = null;
+    // Clear any pending timeout
+    if (gradeChangeTimeoutRef.current) {
+      window.clearTimeout(gradeChangeTimeoutRef.current);
     }
     
-    if (gradeLevelChangeInProgress || newGradeLevel === currentGradeLevel) {
-      return; // Prevent multiple consecutive grade level changes
+    // Don't allow multiple changes at once
+    if (gradeChangePending || newGradeLevel === currentGradeLevel) {
+      return;
     }
     
+    setGradeChangePending(true);
     console.log("Index page handling grade level change to:", newGradeLevel);
-    setGradeLevelChangeInProgress(true);
     
+    // Update the grade level
     setCurrentGradeLevel(newGradeLevel);
     
-    gradeLevelChangeTimeoutRef.current = window.setTimeout(() => {
-      fetchSubjects(true);
+    // Set a timeout to fetch subjects after the grade level is updated
+    gradeChangeTimeoutRef.current = window.setTimeout(() => {
+      fetchSubjects(true); // Force fetch subjects
+      
+      // Release the lock after a small delay
       setTimeout(() => {
-        setGradeLevelChangeInProgress(false);
-        gradeLevelChangeTimeoutRef.current = null;
-      }, 500);
+        setGradeChangePending(false);
+        gradeChangeTimeoutRef.current = null;
+      }, 300);
     }, 100);
   };
 
+  // Handle student selection from URL query parameter
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const studentId = params.get('student');
@@ -76,16 +86,18 @@ const Index = () => {
     if (studentId && isTeacher && students.find(s => s.id === studentId)) {
       selectStudent(studentId);
     }
-  }, [location.search, isTeacher, students, selectStudent]);
+  }, [location.search, isTeacher, students]);
 
+  // Clean up timeouts on unmount
   useEffect(() => {
     return () => {
-      if (gradeLevelChangeTimeoutRef.current) {
-        window.clearTimeout(gradeLevelChangeTimeoutRef.current);
+      if (gradeChangeTimeoutRef.current) {
+        window.clearTimeout(gradeChangeTimeoutRef.current);
       }
     };
   }, []);
 
+  // Handle Excel file upload for grade import
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -103,11 +115,13 @@ const Index = () => {
       });
   };
 
+  // Handle add grade button click
   const handleAddGrade = (subjectId: string) => {
     setSelectedSubjectId(subjectId);
     setIsAddGradeSheetOpen(true);
   };
 
+  // Handle grade submission
   const handleGradeSubmit = (grade: Omit<Grade, 'id'>) => {
     if (selectedSubjectId) {
       addGrade(selectedSubjectId, grade);
@@ -115,6 +129,7 @@ const Index = () => {
     }
   };
 
+  // Get name of selected student
   const selectedStudent = students.find(s => s.id === selectedStudentId);
   const selectedStudentName = selectedStudent?.first_name || undefined;
 
@@ -125,6 +140,7 @@ const Index = () => {
         <Sidebar />
         <main className="flex-1 p-4 pt-6 lg:p-8 overflow-auto w-full">
           <div className="max-w-6xl mx-auto space-y-8">
+            {/* Header section with title and buttons */}
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-bold mb-2">
@@ -200,6 +216,7 @@ const Index = () => {
               </div>
             </div>
 
+            {/* Grade level selector */}
             <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
               <div className="text-sm text-gray-500">
                 {isTeacher 
@@ -212,21 +229,23 @@ const Index = () => {
               <GradeLevelSelector 
                 currentGradeLevel={currentGradeLevel} 
                 onGradeLevelChange={handleGradeLevelChange}
-                disabled={isTeacher && !!selectedStudentId || gradeLevelChangeInProgress || isLoading}
+                disabled={(isTeacher && !!selectedStudentId) || gradeChangePending || isLoading}
               />
             </div>
 
+            {/* Teacher student selector (only visible for teachers) */}
             {isTeacher && (
               <TeacherStudentSelector
                 students={students}
                 selectedStudentId={selectedStudentId}
                 onSelectStudent={selectStudent}
                 onRefresh={fetchSubjects}
-                isLoading={isLoading || gradeLevelChangeInProgress}
+                isLoading={isLoading || gradeChangePending}
               />
             )}
 
-            {isLoading || gradeLevelChangeInProgress ? (
+            {/* Subject list or loading/empty states */}
+            {isLoading || gradeChangePending ? (
               <div className="flex justify-center py-16">
                 <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                 <span className="ml-3 text-gray-600">Lade Fächer...</span>
@@ -256,6 +275,7 @@ const Index = () => {
       </div>
       <Toaster />
 
+      {/* Sheet for adding grades */}
       <Sheet open={isAddGradeSheetOpen} onOpenChange={setIsAddGradeSheetOpen}>
         <SheetContent side="right">
           <SheetHeader>

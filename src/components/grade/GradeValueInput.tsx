@@ -21,8 +21,7 @@ export const GradeValueInput = ({ value, onChange, hasError = false }: GradeValu
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Allow empty value for user input convenience
-    const newValue = e.target.value;
-    onChange(newValue);
+    onChange(e.target.value);
   };
 
   return (
