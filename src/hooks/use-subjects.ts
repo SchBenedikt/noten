@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Subject } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +23,9 @@ export const useSubjects = () => {
   
   // Create state for selected student ID
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  
+  // Track if we're currently fetching to prevent duplicate fetches
+  const isFetchingRef = useRef(false);
   
   // Extract grade level management
   const { 
@@ -74,6 +78,12 @@ export const useSubjects = () => {
 
   // Function to fetch subjects based on current grade level and selected student
   const fetchSubjects = useCallback(async (forceFetch = false) => {
+    // Prevent duplicate fetches that can cause infinite loops
+    if (isFetchingRef.current && !forceFetch) {
+      return;
+    }
+    
+    isFetchingRef.current = true;
     setIsLoading(true);
     
     try {
@@ -151,6 +161,7 @@ export const useSubjects = () => {
       });
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
   }, [currentGradeLevel, selectedStudentId, isTeacher, navigate, toast, isInitialLoadComplete, completeInitialLoad, 
       fetchUserGradeLevel, fetchStudentSubjects, updateGradeLevel]);
@@ -172,7 +183,8 @@ export const useSubjects = () => {
     };
     
     initialFetch();
-  }, []);
+    // Only run this effect once on component mount
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch subjects when the grade level changes
   useEffect(() => {
@@ -180,8 +192,13 @@ export const useSubjects = () => {
       return;
     }
     
-    console.log("Grade level changed to:", currentGradeLevel, "- fetching subjects");
-    fetchSubjects(true);
+    // Using a debounce to prevent rapid consecutive fetches
+    const timeoutId = setTimeout(() => {
+      console.log("Grade level changed to:", currentGradeLevel, "- fetching subjects");
+      fetchSubjects();
+    }, 300); // Add a small delay to prevent rapid consecutive fetches
+    
+    return () => clearTimeout(timeoutId);
   }, [currentGradeLevel, isInitialLoadComplete, fetchSubjects]);
 
   // Fetch subjects when the selected student changes
@@ -190,16 +207,13 @@ export const useSubjects = () => {
       return;
     }
     
+    // Don't need to set up another fetching mechanism here
+    // as the currentGradeLevel dependency in the above effect will handle it
     if (selectedStudentId) {
-      console.log("Selected student changed to:", selectedStudentId, "- fetching subjects");
-      fetchStudentSubjects(selectedStudentId).then(({ subjects: studentSubjects }) => {
-        setSubjects(studentSubjects.map(mapDatabaseSubjectToSubject));
-      });
-    } else {
-      // If no student is selected anymore, fetch the user's own subjects
-      fetchSubjects(true);
+      console.log("Selected student changed to:", selectedStudentId);
+      // The actual fetch will happen in the fetchSubjects function based on the selectedStudentId
     }
-  }, [selectedStudentId, isTeacher, isInitialLoadComplete, fetchStudentSubjects, fetchSubjects]);
+  }, [selectedStudentId, isTeacher, isInitialLoadComplete]);
 
   // Ensure the return type matches what's being destructured
   return {

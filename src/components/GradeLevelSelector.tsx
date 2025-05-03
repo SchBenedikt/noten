@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 interface GradeLevelSelectorProps {
   currentGradeLevel: number;
@@ -21,16 +21,22 @@ export const GradeLevelSelector = ({
   disabled = false,
 }: GradeLevelSelectorProps) => {
   const [isUpdating, setIsUpdating] = useState(false);
+  const lastSelectedLevelRef = useRef<number>(currentGradeLevel);
   
   const handleGradeLevelChange = (value: string) => {
     const newGradeLevel = parseInt(value);
     
-    // Don't update if the value hasn't changed or component is disabled
-    if (newGradeLevel === currentGradeLevel || disabled || isUpdating) {
+    // Don't update if the value hasn't changed or component is disabled or is updating
+    if (
+      newGradeLevel === lastSelectedLevelRef.current || 
+      disabled || 
+      isUpdating
+    ) {
       return;
     }
     
     setIsUpdating(true);
+    lastSelectedLevelRef.current = newGradeLevel;
     
     try {
       console.log("GradeLevelSelector changing grade level from:", currentGradeLevel, "to:", newGradeLevel);

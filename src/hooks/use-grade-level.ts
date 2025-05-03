@@ -1,7 +1,7 @@
 
 import { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 interface UseGradeLevelProps {
   initialGradeLevel?: number;
@@ -17,6 +17,9 @@ export const useGradeLevel = ({
   const [currentGradeLevel, setCurrentGradeLevel] = useState<number>(initialGradeLevel);
   const [isUpdating, setIsUpdating] = useState(false);
   const initialLoadCompleteRef = useRef(false);
+  const { toast } = useToast();
+  // Add a ref to track the last updated grade level to prevent duplicate updates
+  const lastUpdatedLevelRef = useRef<number>(initialGradeLevel);
 
   // Mark initial load as complete
   const completeInitialLoad = (gradeLevel?: number) => {
@@ -26,12 +29,18 @@ export const useGradeLevel = ({
       // If a grade level is provided, set it
       if (gradeLevel !== undefined && gradeLevel !== currentGradeLevel) {
         setCurrentGradeLevel(gradeLevel);
+        lastUpdatedLevelRef.current = gradeLevel;
       }
     }
   };
 
   // Update grade level in local state and in the database
   const updateGradeLevel = async (newGradeLevel: number) => {
+    // Don't update if it's the same as the current grade level
+    if (newGradeLevel === lastUpdatedLevelRef.current) {
+      return;
+    }
+    
     // Don't update if we're already updating
     if (isUpdating) {
       return;
@@ -40,17 +49,20 @@ export const useGradeLevel = ({
     // Don't update if we're in teacher mode with a selected student
     if (isTeacher && selectedStudentId) {
       setCurrentGradeLevel(newGradeLevel);
+      lastUpdatedLevelRef.current = newGradeLevel;
       return;
     }
     
     // Skip if the initial load hasn't completed
     if (!initialLoadCompleteRef.current) {
       setCurrentGradeLevel(newGradeLevel);
+      lastUpdatedLevelRef.current = newGradeLevel;
       return;
     }
     
     setIsUpdating(true);
     setCurrentGradeLevel(newGradeLevel);
+    lastUpdatedLevelRef.current = newGradeLevel;
     
     try {
       const { data: session } = await supabase.auth.getSession();
