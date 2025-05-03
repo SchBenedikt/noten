@@ -1,7 +1,7 @@
 
-import { useState, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from '@/components/ui/use-toast';
 
 interface UseGradeLevelProps {
   initialGradeLevel?: number;
@@ -15,67 +15,29 @@ export const useGradeLevel = ({
   selectedStudentId
 }: UseGradeLevelProps) => {
   const [currentGradeLevel, setCurrentGradeLevel] = useState<number>(initialGradeLevel);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const lastSuccessfulGradeLevelRef = useRef<number | null>(null);
   const initialLoadCompleteRef = useRef(false);
-  const { toast } = useToast();
-  // Add a ref to track the last updated grade level to prevent duplicate updates
-  const lastUpdatedLevelRef = useRef<number>(initialGradeLevel);
 
-  // Mark initial load as complete
-  const completeInitialLoad = (gradeLevel?: number) => {
-    if (!initialLoadCompleteRef.current) {
-      initialLoadCompleteRef.current = true;
-      
-      // If a grade level is provided, set it
-      if (gradeLevel !== undefined && gradeLevel !== currentGradeLevel) {
-        setCurrentGradeLevel(gradeLevel);
-        lastUpdatedLevelRef.current = gradeLevel;
-      }
+  const updateGradeLevelInDb = async () => {
+    // Don't update during initial loading or if last fetch wasn't successful
+    if (!initialLoadCompleteRef.current || 
+        lastSuccessfulGradeLevelRef.current !== currentGradeLevel) {
+      return;
     }
-  };
+    
+    const { data: session } = await supabase.auth.getSession();
+    
+    if (!session?.session?.user) {
+      return;
+    }
 
-  // Update grade level in local state and in the database
-  const updateGradeLevel = async (newGradeLevel: number) => {
-    // Don't update if it's the same as the current grade level
-    if (newGradeLevel === lastUpdatedLevelRef.current) {
-      return;
-    }
-    
-    // Don't update if we're already updating
-    if (isUpdating) {
-      return;
-    }
-    
-    // Don't update if we're in teacher mode with a selected student
-    if (isTeacher && selectedStudentId) {
-      setCurrentGradeLevel(newGradeLevel);
-      lastUpdatedLevelRef.current = newGradeLevel;
-      return;
-    }
-    
-    // Skip if the initial load hasn't completed
-    if (!initialLoadCompleteRef.current) {
-      setCurrentGradeLevel(newGradeLevel);
-      lastUpdatedLevelRef.current = newGradeLevel;
-      return;
-    }
-    
-    setIsUpdating(true);
-    setCurrentGradeLevel(newGradeLevel);
-    lastUpdatedLevelRef.current = newGradeLevel;
-    
-    try {
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (!session?.session?.user) {
-        return;
-      }
-
-      console.log("Updating grade level in DB to:", newGradeLevel);
+    // Only update the grade level if we're not in teacher mode or if no student is selected
+    if (!isTeacher || !selectedStudentId) {
+      console.log("Updating grade level in DB to:", currentGradeLevel);
       
       const { error } = await supabase
         .from('profiles')
-        .update({ grade_level: newGradeLevel })
+        .update({ grade_level: currentGradeLevel })
         .eq('id', session.session.user.id);
 
       if (error) {
@@ -86,24 +48,39 @@ export const useGradeLevel = ({
           variant: "destructive",
         });
       } else {
-        console.log("Grade level updated in DB successfully:", newGradeLevel);
+        console.log("Grade level updated in DB successfully:", currentGradeLevel);
         toast({
           title: "Erfolg",
-          description: `Jahrgangsstufe auf ${newGradeLevel} geändert`,
+          description: `Jahrgangsstufe auf ${currentGradeLevel} geändert`,
         });
       }
-    } catch (error) {
-      console.error("Unexpected error updating grade level:", error);
-    } finally {
-      setIsUpdating(false);
     }
   };
 
+  // Update lastSuccessfulGradeLevel when we know the fetch has completed
+  const markGradeLevelSuccess = () => {
+    lastSuccessfulGradeLevelRef.current = currentGradeLevel;
+  };
+
+  // Mark initial load as complete
+  const completeInitialLoad = () => {
+    initialLoadCompleteRef.current = true;
+  };
+
+  useEffect(() => {
+    // Skip during initial loading
+    if (!initialLoadCompleteRef.current) {
+      return;
+    }
+    
+    updateGradeLevelInDb();
+  }, [currentGradeLevel, isTeacher, selectedStudentId]);
+
   return {
     currentGradeLevel,
-    updateGradeLevel,
-    isUpdating,
-    isInitialLoadComplete: initialLoadCompleteRef.current,
-    completeInitialLoad
+    setCurrentGradeLevel,
+    markGradeLevelSuccess,
+    completeInitialLoad,
+    isInitialLoadComplete: initialLoadCompleteRef.current
   };
 };

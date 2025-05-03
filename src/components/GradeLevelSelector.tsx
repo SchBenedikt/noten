@@ -7,7 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useRef } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { useState, useEffect, useRef } from "react";
 
 interface GradeLevelSelectorProps {
   currentGradeLevel: number;
@@ -20,29 +21,47 @@ export const GradeLevelSelector = ({
   onGradeLevelChange,
   disabled = false,
 }: GradeLevelSelectorProps) => {
+  const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
-  const lastSelectedLevelRef = useRef<number>(currentGradeLevel);
-  
-  const handleGradeLevelChange = (value: string) => {
+  const [selectedGradeLevel, setSelectedGradeLevel] = useState<number>(currentGradeLevel);
+  const prevGradeLevelRef = useRef<number>(currentGradeLevel);
+
+  // Synchronize with parent component when currentGradeLevel changes
+  useEffect(() => {
+    console.log("GradeLevelSelector received currentGradeLevel:", currentGradeLevel);
+    // Only update internal state if the current grade level has actually changed
+    if (currentGradeLevel !== selectedGradeLevel) {
+      setSelectedGradeLevel(currentGradeLevel);
+      prevGradeLevelRef.current = currentGradeLevel;
+    }
+  }, [currentGradeLevel]);
+
+  const handleGradeLevelChange = async (value: string) => {
     const newGradeLevel = parseInt(value);
     
-    // Don't update if the value hasn't changed or component is disabled or is updating
-    if (
-      newGradeLevel === lastSelectedLevelRef.current || 
-      disabled || 
-      isUpdating
-    ) {
+    // Don't update if the value hasn't changed, component is disabled, or an update is in progress
+    if (newGradeLevel === selectedGradeLevel || disabled || isUpdating) {
       return;
     }
     
     setIsUpdating(true);
-    lastSelectedLevelRef.current = newGradeLevel;
+    setSelectedGradeLevel(newGradeLevel);
+    prevGradeLevelRef.current = newGradeLevel;
     
     try {
-      console.log("GradeLevelSelector changing grade level from:", currentGradeLevel, "to:", newGradeLevel);
-      
+      console.log("GradeLevelSelector changing grade level from:", selectedGradeLevel, "to:", newGradeLevel);
       // Call the callback to notify parent components
       onGradeLevelChange(newGradeLevel);
+    } catch (error) {
+      console.error("Fehler beim Ändern der Klassenstufe:", error);
+      toast({
+        title: "Fehler",
+        description: "Unerwarteter Fehler beim Ändern der Klassenstufe",
+        variant: "destructive",
+      });
+      
+      // Revert to previous value on error
+      setSelectedGradeLevel(prevGradeLevelRef.current);
     } finally {
       // Add a small delay to prevent rapid changes
       setTimeout(() => {
@@ -55,7 +74,7 @@ export const GradeLevelSelector = ({
     <div className="flex items-center gap-2">
       <span className="text-sm font-medium">Klassenstufe:</span>
       <Select
-        value={currentGradeLevel.toString()}
+        value={selectedGradeLevel.toString()}
         onValueChange={handleGradeLevelChange}
         disabled={isUpdating || disabled}
       >

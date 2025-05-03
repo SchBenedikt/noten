@@ -1,7 +1,6 @@
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState, useEffect } from 'react';
 
 interface GradeValueInputProps {
   value: string;
@@ -10,18 +9,10 @@ interface GradeValueInputProps {
 }
 
 export const GradeValueInput = ({ value, onChange, hasError = false }: GradeValueInputProps) => {
-  const [localError, setLocalError] = useState(false);
-  
-  // Validate the value whenever it changes
-  useEffect(() => {
-    const numValue = parseFloat(value);
-    const isValid = !isNaN(numValue) && numValue >= 1 && numValue <= 6;
-    setLocalError(!isValid && value !== '');
-  }, [value]);
-  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Allow empty value for user input convenience
-    onChange(e.target.value);
+    // Validieren, dass der Wert zwischen 1 und 6 liegt
+    const newValue = e.target.value;
+    onChange(newValue);
   };
 
   return (
@@ -36,9 +27,9 @@ export const GradeValueInput = ({ value, onChange, hasError = false }: GradeValu
         value={value}
         onChange={handleChange}
         required
-        className={hasError || localError ? 'border-red-500' : ''}
+        className={hasError ? 'border-red-500' : ''}
       />
-      {(hasError || localError) && <p className="text-sm text-red-500">Bitte gib eine gültige Note ein (1-6)</p>}
+      {hasError && <p className="text-sm text-red-500">Bitte gib eine gültige Note ein (1-6)</p>}
     </div>
   );
 };
