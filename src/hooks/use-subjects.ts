@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Subject } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -202,6 +201,7 @@ export const useSubjects = () => {
     }
   }, [selectedStudentId, isTeacher, isInitialLoadComplete, fetchStudentSubjects, fetchSubjects]);
 
+  // Ensure the return type matches what's being destructured
   return {
     subjects,
     addSubject,
@@ -219,6 +219,6 @@ export const useSubjects = () => {
     selectedStudentId,
     selectStudent,
     isGradeLevelUpdating,
-    updateGradeLevel,
+    updateGradeLevel, // This is the correct name as used in Profile.tsx
   };
 };

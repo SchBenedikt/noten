@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdatingRole, setIsUpdatingRole] = useState(false);
   const [isChangingGradeLevel, setIsChangingGradeLevel] = useState(false);
-  const { setCurrentGradeLevel, fetchSubjects } = useSubjects();
+  const { updateGradeLevel, fetchSubjects } = useSubjects();
   const gradeLevelChangeTimeoutRef = useRef<number | null>(null);
 
   // Fetch the profile data directly from Supabase
@@ -78,7 +79,7 @@ const Profile = () => {
     updateGradeLevelInDatabase(newGradeLevel)
       .then(() => {
         // Then update the state and fetch subjects
-        setCurrentGradeLevel(newGradeLevel);
+        updateGradeLevel(newGradeLevel);
         
         // Add a delay before fetching subjects to avoid race conditions
         gradeLevelChangeTimeoutRef.current = window.setTimeout(() => {
