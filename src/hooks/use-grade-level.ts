@@ -19,9 +19,9 @@ export const useGradeLevel = ({
   const initialLoadCompleteRef = useRef(false);
 
   const updateGradeLevelInDb = async () => {
-    // Don't update during initial loading or if last fetch wasn't successful
+    // Don't update during initial loading or if no change from last successful fetch
     if (!initialLoadCompleteRef.current || 
-        lastSuccessfulGradeLevelRef.current !== currentGradeLevel) {
+        lastSuccessfulGradeLevelRef.current === currentGradeLevel) {
       return;
     }
     
@@ -49,6 +49,7 @@ export const useGradeLevel = ({
         });
       } else {
         console.log("Grade level updated in DB successfully:", currentGradeLevel);
+        lastSuccessfulGradeLevelRef.current = currentGradeLevel;
         toast({
           title: "Erfolg",
           description: `Jahrgangsstufe auf ${currentGradeLevel} geändert`,
@@ -57,14 +58,21 @@ export const useGradeLevel = ({
     }
   };
 
-  // Update lastSuccessfulGradeLevel when we know the fetch has completed
-  const markGradeLevelSuccess = () => {
-    lastSuccessfulGradeLevelRef.current = currentGradeLevel;
+  // Update grade level and trigger database update
+  const updateGradeLevel = (newGradeLevel: number) => {
+    if (newGradeLevel !== currentGradeLevel) {
+      console.log("Updating grade level to:", newGradeLevel);
+      setCurrentGradeLevel(newGradeLevel);
+    }
   };
 
   // Mark initial load as complete
-  const completeInitialLoad = () => {
+  const completeInitialLoad = (gradeLevel?: number) => {
+    if (gradeLevel !== undefined && gradeLevel !== currentGradeLevel) {
+      setCurrentGradeLevel(gradeLevel);
+    }
     initialLoadCompleteRef.current = true;
+    lastSuccessfulGradeLevelRef.current = gradeLevel || currentGradeLevel;
   };
 
   useEffect(() => {
@@ -78,8 +86,7 @@ export const useGradeLevel = ({
 
   return {
     currentGradeLevel,
-    setCurrentGradeLevel,
-    markGradeLevelSuccess,
+    updateGradeLevel,
     completeInitialLoad,
     isInitialLoadComplete: initialLoadCompleteRef.current
   };

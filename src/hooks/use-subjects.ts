@@ -29,8 +29,7 @@ export const useSubjects = () => {
   // Extract grade level management
   const { 
     currentGradeLevel, 
-    setCurrentGradeLevel, 
-    markGradeLevelSuccess,
+    updateGradeLevel, 
     completeInitialLoad,
     isInitialLoadComplete
   } = useGradeLevel({ 
@@ -44,7 +43,7 @@ export const useSubjects = () => {
     students, 
     fetchAllStudents,
     fetchStudentSubjects 
-  } = useStudents(currentGradeLevel, setCurrentGradeLevel);
+  } = useStudents(currentGradeLevel);
   
   // Function to select a student
   const selectStudent = (studentId: string | null) => {
@@ -111,16 +110,15 @@ export const useSubjects = () => {
       if (isTeacher && selectedStudentId) {
         const { subjects: studentSubjects, gradeLevel } = await fetchStudentSubjects(selectedStudentId);
         setSubjects(studentSubjects.map(mapDatabaseSubjectToSubject));
-        markGradeLevelSuccess();
       } else {
         // Get the current grade level from the database only if we're not a teacher viewing a student
         if (!isTeacher && !isInitialLoadComplete) {
           const gradeLevel = await fetchUserGradeLevel();
           if (gradeLevel !== currentGradeLevel) {
-            setCurrentGradeLevel(gradeLevel);
+            updateGradeLevel(gradeLevel);
+            completeInitialLoad(gradeLevel);
           }
           console.log("useSubjects.fetchSubjects updated currentGradeLevel to:", gradeLevel);
-          completeInitialLoad();
         }
 
         // Fetch own subjects for students and teachers viewing their own data
@@ -162,7 +160,6 @@ export const useSubjects = () => {
 
         console.log("Fetched subjects:", subjectsData?.length || 0, "for grade level:", currentGradeLevel);
         setSubjects((subjectsData || []).map(mapDatabaseSubjectToSubject));
-        markGradeLevelSuccess();
       }
     } catch (error) {
       console.error("Error fetching subjects:", error);
@@ -182,11 +179,12 @@ export const useSubjects = () => {
       // Use the grade level stored in the profile on initial load
       const initialGradeLevel = await fetchUserGradeLevel();
       console.log("Initial grade level fetch:", initialGradeLevel);
-      if (initialGradeLevel !== currentGradeLevel) {
-        setCurrentGradeLevel(initialGradeLevel);
-      }
-      completeInitialLoad();
-      await fetchSubjects(true); // Force fetch on initial load
+      
+      // Complete initial load with the fetched grade level
+      completeInitialLoad(initialGradeLevel);
+      
+      // Force fetch subjects after setting the grade level
+      await fetchSubjects(true);
       
       // If user is a teacher, fetch all students
       if (isTeacher) {
@@ -217,7 +215,6 @@ export const useSubjects = () => {
       console.log("Selected student changed to:", selectedStudentId, "- fetching subjects");
       fetchStudentSubjects(selectedStudentId).then(({ subjects: studentSubjects }) => {
         setSubjects(studentSubjects.map(mapDatabaseSubjectToSubject));
-        markGradeLevelSuccess();
       });
     }
   }, [selectedStudentId]);
@@ -232,7 +229,7 @@ export const useSubjects = () => {
     updateSubject,
     importGradesFromExcel,
     currentGradeLevel,
-    setCurrentGradeLevel,
+    updateGradeLevel,
     fetchSubjects,
     isLoading,
     isTeacher,

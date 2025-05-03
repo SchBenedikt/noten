@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useSubjects } from "@/hooks/use-subjects";
@@ -36,7 +35,7 @@ const Index = () => {
     updateSubject,
     importGradesFromExcel,
     currentGradeLevel,
-    setCurrentGradeLevel,
+    updateGradeLevel,
     fetchSubjects,
     isLoading,
     isTeacher,
@@ -58,15 +57,12 @@ const Index = () => {
     console.log("Index page handling grade level change to:", newGradeLevel);
     setGradeLevelChangeInProgress(true);
     
-    setCurrentGradeLevel(newGradeLevel);
+    updateGradeLevel(newGradeLevel);
     
     gradeLevelChangeTimeoutRef.current = window.setTimeout(() => {
-      fetchSubjects(true);
-      setTimeout(() => {
-        setGradeLevelChangeInProgress(false);
-        gradeLevelChangeTimeoutRef.current = null;
-      }, 500);
-    }, 100);
+      setGradeLevelChangeInProgress(false);
+      gradeLevelChangeTimeoutRef.current = null;
+    }, 1000);
   };
 
   useEffect(() => {

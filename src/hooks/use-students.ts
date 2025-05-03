@@ -1,65 +1,76 @@
-
 import { useState, useEffect } from 'react';
+import { Student } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { Subject } from '@/types';
 
-interface StudentProfile {
-  id: string;
-  first_name: string | null;
-  grade_level: number;
-  school_id: string | null;
+interface UseStudentsResult {
+  students: Student[];
+  fetchAllStudents: () => Promise<void>;
+  fetchStudentSubjects: (studentId: string) => Promise<{ subjects: Subject[], gradeLevel: number }>;
 }
 
-export const useStudents = (
-  currentGradeLevel: number,
-  setCurrentGradeLevel: (level: number) => void
-) => {
-  const [students, setStudents] = useState<StudentProfile[]>([]);
+export const useStudents = (currentGradeLevel: number): UseStudentsResult => {
+  const [students, setStudents] = useState<Student[]>([]);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const fetchAllStudents = async () => {
     try {
-      const { data: studentsData, error } = await supabase
-        .from('profiles')
-        .select('id, first_name, grade_level, school_id, role')
-        .eq('role', 'student');
-
-      if (error) {
-        console.error("Error fetching students:", error);
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user) {
+        navigate('/login');
         return;
       }
 
-      setStudents(studentsData || []);
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('role', 'student')
+        .eq('teacher_id', session.session.user.id);
+
+      if (error) {
+        console.error("Error fetching students:", error);
+        toast({
+          title: "Fehler",
+          description: "Fehler beim Laden der Schüler",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setStudents(profiles as Student[]);
     } catch (error) {
-      console.error("Error in fetchAllStudents:", error);
+      console.error("Error fetching students:", error);
+      toast({
+        title: "Fehler",
+        description: "Fehler beim Laden der Schüler",
+        variant: "destructive",
+      });
     }
   };
 
   const fetchStudentSubjects = async (studentId: string) => {
     try {
-      // First get the student's grade level
-      const { data: studentData, error: studentError } = await supabase
+      const { data: studentProfile, error: profileError } = await supabase
         .from('profiles')
         .select('grade_level')
         .eq('id', studentId)
         .single();
-      
-      if (studentError) {
-        console.error("Error fetching student grade level:", studentError);
+
+      if (profileError) {
+        console.error("Error fetching student profile:", profileError);
         toast({
           title: "Fehler",
-          description: "Fehler beim Laden der Schülerdaten",
+          description: "Fehler beim Laden des Schülerprofils",
           variant: "destructive",
         });
         return { subjects: [], gradeLevel: currentGradeLevel };
       }
-      
-      // Update the current grade level to match the student's
-      if (studentData.grade_level !== currentGradeLevel) {
-        setCurrentGradeLevel(studentData.grade_level);
-      }
-      console.log("Updated current grade level to student's grade level:", studentData.grade_level);
-      
-      // Now fetch subjects filtered by student ID and their grade level
+
+      const studentGradeLevel = studentProfile?.grade_level || currentGradeLevel;
+
       const { data: subjectsData, error: subjectsError } = await supabase
         .from('subjects')
         .select(`
@@ -82,33 +93,38 @@ export const useStudents = (
           )
         `)
         .eq('user_id', studentId)
-        .eq('grade_level', studentData.grade_level) // Filter by the student's current grade level
+        .eq('grade_level', studentGradeLevel)
         .order('created_at', { ascending: true });
 
       if (subjectsError) {
+        console.error("Error fetching student subjects:", subjectsError);
         toast({
           title: "Fehler",
-          description: "Fehler beim Laden der Schülerfächer",
+          description: "Fehler beim Laden der Fächer des Schülers",
           variant: "destructive",
         });
-        return { subjects: [], gradeLevel: studentData.grade_level };
+        return { subjects: [], gradeLevel: currentGradeLevel };
       }
 
-      console.log("Fetched student subjects:", subjectsData?.length || 0, "for grade level:", studentData.grade_level);
-      return { 
-        subjects: subjectsData || [], 
-        gradeLevel: studentData.grade_level 
+      return {
+        subjects: subjectsData || [],
+        gradeLevel: studentGradeLevel,
       };
     } catch (error) {
       console.error("Error fetching student subjects:", error);
       toast({
         title: "Fehler",
-        description: "Fehler beim Laden der Schülerdaten",
+        description: "Fehler beim Laden der Fächer des Schülers",
         variant: "destructive",
       });
       return { subjects: [], gradeLevel: currentGradeLevel };
     }
   };
+
+  useEffect(() => {
+    // Fetch all students when the component mounts
+    fetchAllStudents();
+  }, []);
 
   return {
     students,
