@@ -147,12 +147,12 @@ export const Sidebar = () => {
     />
   );
 
-  // Desktop sidebar toggle button
+  // Desktop sidebar toggle button - Updated to ensure it's fully visible
   const SidebarToggle = () => (
     <Button
       variant="ghost"
       size="sm"
-      className="hidden md:flex absolute -right-3 top-6 z-20 h-6 w-6 rounded-full items-center justify-center"
+      className="hidden md:flex absolute -right-4 top-6 z-20 h-7 w-7 rounded-full items-center justify-center bg-background border shadow-sm"
       onClick={() => setIsCollapsed(!isCollapsed)}
       aria-label={isCollapsed ? "Ausklappen" : "Einklappen"}
     >
@@ -185,9 +185,9 @@ export const Sidebar = () => {
       {/* Sidebar component */}
       <aside
         className={cn(
-          "bg-background border-r border-border overflow-y-auto transition-all duration-300 ease-in-out z-50 h-screen",
+          "bg-background border-r border-border overflow-hidden transition-all duration-300 ease-in-out z-50 h-screen flex flex-col",
           // Desktop states
-          "hidden md:block fixed",
+          "hidden md:flex fixed",
           isCollapsed ? "md:w-16" : "md:w-[240px]",
           // Mobile states
           isMobileOpen ? "fixed inset-y-0 left-0 w-[240px]" : "hidden"
@@ -229,7 +229,7 @@ export const Sidebar = () => {
             )}
           </div>
 
-          <nav className="mt-8 flex-1">
+          <nav className="mt-8 flex-1 overflow-y-auto">
             {isLoading ? (
               <div className="flex justify-center py-4">
                 <div className="w-5 h-5 border-2 border-t-transparent border-primary rounded-full animate-spin"></div>
@@ -256,11 +256,12 @@ export const Sidebar = () => {
             )}
           </nav>
 
+          {/* Fixed logout button at the bottom */}
           <div className="mt-auto px-2">
             <Button
               variant="ghost"
               className={cn(
-                "w-full flex",
+                "w-full flex mb-2",
                 isCollapsed ? "justify-center px-2" : "justify-start",
                 "text-red-500 hover:text-red-600 hover:bg-red-50"
               )}

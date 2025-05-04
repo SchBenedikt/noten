@@ -22,3 +22,14 @@ export interface Subject {
   created_at?: string;
   grade_level: number;
 }
+
+// Add Student type if it's not already defined
+export interface Student {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  grade_level: number;
+  role: string;
+  created_at: string;
+}
